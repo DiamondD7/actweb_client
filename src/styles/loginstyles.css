@@ -74,3 +74,9 @@
   border: none;
   border-radius: 5px;
 }
+
+.signin-google__wrapper {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+}

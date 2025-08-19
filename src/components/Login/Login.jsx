@@ -3,6 +3,7 @@ import { CircleNotchIcon } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 
 import "../../styles/loginstyles.css";
+import { GoogleLogin } from "@react-oauth/google";
 const Login = () => {
   const navigate = useNavigate();
   const [isJoinNowClicked, setIsJoinNowClicked] = useState(false);
@@ -63,6 +64,20 @@ const Login = () => {
             </div>
 
             <button className="form-submit__btn -btn-dark-">Submit</button>
+
+            <br />
+            <br />
+            <p>Or</p>
+
+            <div className="signin-google__wrapper">
+              <GoogleLogin
+                onSuccess={() => console.log()}
+                onError={(err) => console.log(err)}
+                text="signin_with"
+                width="330px"
+                shape="pill"
+              />
+            </div>
           </form>
         </div>
       </div>
