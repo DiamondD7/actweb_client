@@ -1,0 +1,100 @@
+@import url("https://fonts.googleapis.com/css2?family=Mozilla+Text:wght@200..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  color: #494949;
+  box-sizing: border-box;
+  font-family: "Roboto", sans-serif;
+}
+
+.-btn-dark- {
+  background-color: #4495c7;
+  color: #eaf2ff;
+}
+
+.-btn-loading__icon {
+  animation: loadingAnimation 1s infinite;
+}
+
+@keyframes loadingAnimation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.-form-password-input__wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin: 15px 0 15px 0;
+  text-align: start;
+  border: 1px solid #494949;
+  border-radius: 5px;
+  width: 100%;
+  padding: 5px;
+}
+.-form-input__wrapper {
+  margin: 15px 0 15px 0;
+  text-align: start;
+  border: 1px solid #494949;
+  border-radius: 5px;
+  width: 100%;
+  padding: 5px;
+}
+
+.-form-input__wrapper p,
+.-form-password-input__wrapper p {
+  margin-top: 0;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.4);
+}
+.-form-input__wrapper input,
+.-form-password-input__wrapper input {
+  width: 100%;
+  outline: none;
+  background-color: transparent;
+  border: none;
+}
+
+.-form-half-input__wrapper {
+  margin-top: 15px;
+  text-align: start;
+  border: 1px solid #494949;
+  border-radius: 5px;
+  width: 50%;
+  padding: 5px;
+}
+
+.-form-half-input__wrapper p {
+  color: rgba(0, 0, 0, 0.4);
+  margin-top: 0;
+  font-size: 11px;
+}
+.-form-half-input__wrapper input {
+  width: 100%;
+  outline: none;
+  background-color: transparent;
+  border: none;
+}
+
+.-input-border-error {
+  border: 1px solid red;
+}
+
+.-error-form-p {
+  color: red;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.-password-seeIcon-btn {
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+  outline: none;
+}

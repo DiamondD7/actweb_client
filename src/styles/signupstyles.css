@@ -1,0 +1,90 @@
+.signup-statements__wrapper {
+  width: 100vw;
+  height: 300px;
+  padding: 50px;
+
+  text-align: center;
+  background-color: #4495c7;
+}
+.signup-statements__wrapper h1 {
+  font-size: 40px;
+  color: #eaf2ff;
+}
+.signup-statements__wrapper p {
+  display: inline-block;
+  margin-top: 30px;
+  width: 700px;
+  line-height: 1.5;
+  color: #eaf2ff;
+}
+.signup-form__wrapper {
+  margin: 0 auto;
+
+  width: 600px;
+  height: 200px;
+  padding: 30px;
+
+  position: relative;
+  top: -30px;
+
+  border-radius: 5px;
+  background-color: #eaf2ff;
+}
+
+.form-checkbox-terms__wrapper {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.signup-form-userDetails__wrapper {
+  display: flex;
+  gap: 10px;
+}
+
+.form-signup__btn {
+  cursor: pointer;
+  margin-top: 20px;
+  width: 100%;
+  padding: 5px 10px;
+
+  border: none;
+  border-radius: 5px;
+  background-color: #4495c7;
+  color: #eaf2ff;
+}
+
+.signup-google__wrapper {
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+}
+.signup-google__wrapper p {
+  margin-bottom: 50px;
+}
+
+.signup-success__wrapper {
+  text-align: center;
+}
+
+.signup-success__wrapper h1 {
+  margin-top: 30px;
+}
+
+.signup-success__wrapper p {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.signup-success__btn {
+  cursor: pointer;
+  width: 200px;
+
+  border: none;
+  border-radius: 5px;
+  background-color: #4495c7;
+  color: #eaf2ff;
+
+  margin-top: 30px;
+  padding: 5px 10px;
+}

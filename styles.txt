@@ -1,0 +1,1 @@
+background&text (light)= #eaf2ff        accent = #4495c7          text (dark)- #494949
