@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { CircleNotchIcon } from "@phosphor-icons/react";
+import { CircleNotchIcon, EyeIcon, EyeSlashIcon } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 
 import "../../styles/loginstyles.css";
 import { GoogleLogin } from "@react-oauth/google";
 const Login = () => {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
   const [isJoinNowClicked, setIsJoinNowClicked] = useState(false);
 
   const handleJoinNowClicked = (e) => {
@@ -58,9 +59,24 @@ const Login = () => {
               <p>Email</p>
               <input type="text" />
             </div>
-            <div className="-form-input__wrapper">
-              <p>Password</p>
-              <input type="password" />
+            <div className="-form-password-input__wrapper">
+              <div style={{ width: "100%" }}>
+                <p>Password</p>
+                <input type={showPassword === false ? "password" : "text"} />
+              </div>
+              <button
+                className="-password-seeIcon-btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowPassword(!showPassword);
+                }}
+              >
+                {showPassword === false ? (
+                  <EyeSlashIcon size={18} />
+                ) : (
+                  <EyeIcon size={18} />
+                )}
+              </button>
             </div>
 
             <button className="form-submit__btn -btn-dark-">Submit</button>
