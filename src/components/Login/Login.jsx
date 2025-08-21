@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CheckLogin } from "../../assets/js/serverapi";
+import { CheckLogin, ValidateTokens } from "../../assets/js/serverapi";
 import { CircleNotchIcon, EyeIcon, EyeSlashIcon } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
@@ -41,7 +41,7 @@ const Login = () => {
       });
 
       if (response.status === 401) {
-        console.error("Login failed: Invalid credentials");
+        console.error(response.status);
         setShowError(true);
         setIsLoginClicked(false);
         return;
@@ -55,15 +55,40 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setTimeout(() => {
-          setIsLoginClicked(false);
-          // Navigate to the dashboard or home page after successful login
-          navigate("/profile-page");
-        }, 2000);
+        handleTokenValidation(data.data);
       }
     } catch (err) {
       console.error("Login failed:", err);
       // Handle error appropriately, e.g., show a notification
+    }
+  };
+
+  const handleTokenValidation = async (userData) => {
+    try {
+      const response = await fetch(ValidateTokens, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include", // Include credentials for CORS requests
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+      console.log("Token validation data:", data);
+
+      setTimeout(() => {
+        setIsLoginClicked(false);
+        // Navigate to the dashboard or home page after successful login
+        navigate("/profile-page");
+      }, 2000);
+    } catch (e) {
+      console.error("Error validating tokens:", e);
     }
   };
 
