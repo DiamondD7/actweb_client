@@ -98,3 +98,10 @@
   border: none;
   outline: none;
 }
+
+.-main-container__wrapper {
+  width: 1550px;
+  margin: 0 auto;
+
+  padding: 30px;
+}

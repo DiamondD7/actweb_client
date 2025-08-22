@@ -85,7 +85,7 @@ const Login = () => {
       setTimeout(() => {
         setIsLoginClicked(false);
         // Navigate to the dashboard or home page after successful login
-        navigate("/profile-page");
+        navigate("/home-page");
       }, 2000);
     } catch (e) {
       console.error("Error validating tokens:", e);
