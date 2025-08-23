@@ -36,6 +36,7 @@
   list-style: none;
 }
 .nav-navigations__list li {
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 5px;

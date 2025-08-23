@@ -1,0 +1,96 @@
+.profile-background-viewall__btn {
+  cursor: pointer;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: #eaf2ff;
+  background-color: #4495c7;
+  border: none;
+  border-radius: 5px;
+}
+
+.profile-deatils__wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background-color: #fefae0;
+
+  width: 450px;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.profile-details-profilepicture__img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.profile-details-details__wrapper {
+  width: 300px;
+}
+.profile-details-details__wrapper p {
+  font-size: 12px;
+}
+
+.profile-details-followers__wrapper {
+  display: flex;
+  gap: 10px;
+}
+
+.profile-details-bio__text {
+  color: rgba(0, 0, 0, 0.4);
+  margin-top: 10px;
+}
+
+.profile-background__wrapper {
+  margin-top: 10px;
+  width: 450px;
+
+  background-color: #fefae0;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.profile-background-lists__wrapper {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.profile-background__list {
+  margin-top: 10px;
+  list-style: none;
+  padding: 0;
+}
+
+.profile-background__list li {
+  font-size: 12px;
+  margin-top: 5px;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.profile-background-list__li-strong {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.profile-background-lists-view__wrapper {
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  padding: 5px;
+}
+
+.profile-background-lists-view__wrapper span {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.4);
+}
