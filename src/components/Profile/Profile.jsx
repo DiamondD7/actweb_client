@@ -9,9 +9,48 @@ import {
   VideoIcon,
 } from "@phosphor-icons/react";
 const ProfileReels = () => {
+  const testString =
+    "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Aut, ad adipisci voluptatum non iure, reiciendis beatae sapiente eius unde porro odit expedita error labore fugiat, sint dolor nihil numquam voluptate. lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum, natus aspernatur. Soluta, quod? Sint, numquam voluptates doloremque laudantium sapiente cumque, est sed id reiciendis dolor amet quasi, accusamus atque a.";
   return (
     <div className="profile-reels-container__wrapper">
-      <div></div>
+      <div className="profile-reels-content-thumbnail__wrapper">
+        <img
+          className="profile-reels-thumbnail__img"
+          src="https://plus.unsplash.com/premium_photo-1683219368443-cb52cb4bf023?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          alt="video-thumbnail"
+        />
+        <p className="profile-reels-thumbnail__text">
+          {testString.length > 250
+            ? testString.substring(0, 250) + "...."
+            : testString}
+        </p>
+      </div>
+      <div className="profile-reels-content-thumbnail__wrapper">
+        <img
+          className="profile-reels-thumbnail__img"
+          src="https://images.unsplash.com/photo-1623888557352-442ac9bd4417?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          alt="video-thumbnail"
+        />
+        <p className="profile-reels-thumbnail__text">
+          Lorem ipsum, dolor sit amet consectetur adipisicing elit. Aut, ad
+          adipisci voluptatum non iure, reiciendis beatae sapiente eius unde
+          porro odit expedita error labore fugiat, sint dolor nihil numquam
+          voluptate.
+        </p>
+      </div>
+      <div className="profile-reels-content-thumbnail__wrapper">
+        <img
+          className="profile-reels-thumbnail__img"
+          src="https://plus.unsplash.com/premium_photo-1684718741176-56035a6af605?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          alt="video-thumbnail"
+        />
+        <p className="profile-reels-thumbnail__text">
+          Lorem ipsum, dolor sit amet consectetur adipisicing elit. Aut, ad
+          adipisci voluptatum non iure, reiciendis beatae sapiente eius unde
+          porro odit expedita error labore fugiat, sint dolor nihil numquam
+          voluptate.
+        </p>
+      </div>
     </div>
   );
 };
