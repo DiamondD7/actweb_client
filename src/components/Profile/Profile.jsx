@@ -3,11 +3,71 @@ import { useNavigate } from "react-router-dom";
 import Nav from "../Nav/Nav";
 
 import "../../styles/profilestyles.css";
-import { ArrowCircleRightIcon } from "@phosphor-icons/react";
+import {
+  ArrowCircleRightIcon,
+  FilmReelIcon,
+  VideoIcon,
+} from "@phosphor-icons/react";
+const ProfileReels = () => {
+  return (
+    <div className="profile-reels-container__wrapper">
+      <div></div>
+    </div>
+  );
+};
+
+const ProfileCards = () => {
+  return (
+    <div className="profile-cards-container__wrapper">
+      <div className="profile-cards__wrapper"></div>
+      <div className="profile-cards__wrapper"></div>
+      <div className="profile-cards__wrapper"></div>
+    </div>
+  );
+};
+
 const ProfileShowreel = () => {
   return (
     <div className="profile-background__wrapper">
-      <h1>Hello</h1>
+      <div className="profile-showreel-lists-container__wrapper">
+        <p style={{ fontSize: "10px" }}>1</p>
+        <div className="profile-showreel-list__wrapper">
+          <h4>Feature Film</h4>
+          <p className="profile-showreel-title__text">Bean</p>
+        </div>
+        <div className="profile-showreel-link__wrapper">
+          <VideoIcon size={18} />
+          <a href="https://www.youtube.com" target="_blank">
+            Bean Season 1, Episode 2
+          </a>
+        </div>
+      </div>
+      <div className="profile-showreel-lists-container__wrapper">
+        <p style={{ fontSize: "10px" }}>2</p>
+        <div className="profile-showreel-list__wrapper">
+          <h4>Commercial</h4>
+          <p className="profile-showreel-title__text">Briscoes</p>
+        </div>
+        <div className="profile-showreel-link__wrapper">
+          <VideoIcon size={18} />
+          <a href="https://www.youtube.com" target="_blank">
+            Briscoes Christmas 2024
+          </a>
+        </div>
+      </div>
+      <div className="profile-showreel-lists-container__wrapper">
+        <p style={{ fontSize: "10px" }}>3</p>
+        <div className="profile-showreel-list__wrapper">
+          <h4>Commercial</h4>
+          <p className="profile-showreel-title__text">PB Tech</p>
+        </div>
+        <div className="profile-showreel-link__wrapper">
+          <VideoIcon size={18} />
+          <a href="https://www.youtube.com" target="_blank">
+            PB Tech Back to School 2024
+          </a>
+        </div>
+      </div>
     </div>
   );
 };
@@ -116,9 +176,17 @@ const Profile = () => {
   return (
     <div className="-main-container__wrapper">
       <Nav />
-      <ProfileDetails />
-      <ProfileBackground />
-      <ProfileShowreel />
+      <div className="profile-container__wrapper">
+        <div>
+          <ProfileDetails />
+          <ProfileBackground />
+          <ProfileShowreel />
+        </div>
+        <div>
+          <ProfileCards />
+          <ProfileReels />
+        </div>
+      </div>
     </div>
   );
 };
