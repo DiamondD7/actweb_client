@@ -5,7 +5,10 @@ import Nav from "../Nav/Nav";
 import "../../styles/profilestyles.css";
 import {
   ArrowCircleRightIcon,
-  FilmReelIcon,
+  EnvelopeIcon,
+  GlobeHemisphereEastIcon,
+  PhoneIcon,
+  ScanSmileyIcon,
   VideoIcon,
 } from "@phosphor-icons/react";
 const ProfileReels = () => {
@@ -58,9 +61,54 @@ const ProfileReels = () => {
 const ProfileCards = () => {
   return (
     <div className="profile-cards-container__wrapper">
-      <div className="profile-cards__wrapper"></div>
-      <div className="profile-cards__wrapper"></div>
-      <div className="profile-cards__wrapper"></div>
+      <div className="profile-cards__wrapper">
+        <div className="profile-cards-icon-texts__wrapper">
+          <EnvelopeIcon size={18} />
+          <span style={{ fontSize: "12px" }}>junro@gmail.com</span>
+        </div>
+        <div className="profile-cards-icon-texts__wrapper">
+          <PhoneIcon size={18} />
+          <span style={{ fontSize: "12px" }}>+6421020288765</span>
+        </div>
+      </div>
+      <div className="profile-cards__wrapper">
+        <div className="profile-cards-icon-texts__wrapper">
+          <ScanSmileyIcon size={18} />
+          <span style={{ fontSize: "12px" }}>Appearance</span>
+        </div>
+
+        <div className="profile-cards-appearance-details__wrapper">
+          <p>Height</p>
+          <span style={{ fontSize: "12px" }}>170cm</span>
+        </div>
+        <div className="profile-cards-appearance-details__wrapper">
+          <p>Weight</p>
+          <span style={{ fontSize: "12px" }}>80kg</span>
+        </div>
+        <div className="profile-cards-appearance-details__wrapper">
+          <p>Hair Color</p>
+          <span style={{ fontSize: "12px" }}>Brown</span>
+        </div>
+        <div className="profile-cards-appearance-details__wrapper">
+          <p>Eye Color</p>
+          <span style={{ fontSize: "12px" }}>Brown</span>
+        </div>
+      </div>
+      <div className="profile-cards__wrapper">
+        <div className="profile-cards-icon-texts__wrapper">
+          <GlobeHemisphereEastIcon size={18} />
+          <span style={{ fontSize: "12px" }}>Personal Background</span>
+        </div>
+
+        <div className="profile-cards-appearance-details__wrapper">
+          <p>Ethnicity</p>
+          <span style={{ fontSize: "12px" }}>Filipino</span>
+        </div>
+        <div className="profile-cards-appearance-details__wrapper">
+          <p>Natural Accent</p>
+          <span style={{ fontSize: "12px" }}>American</span>
+        </div>
+      </div>
     </div>
   );
 };
