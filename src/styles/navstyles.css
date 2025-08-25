@@ -1,11 +1,15 @@
 .nav-container__wrapper {
   width: 100%;
+  background-color: #fefae0;
+  border-radius: 5px;
 
   display: flex;
   align-items: center;
   gap: 50px;
 
-  padding: 10px;
+  padding-right: 10px;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
 }
 
 .nav-searchbar__wrapper {
@@ -13,7 +17,7 @@
   width: 20%;
   height: 100%;
 
-  padding: 1px;
+  padding: 5px;
   border-radius: 5px;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
     rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
@@ -36,13 +40,23 @@
   list-style: none;
 }
 .nav-navigations__list li {
+  cursor: pointer;
+
   display: flex;
   align-items: center;
   gap: 5px;
   font-size: 13px;
+
+  padding: 10px;
 }
 
 .nav-searchbar__icon {
   background-color: white;
   padding: 5px 5px;
+}
+
+.active-nav {
+  color: #4495c7;
+  border: none;
+  border-bottom: 2px solid #4495c7;
 }

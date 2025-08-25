@@ -8,11 +8,14 @@ import {
   SignOutIcon,
   UserIcon,
 } from "@phosphor-icons/react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import "../../styles/navstyles.css";
 const Nav = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
+
   return (
     <div className="-main-container__wrapper">
       <div className="nav-container__wrapper">
@@ -28,16 +31,37 @@ const Nav = () => {
         </div>
         <div className="nav-navigations__wrapper">
           <ul className="nav-navigations__list">
-            <li>
-              <ArticleIcon size={20} />
+            <li
+              onClick={() => navigate("/feed-page")}
+              className={currentPath === "/feed-page" ? "active-nav" : ""}
+            >
+              <ArticleIcon
+                size={20}
+                weight={currentPath === "/feed-page" ? "fill" : "regular"}
+                color={currentPath === "/feed-page" ? "#4495c7" : ""}
+              />
               Feed
             </li>
-            <li onClick={() => navigate("/profile-page")}>
-              <UserIcon size={20} />
+            <li
+              onClick={() => navigate("/profile-page")}
+              className={currentPath === "/profile-page" ? "active-nav" : ""}
+            >
+              <UserIcon
+                size={20}
+                weight={currentPath === "/profile-page" ? "fill" : "regular"}
+                color={currentPath === "/profile-page" ? "#4495c7" : ""}
+              />
               Profile
             </li>
-            <li>
-              <UsersFourIcon size={20} />
+            <li
+              onClick={() => navigate("/connect-page")}
+              className={currentPath === "/connect-page" ? "active-nav" : ""}
+            >
+              <UsersFourIcon
+                size={20}
+                weight={currentPath === "/connect-page" ? "fill" : "regular"}
+                color={currentPath === "/connect-page" ? "#4495c7" : ""}
+              />
               Connect
             </li>
             <li>
