@@ -3,9 +3,9 @@ import { CheckLogin, ValidateTokens } from "../../assets/js/serverapi";
 import { CircleNotchIcon, EyeIcon, EyeSlashIcon } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 
 import "../../styles/loginstyles.css";
-import { jwtDecode } from "jwt-decode";
 const Login = () => {
   const navigate = useNavigate();
   const [showError, setShowError] = useState(false);
