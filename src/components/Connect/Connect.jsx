@@ -2,6 +2,32 @@ import React, { useState } from "react";
 import Nav from "../Nav/Nav";
 
 import "../../styles/connectstyles.css";
+const FindConnection = () => {
+  return (
+    <div className="find-connections__wrapper">
+      <div className="connect-followers-profile-thumbnail__wrapper">
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <img
+            className="connect-followers-profile-thumbnail__img"
+            src="https://randomuser.me/api/portraits/men/32.jpg"
+            alt="profile-thumbnail-picture"
+          />
+          <div>
+            <p>John Doe</p>
+            <span>Auckland</span>
+            <span>200 Following</span>
+            <span>10 Followers</span>
+          </div>
+        </div>
+
+        <div>
+          <button className="connect-not-following__btn">Follow</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ConnectFollowersFollowing = ({
   followerBtnClicked,
   setFollowerBtnClicked,
@@ -119,10 +145,14 @@ const Connect = () => {
           setOpenFindConnections={setOpenFindConnections}
         />
 
-        <ConnectFollowersFollowing
-          followerBtnClicked={followerBtnClicked}
-          setFollowerBtnClicked={setFollowerBtnClicked}
-        />
+        {openFindConnections === "find-connections" ? (
+          <FindConnection />
+        ) : (
+          <ConnectFollowersFollowing
+            followerBtnClicked={followerBtnClicked}
+            setFollowerBtnClicked={setFollowerBtnClicked}
+          />
+        )}
       </div>
     </div>
   );
