@@ -64,8 +64,15 @@ const Nav = () => {
               />
               Connect
             </li>
-            <li>
-              <ChatCircleTextIcon size={20} />
+            <li
+              onClick={() => navigate("/messages-page")}
+              className={currentPath === "/messages-page" ? "active-nav" : ""}
+            >
+              <ChatCircleTextIcon
+                size={20}
+                weight={currentPath === "/messages-page" ? "fill" : "regular"}
+                color={currentPath === "/messages-page" ? "#4495c7" : ""}
+              />
               Message
             </li>
             <li>
