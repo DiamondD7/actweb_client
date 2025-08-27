@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   MagnifyingGlassIcon,
   ArticleIcon,
@@ -11,10 +11,13 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 
 import "../../styles/navstyles.css";
+import Notifications from "../Notifications/Notifications";
 const Nav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
+
+  const [notificationOpen, setNotificationOpen] = useState(false);
 
   return (
     <div className="-main-container__wrapper">
@@ -75,9 +78,16 @@ const Nav = () => {
               />
               Message
             </li>
-            <li>
-              <BellIcon size={20} />
-              Notification
+            <li
+              onClick={() => setNotificationOpen(!notificationOpen)}
+              className={notificationOpen ? "active-nav" : ""}
+            >
+              <BellIcon
+                size={20}
+                weight={notificationOpen ? "fill" : "regular"}
+                color={notificationOpen ? "#4495c7" : ""}
+              />
+              Notifications
             </li>
             <li>
               <SignOutIcon size={20} />
@@ -86,6 +96,8 @@ const Nav = () => {
           </ul>
         </div>
       </div>
+
+      {notificationOpen && <Notifications />}
     </div>
   );
 };

@@ -1,0 +1,57 @@
+.notifications-container__wrapper {
+  position: absolute;
+  right: 280px;
+
+  width: 350px;
+  height: 260px;
+  background-color: #fefae0;
+
+  border-radius: 10px;
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+
+  padding: 20px;
+}
+
+.notifications-thumbnail__img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.notifications-details__wrapper {
+  display: flex;
+  gap: 10px;
+}
+
+.notification-message__wrapper p,
+.notification-message__wrapper span {
+  font-size: 12px;
+}
+
+.notification-message__wrapper p {
+  color: #4495c7;
+  font-weight: bold;
+}
+
+.notification-message__wrapper span {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.notifications-sellAll__wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.notifications-sellAll__btn {
+  margin-top: 20px;
+  color: #4495c7;
+  cursor: pointer;
+  width: 100%;
+  background-color: transparent;
+  border: none;
+}
