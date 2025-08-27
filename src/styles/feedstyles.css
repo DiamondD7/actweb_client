@@ -1,0 +1,39 @@
+.feed-container__wrapper {
+}
+
+.feed-asksomething__wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  background-color: hsl(52, 94%, 94%);
+
+  width: 400px;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  border-radius: 10px;
+  padding: 20px;
+  margin-left: 30px;
+}
+
+.feed-picture-thumbnail__img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.feed-asksomething-message__textarea {
+  outline: none;
+  resize: none;
+
+  border-radius: 50px;
+  min-width: 300px;
+  max-width: 300px;
+
+  min-height: 30px;
+  max-height: 30px;
+
+  padding: 5px 10px 5px 10px;
+}

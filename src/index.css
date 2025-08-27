@@ -105,3 +105,8 @@
 
   padding: 30px;
 }
+
+.-display-flex-justified-center {
+  display: flex;
+  justify-content: center;
+}
