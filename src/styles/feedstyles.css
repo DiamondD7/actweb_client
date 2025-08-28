@@ -1,7 +1,9 @@
 .feed-container__wrapper {
+  display: flex;
+  gap: 20px;
 }
 
-.feed-asksomething__wrapper {
+.feed-whatsonyourmind__wrapper {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -24,7 +26,7 @@
   object-position: center;
 }
 
-.feed-asksomething-message__textarea {
+.feed-whatsonyourmind-message__textarea {
   outline: none;
   resize: none;
 
@@ -36,4 +38,118 @@
   max-height: 30px;
 
   padding: 5px 10px 5px 10px;
+}
+
+.feed-whatsonyourmind-post__btn {
+  cursor: pointer;
+  color: #eaf2ff;
+  background-color: #4495c7;
+  border-radius: 5px;
+  border: none;
+  padding: 2px 10px;
+}
+
+.hashtag-container__wrapper {
+  background-color: hsl(52, 94%, 94%);
+
+  width: 400px;
+  height: 600px;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  border-radius: 10px;
+  padding: 20px;
+  margin-left: 30px;
+}
+.post-container__wrapper {
+  background-color: hsl(52, 94%, 94%);
+
+  width: 1070px;
+  height: 755px;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  border-radius: 10px;
+  padding: 20px;
+  overflow: auto;
+}
+
+.post-header-user-details__wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.post-header-user-details__wrapper p {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.post-header-user-details__wrapper span {
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.3);
+}
+
+.post-thumbnail__wrapper {
+  display: flex;
+
+  width: 1010px;
+  height: 600px;
+  border-radius: 10px;
+  margin-top: 10px;
+
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+}
+
+.post-thumbnail__img {
+  width: 650px;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.post-play-icon__btn {
+  position: relative;
+  top: -350px;
+  left: 300px;
+
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+}
+
+.post-thumbnail-details__wrapper {
+  padding: 20px;
+}
+
+.post-thumbnail-caption__text {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.post-thumbnail-details-actions__btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+}
+
+.feed-picture-comments__img {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.feed-comments-accountName__text {
+  font-size: 10px;
+}
+
+.feed-comments-comment__text {
+  font-size: 12px;
 }
