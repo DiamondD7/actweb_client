@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Nav from "../Nav/Nav";
 import {
   ChatCenteredTextIcon,
