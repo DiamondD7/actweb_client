@@ -230,7 +230,7 @@ const ProfileBackground = () => {
   );
 };
 
-const ProfileDetails = () => {
+const ProfileDetails = ({ navigate }) => {
   return (
     <div>
       <div className="profile-deatils__wrapper">
@@ -254,7 +254,10 @@ const ProfileDetails = () => {
           </p>
         </div>
 
-        <button className="profile-details-profilepicture-edit__btn">
+        <button
+          className="profile-details-profilepicture-edit__btn"
+          onClick={() => navigate("/settings-page?load=profile")}
+        >
           <PencilSimpleIcon size={15} />
         </button>
       </div>
@@ -270,7 +273,7 @@ const Profile = () => {
       <Nav />
       <div className="profile-container__wrapper">
         <div>
-          <ProfileDetails />
+          <ProfileDetails navigate={navigate} />
           <ProfileBackground />
           <ProfileShowreel />
         </div>

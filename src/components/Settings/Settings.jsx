@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Nav from "../Nav/Nav";
 import { GearSixIcon, PencilSimpleIcon } from "@phosphor-icons/react";
+import { useSearchParams } from "react-router-dom";
 
 import "../../styles/settingsstyles.css";
 const ProfileSettings = () => {
@@ -82,7 +83,10 @@ const Account = () => {
 };
 
 const Settings = () => {
-  const [navDisplay, setNavDisplay] = useState("Account");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const load = searchParams.get("load") === "profile" ? "Profile" : null;
+  const [navDisplay, setNavDisplay] = useState(load ? load : "Account"); //this just means that if there is a query "load" to load the profile, then use,
+  // if there is no query then just use default which is "Account"
 
   return (
     <div className="-main-container__wrapper">
