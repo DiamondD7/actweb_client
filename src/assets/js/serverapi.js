@@ -1,4 +1,9 @@
+export const BASE_URL = "http://localhost:5195";
+export const USER_API_URI = "http://localhost:5195/api/Users";
 export const UserCreation = "http://localhost:5195/api/Users/create-user";
 export const CheckLogin = "http://localhost:5195/api/Users/check-login";
 export const ValidateTokens = "http://localhost:5195/api/Users/validate-tokens";
+export const UploadProfilePicture =
+  "http://localhost:5195/api/Users/upload-profile-picture";
+export const UpdateData = "http://localhost:5195/api/Users/update-user-data";
 export const Logout = "http://localhost:5195/api/Users/logout";

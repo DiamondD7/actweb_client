@@ -61,3 +61,15 @@
 .settings-textarea-counter__span {
   font-size: 10px;
 }
+
+.settings-profile-updatepicture__btn {
+  cursor: pointer;
+  background-color: #4495c7;
+  border: none;
+  border-radius: 5px;
+
+  padding: 2px 10px;
+  font-size: 10px;
+  font-weight: bold;
+  color: #fefae0;
+}

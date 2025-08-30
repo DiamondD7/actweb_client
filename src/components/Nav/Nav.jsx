@@ -39,7 +39,8 @@ const Nav = () => {
 
       const data = await response.json();
       console.log(data);
-      navigate("/");
+      sessionStorage.setItem("id", null);
+      navigate("/", { replace: true });
     } catch (err) {
       console.warn(err);
     }

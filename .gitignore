@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 
+serverapi.js
 .env
 
 # Editor directories and files
