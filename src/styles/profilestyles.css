@@ -26,6 +26,13 @@
   padding: 20px;
 }
 
+.profile-details-profilepicture-edit__btn {
+  align-self: flex-start;
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+}
+
 .profile-details-profilepicture__img {
   width: 100px;
   height: 100px;

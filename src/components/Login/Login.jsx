@@ -55,7 +55,7 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        handleTokenValidation(data.data);
+        await handleTokenValidation(data.data);
       }
     } catch (err) {
       console.error("Login failed:", err);
@@ -71,7 +71,7 @@ const Login = () => {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        credentials: "include", // Include credentials for CORS requests
+        credentials: "include",
         body: JSON.stringify(userData),
       });
 
@@ -85,7 +85,7 @@ const Login = () => {
       setTimeout(() => {
         setIsLoginClicked(false);
         // Navigate to the dashboard or home page after successful login
-        navigate("/home-page");
+        navigate("/feed-page");
       }, 2000);
     } catch (e) {
       console.error("Error validating tokens:", e);

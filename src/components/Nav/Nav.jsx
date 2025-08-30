@@ -9,15 +9,40 @@ import {
   UserIcon,
 } from "@phosphor-icons/react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Logout } from "../../assets/js/serverapi";
+import Notifications from "../Notifications/Notifications";
 
 import "../../styles/navstyles.css";
-import Notifications from "../Notifications/Notifications";
 const Nav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
 
   const [notificationOpen, setNotificationOpen] = useState(false);
+
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(Logout, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        console.warn(response.status);
+      }
+
+      const data = await response.json();
+      console.log(data);
+      navigate("/");
+    } catch (err) {
+      console.warn(err);
+    }
+  };
 
   return (
     <div className="-main-container__wrapper">
@@ -89,7 +114,7 @@ const Nav = () => {
               />
               Notifications
             </li>
-            <li>
+            <li onClick={(e) => handleLogout(e)}>
               <SignOutIcon size={20} />
               Logout
             </li>

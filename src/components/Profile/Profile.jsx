@@ -7,6 +7,7 @@ import {
   ArrowCircleRightIcon,
   EnvelopeIcon,
   GlobeHemisphereEastIcon,
+  PencilSimpleIcon,
   PhoneIcon,
   ScanSmileyIcon,
   VideoIcon,
@@ -252,6 +253,10 @@ const ProfileDetails = () => {
             tenetur, officia ratione unde quibusdam hic!
           </p>
         </div>
+
+        <button className="profile-details-profilepicture-edit__btn">
+          <PencilSimpleIcon size={15} />
+        </button>
       </div>
     </div>
   );
