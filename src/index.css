@@ -122,6 +122,10 @@
   gap: 50px;
 }
 
+.-display-flex {
+  display: flex;
+}
+
 .-display-flex-justified-center {
   display: flex;
   justify-content: center;
