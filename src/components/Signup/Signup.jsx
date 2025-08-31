@@ -49,17 +49,21 @@ const SignUpSuccess = () => {
 };
 
 const Signup = () => {
+  const USERNAME_REGEX = /^[a-zA-Z][a-zA-Z0-9._]{2,15}$/;
+  const [validUserName, setValidUserName] = useState(null);
   const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
   const [validPW, setValidPW] = useState(null);
   const [matchedPW, setMatchedPW] = useState(null);
 
   const [showPassword, setShowPassword] = useState(false);
   const [responseError, setResponseError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [successfulSignup, setSuccessfulSignup] = useState(false);
   const [isTermsChecked, setIsTermsChecked] = useState(false);
   const [isSignupClicked, setIsSignupClicked] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [userData, setUserData] = useState({
+    userName: "",
     firstName: "",
     lastName: "",
     email: "",
@@ -71,10 +75,17 @@ const Signup = () => {
   //CHECK IF PW IS VALID OR IT MATCH
   useEffect(() => {
     const match = PWD_REGEX.test(userData.password);
+    const userNameMatch = USERNAME_REGEX.test(userData.userName);
     if (userData.password !== confirmPassword) {
       setMatchedPW(false);
     } else {
       setMatchedPW(true);
+    }
+
+    if (userNameMatch === false) {
+      setValidUserName(false);
+    } else if (userNameMatch === true) {
+      setValidUserName(true);
     }
 
     if (match === false) {
@@ -82,7 +93,7 @@ const Signup = () => {
     } else if (match === true) {
       setValidPW(true);
     }
-  }, [userData.password, confirmPassword]);
+  }, [userData.userName, userData.password, confirmPassword]);
 
   const handleOnChangeInputs = (e) => {
     const { name, value } = e.target;
@@ -106,6 +117,8 @@ const Signup = () => {
 
       if (response.status === 409) {
         setResponseError(true);
+        const error = await response.json();
+        setErrorMessage(error.message);
         return;
       }
 
@@ -146,6 +159,8 @@ const Signup = () => {
 
       if (response.status === 409) {
         setResponseError(true);
+        const error = await response.json();
+        setErrorMessage(error.message);
         return;
       }
 
@@ -170,6 +185,7 @@ const Signup = () => {
 
       //refresh values back to default (empty string)
       setUserData({
+        userName: "",
         firstName: "",
         lastName: "",
         email: "",
@@ -204,9 +220,7 @@ const Signup = () => {
             </h1>
             {responseError === true ? (
               <p>
-                <strong className="-error-form-p">
-                  Error: Email is already registered
-                </strong>
+                <strong className="-error-form-p">Error: {errorMessage}</strong>
               </p>
             ) : (
               ""
@@ -231,6 +245,32 @@ const Signup = () => {
                 />
               </div>
             </div>
+
+            {validUserName === false ? (
+              <p className="-error-form-p">
+                {" "}
+                2 to 16 characters. Must start with a letter and can include
+                letters, numbers, underscores, or dots.
+              </p>
+            ) : (
+              ""
+            )}
+            <div
+              className={
+                validUserName === true
+                  ? "-form-input__wrapper"
+                  : "-form-input__wrapper -input-border-error"
+              }
+            >
+              <p>Username</p>
+              <input
+                required
+                type="text"
+                name="userName"
+                onChange={(e) => handleOnChangeInputs(e)}
+              />
+            </div>
+
             <div className="-form-input__wrapper">
               <p>Email</p>
               <input
