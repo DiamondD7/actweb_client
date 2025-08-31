@@ -233,8 +233,6 @@ const ProfileBackground = () => {
 };
 
 const ProfileDetails = ({ navigate, userData }) => {
-  const test =
-    "damn look at you know brotherrr. what is going now bro like wtf im so confused ay wtf brothadamn look at you know brotherrr. what is going now bro like wtf im so confused ay wtf brothadamn look at you know brotherrr. what is going now bro like wtf im so confused ay wtf brothadamn look at you know brotherrr. what is going now bro like wtf im so confused ay wtf brothadamn look at you know brotherrr. what is going now bro like wtf im so confused ay wtf brothadamn look at you know brotherrr. what is going now bro like wtf im so confused ay wtf brothadamn look at you know brotherrr. what is going now bro like wtf im so confused ay wtf brotha";
   return (
     <div>
       <div className="profile-deatils__wrapper">
