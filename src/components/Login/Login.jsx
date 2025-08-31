@@ -83,6 +83,7 @@ const Login = () => {
       console.log("Token validation data:", data);
 
       setTimeout(() => {
+        sessionStorage.setItem("id", userData.id);
         setIsLoginClicked(false);
         // Navigate to the dashboard or home page after successful login
         navigate("/feed-page");

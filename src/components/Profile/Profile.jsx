@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { USER_API_URI, BASE_URL } from "../../assets/js/serverapi";
 import Nav from "../Nav/Nav";
 
 import "../../styles/profilestyles.css";
@@ -230,13 +231,13 @@ const ProfileBackground = () => {
   );
 };
 
-const ProfileDetails = () => {
+const ProfileDetails = ({ navigate, userData }) => {
   return (
     <div>
       <div className="profile-deatils__wrapper">
         <img
           className="profile-details-profilepicture__img"
-          src="https://randomuser.me/api/portraits/men/1.jpg"
+          src={`${BASE_URL}${userData.profilePictureUrl}`}
           alt="profile-picture"
         />
 
@@ -247,14 +248,16 @@ const ProfileDetails = () => {
             <p>Following: 200</p>
           </div>
           <p className="profile-details-bio__text">
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Esse
-            deserunt necessitatibus, cupiditate quisquam mollitia nobis at
-            perspiciatis ex velit rem quaerat sapiente temporibus harum,
-            tenetur, officia ratione unde quibusdam hic!
+            {userData.bio?.length > 250
+              ? userData.bio?.substring(0, 250) + "..."
+              : userData.bio}
           </p>
         </div>
 
-        <button className="profile-details-profilepicture-edit__btn">
+        <button
+          className="profile-details-profilepicture-edit__btn"
+          onClick={() => navigate("/settings-page?load=profile")}
+        >
           <PencilSimpleIcon size={15} />
         </button>
       </div>
@@ -263,14 +266,56 @@ const ProfileDetails = () => {
 };
 
 const Profile = () => {
+  const [userData, setUserData] = useState([]);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    handleGetUserData();
+  }, []);
+
+  const handleGetUserData = async (retry = true) => {
+    try {
+      const response = await fetch(
+        `${USER_API_URI}/${sessionStorage.getItem("id")}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      if (response.status === 302) {
+        console.warn("301 detected, redirecting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("401 detected, rerouting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected, retrying request...");
+        return handleGetUserData(false);
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+      }
+
+      const data = await response.json();
+      setUserData(data);
+    } catch (err) {
+      console.warn(err);
+    }
+  };
   return (
     <div className="-main-container__wrapper">
       <Nav />
       <div className="profile-container__wrapper">
         <div>
-          <ProfileDetails />
+          <ProfileDetails navigate={navigate} userData={userData} />
           <ProfileBackground />
           <ProfileShowreel />
         </div>

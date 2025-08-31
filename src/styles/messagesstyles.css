@@ -141,6 +141,7 @@
   max-height: 65px;
   min-height: 65px;
 
+  resize: none;
   padding: 10px;
   border: none;
   border-right: 1px solid #ccc;

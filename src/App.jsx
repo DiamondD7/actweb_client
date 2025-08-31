@@ -6,6 +6,7 @@ import Profile from "./components/Profile/Profile";
 import Feed from "./components/Feed/Feed";
 import Connect from "./components/Connect/Connect";
 import Messages from "./components/Messages/Messages";
+import Settings from "./components/Settings/Settings";
 
 import "./App.css";
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/profile-page" element={<Profile />} />
         <Route path="/connect-page" element={<Connect />} />
         <Route path="/messages-page" element={<Messages />} />
+        <Route path="/settings-page" element={<Settings />} />
       </Routes>
     </div>
   );

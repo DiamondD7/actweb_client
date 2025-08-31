@@ -7,6 +7,7 @@ import {
   BellIcon,
   SignOutIcon,
   UserIcon,
+  GearSixIcon,
 } from "@phosphor-icons/react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Logout } from "../../assets/js/serverapi";
@@ -38,7 +39,8 @@ const Nav = () => {
 
       const data = await response.json();
       console.log(data);
-      navigate("/");
+      sessionStorage.setItem("id", null);
+      navigate("/", { replace: true });
     } catch (err) {
       console.warn(err);
     }
@@ -113,6 +115,17 @@ const Nav = () => {
                 color={notificationOpen ? "#4495c7" : ""}
               />
               Notifications
+            </li>
+            <li
+              onClick={() => navigate("/settings-page")}
+              className={currentPath === "/settings-page" ? "active-nav" : ""}
+            >
+              <GearSixIcon
+                size={20}
+                weight={currentPath === "/settings-page" ? "fill" : "regular"}
+                color={currentPath === "/settings-page" ? "#4495c7" : ""}
+              />
+              Settings
             </li>
             <li onClick={(e) => handleLogout(e)}>
               <SignOutIcon size={20} />

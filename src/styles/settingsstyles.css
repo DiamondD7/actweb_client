@@ -1,0 +1,96 @@
+.settings-nav-container__wrapper {
+  width: 300px;
+  height: 82vh;
+  background-color: #fefae0;
+
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+
+  padding: 20px;
+  margin-left: 30px;
+}
+
+.settings-nav-ul__wrapper {
+  list-style: none;
+  margin-top: 20px;
+}
+
+.settings-nav-ul__wrapper li {
+  cursor: pointer;
+  padding: 20px;
+  font-size: 12px;
+}
+.setting-nav-active {
+  font-weight: bold;
+  color: #4495c7;
+}
+
+.settings-display-container__wrapper {
+  width: 1100px;
+  height: 82vh;
+  background-color: #fefae0;
+
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+
+  padding: 20px;
+}
+
+.settings-profile-info__wrapper {
+  padding: 10px;
+}
+
+.settings-profile-form__wrapper {
+  width: 40%;
+  padding: 10px;
+}
+
+.settings-profile-form-bio__textarea {
+  min-width: 390px;
+  max-width: 390px;
+  min-height: 30px;
+  max-height: 30px;
+
+  resize: none;
+  outline: none;
+  border: none;
+}
+
+.settings-textarea-counter__span {
+  font-size: 10px;
+}
+
+.settings-profile-updatepicture__btn {
+  cursor: pointer;
+  background-color: #4495c7;
+  border: none;
+  border-radius: 5px;
+
+  padding: 2px 10px;
+  font-size: 10px;
+  font-weight: bold;
+  color: #fefae0;
+}
+
+.settings-profile-form-submit__btn {
+  cursor: pointer;
+  background-color: #4495c7;
+  border: none;
+  border-radius: 5px;
+
+  padding: 2px 10px;
+  font-size: 10px;
+  color: #fefae0;
+}
+
+.update__text {
+  color: limegreen;
+  font-weight: 400;
+}
+
+.settings-profile-form-loading-icon__wrapper {
+  position: absolute;
+  left: 55%;
+}
