@@ -6,6 +6,7 @@ import Nav from "../Nav/Nav";
 import "../../styles/profilestyles.css";
 import {
   ArrowCircleRightIcon,
+  CircleNotchIcon,
   EnvelopeIcon,
   GlobeHemisphereEastIcon,
   PencilSimpleIcon,
@@ -232,6 +233,8 @@ const ProfileBackground = () => {
 };
 
 const ProfileDetails = ({ navigate, userData }) => {
+  const test =
+    "damn look at you know brotherrr. what is going now bro like wtf im so confused ay wtf brothadamn look at you know brotherrr. what is going now bro like wtf im so confused ay wtf brothadamn look at you know brotherrr. what is going now bro like wtf im so confused ay wtf brothadamn look at you know brotherrr. what is going now bro like wtf im so confused ay wtf brothadamn look at you know brotherrr. what is going now bro like wtf im so confused ay wtf brothadamn look at you know brotherrr. what is going now bro like wtf im so confused ay wtf brothadamn look at you know brotherrr. what is going now bro like wtf im so confused ay wtf brotha";
   return (
     <div>
       <div className="profile-deatils__wrapper">
@@ -242,7 +245,10 @@ const ProfileDetails = ({ navigate, userData }) => {
         />
 
         <div className="profile-details-details__wrapper">
-          <h2>Aaron Sierra</h2>
+          <h2>{userData.fullName}</h2>
+          <p style={{ marginBottom: "5px", color: "rgba(0,0,0,0.6)" }}>
+            {userData.userName}
+          </p>
           <div className="profile-details-followers__wrapper">
             <p>Followers: 200</p>
             <p>Following: 200</p>
@@ -266,6 +272,7 @@ const ProfileDetails = ({ navigate, userData }) => {
 };
 
 const Profile = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const [userData, setUserData] = useState([]);
   const navigate = useNavigate();
 
@@ -274,6 +281,7 @@ const Profile = () => {
   }, []);
 
   const handleGetUserData = async (retry = true) => {
+    setIsLoading(true);
     try {
       const response = await fetch(
         `${USER_API_URI}/${sessionStorage.getItem("id")}`,
@@ -306,6 +314,10 @@ const Profile = () => {
 
       const data = await response.json();
       setUserData(data);
+
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
     } catch (err) {
       console.warn(err);
     }
@@ -313,17 +325,24 @@ const Profile = () => {
   return (
     <div className="-main-container__wrapper">
       <Nav />
-      <div className="profile-container__wrapper">
-        <div>
-          <ProfileDetails navigate={navigate} userData={userData} />
-          <ProfileBackground />
-          <ProfileShowreel />
+
+      {isLoading ? (
+        <div className="profile-loading-icon__wrapper">
+          <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
         </div>
-        <div>
-          <ProfileCards />
-          <ProfileReels />
+      ) : (
+        <div className="profile-container__wrapper">
+          <div>
+            <ProfileDetails navigate={navigate} userData={userData} />
+            <ProfileBackground />
+            <ProfileShowreel />
+          </div>
+          <div>
+            <ProfileCards />
+            <ProfileReels />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

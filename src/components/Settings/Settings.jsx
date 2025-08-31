@@ -17,11 +17,25 @@ import Nav from "../Nav/Nav";
 
 import "../../styles/settingsstyles.css";
 const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
-  const [bio, setBio] = useState("");
+  const [isFormSubmit, setIsFormSubmit] = useState(false);
+  const [usernameErrorMsg, setUsernameErrorMsg] = useState("");
+  const [newUserData, setNewUserData] = useState({
+    userName: "",
+    bio: "",
+  });
   const [isUpdated, setIsUpdated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
+
+  const handleFormOnChange = (e) => {
+    const { name, value } = e.target;
+
+    setNewUserData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -83,7 +97,8 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
         body: JSON.stringify({
           Id: sessionStorage.getItem("id"),
           ProfilePictureUrl: imageUrl,
-          Bio: bio,
+          UserName: newUserData.userName,
+          Bio: newUserData.bio,
         }),
       });
 
@@ -104,6 +119,13 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
         return handleUpdateData(imageUrl, false);
       }
 
+      if (response.status === 409) {
+        const res = await response.json();
+        setUsernameErrorMsg(res.message);
+        setIsLoading(false);
+        return;
+      }
+
       if (!response.ok) {
         console.warn(response.status);
         setIsLoading(false);
@@ -114,14 +136,20 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
 
       setSelectedFile(null);
       setPreview(null);
+      setUsernameErrorMsg(""); //setting to empty string when the request/update is successful
       handleGetUserData();
 
       setTimeout(() => {
         setIsLoading(false);
-        if (bio.length > 0) {
+        const isFormUsed =
+          newUserData.bio.length > 0 || newUserData.userName.length > 0;
+        if (isFormUsed === true) {
           setIsUpdated(true);
         }
-        setBio("");
+        setNewUserData({
+          userName: "",
+          bio: "",
+        });
       }, 2000);
     } catch (err) {
       console.warn(err);
@@ -238,7 +266,7 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
               className="-margin-top-50"
             >
               Update Your Details{" "}
-              {isUpdated && (
+              {isUpdated === true && (
                 <>
                   <CheckCircleIcon
                     size={16}
@@ -249,31 +277,45 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
                 </>
               )}
             </p>
+
+            {usernameErrorMsg ? (
+              <p className="-error-form-p">{usernameErrorMsg}</p>
+            ) : (
+              ""
+            )}
             <div className="-form-input__wrapper">
               <p>Username</p>
-              {/* <input required type="text" name="username" /> */}
+              <input
+                type="text"
+                name="userName"
+                placeholder={userData.userName}
+                onChange={(e) => handleFormOnChange(e)}
+              />
             </div>
             <div className="-form-input__wrapper">
               <p>Bio</p>
               <textarea
                 maxLength="250"
-                value={bio}
+                name="bio"
+                value={newUserData.bio}
                 placeholder={userData.bio}
-                onChange={(e) => setBio(e.target.value)}
+                onChange={(e) => handleFormOnChange(e)}
                 className="settings-profile-form-bio__textarea"
               ></textarea>
               <span className="settings-textarea-counter__span">
-                {bio.length} / 250
+                {newUserData.bio.length} / 250
               </span>
             </div>
 
-            {bio.length > 0 && (
+            {newUserData.bio.length > 0 || newUserData.userName.length > 0 ? (
               <button
                 type="submit"
                 className="settings-profile-form-submit__btn"
               >
                 Update
               </button>
+            ) : (
+              ""
             )}
           </form>
         </>
