@@ -248,10 +248,9 @@ const ProfileDetails = ({ navigate, userData }) => {
             <p>Following: 200</p>
           </div>
           <p className="profile-details-bio__text">
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Esse
-            deserunt necessitatibus, cupiditate quisquam mollitia nobis at
-            perspiciatis ex velit rem quaerat sapiente temporibus harum,
-            tenetur, officia ratione unde quibusdam hic!
+            {userData.bio?.length > 250
+              ? userData.bio?.substring(0, 250) + "..."
+              : userData.bio}
           </p>
         </div>
 
