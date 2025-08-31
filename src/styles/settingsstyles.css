@@ -87,11 +87,31 @@
 }
 
 .update__text {
+  font-size: 13px;
   color: limegreen;
   font-weight: 400;
 }
 
 .settings-profile-form-loading-icon__wrapper {
+  position: absolute;
+  left: 55%;
+}
+
+.account-form__wrapper {
+  width: 400px;
+  padding: 20px;
+}
+
+.account-form__wrapper button {
+  cursor: pointer;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4495c7;
+  color: #ffffffff;
+}
+
+.account-loading-icon__wrapper {
   position: absolute;
   left: 55%;
 }

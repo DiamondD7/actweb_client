@@ -16,8 +16,10 @@ import {
 import Nav from "../Nav/Nav";
 
 import "../../styles/settingsstyles.css";
+
 const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
-  const [isFormSubmit, setIsFormSubmit] = useState(false);
+  const USERNAME_REGEX = /^[a-zA-Z][a-zA-Z0-9._]{2,15}$/;
+  const [isUserNameValid, setIsUserNameValid] = useState(null);
   const [usernameErrorMsg, setUsernameErrorMsg] = useState("");
   const [newUserData, setNewUserData] = useState({
     userName: "",
@@ -27,6 +29,17 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
+
+  useEffect(() => {
+    if (newUserData.userName.length > 0) {
+      const validate = USERNAME_REGEX.test(newUserData.userName);
+      if (!validate) {
+        setIsUserNameValid(false);
+      } else {
+        setIsUserNameValid(true);
+      }
+    }
+  }, [newUserData.userName]);
 
   const handleFormOnChange = (e) => {
     const { name, value } = e.target;
@@ -283,6 +296,15 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
             ) : (
               ""
             )}
+
+            {isUserNameValid === false ? (
+              <p className="-error-form-p">
+                Invalid username: 3 to 16 characters. Must start with a letter
+                and can include letters, numbers, underscores, or dots.
+              </p>
+            ) : (
+              ""
+            )}
             <div className="-form-input__wrapper">
               <p>Username</p>
               <input
@@ -324,10 +346,141 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
   );
 };
 
-const Account = () => {
+const Account = ({ userData, handleGetUserData }) => {
+  const NUM_REGEX = /^\d*$/;
+  const [isNumberValid, setIsNumberValid] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUpdated, setIsUpdated] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    mobileNumber: "",
+  });
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const validate = NUM_REGEX.test(newUserData.mobileNumber);
+
+    if (!validate) {
+      setIsNumberValid(false);
+    } else {
+      setIsNumberValid(true);
+    }
+  }, [newUserData.mobileNumber]);
+
+  const handleOnInputChange = (e) => {
+    const { name, value } = e.target;
+
+    setNewUserData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleUpdateData = async (retry = true) => {
+    try {
+      const response = await fetch(UpdateData, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          Id: sessionStorage.getItem("id"),
+          ProfilePictureUrl: "",
+          MobileNumber: newUserData.mobileNumber,
+        }),
+      });
+
+      if (response.status === 302) {
+        console.warn("Detected a 302. rerouting...");
+        navigate("/");
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. Rerouting...");
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("Detected a 402. Retrying request");
+        await handleUpdateData(false);
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        setIsLoading(false);
+      }
+
+      const data = await response.json();
+      console.log(data);
+
+      setNewUserData({
+        mobileNumber: "",
+      });
+
+      setIsUpdated(true);
+      handleGetUserData();
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const handleBtnClicked = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    await handleUpdateData();
+  };
+
   return (
     <div>
-      <div>Account</div>
+      {isLoading === true ? (
+        <div className="account-loading-icon__wrapper">
+          <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
+        </div>
+      ) : (
+        <form className="account-form__wrapper">
+          <div className="-display-flex-aligned-center -gap-10">
+            <h5>Update your contact details</h5>
+            {isUpdated === true && (
+              <>
+                <CheckCircleIcon size={16} weight="fill" color={"limegreen"} />
+                <label className="update__text">updated</label>
+              </>
+            )}
+          </div>
+
+          {isNumberValid === false ? (
+            <p className="-error-form-p">Mobile number is not valid</p>
+          ) : (
+            ""
+          )}
+          <div className="-form-input__wrapper">
+            <p>Mobile Number</p>
+            <input
+              type="text"
+              value={newUserData.mobileNumber}
+              name="mobileNumber"
+              placeholder={
+                userData.mobileNumber === null
+                  ? "64XXXXXXXX"
+                  : userData.mobileNumber
+              }
+              onChange={(e) => handleOnInputChange(e)}
+            />
+          </div>
+
+          {newUserData.mobileNumber !== "" && (
+            <button
+              disabled={isNumberValid === true ? false : true}
+              onClick={(e) => handleBtnClicked(e)}
+            >
+              Save
+            </button>
+          )}
+        </form>
+      )}
     </div>
   );
 };
@@ -425,7 +578,10 @@ const Settings = () => {
         </div>
         <div className="settings-display-container__wrapper">
           {navDisplay === "Account" ? (
-            <Account />
+            <Account
+              userData={userData}
+              handleGetUserData={handleGetUserData}
+            />
           ) : navDisplay === "Profile" ? (
             <ProfileSettings
               navigate={navigate}

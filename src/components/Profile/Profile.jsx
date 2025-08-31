@@ -61,17 +61,17 @@ const ProfileReels = () => {
   );
 };
 
-const ProfileCards = () => {
+const ProfileCards = ({ userData }) => {
   return (
     <div className="profile-cards-container__wrapper">
       <div className="profile-cards__wrapper">
         <div className="profile-cards-icon-texts__wrapper">
           <EnvelopeIcon size={18} />
-          <span style={{ fontSize: "12px" }}>junro@gmail.com</span>
+          <span style={{ fontSize: "12px" }}>{userData.email}</span>
         </div>
         <div className="profile-cards-icon-texts__wrapper">
           <PhoneIcon size={18} />
-          <span style={{ fontSize: "12px" }}>+6421020288765</span>
+          <span style={{ fontSize: "12px" }}>{userData.mobileNumber}</span>
         </div>
       </div>
       <div className="profile-cards__wrapper">
@@ -336,7 +336,7 @@ const Profile = () => {
             <ProfileShowreel />
           </div>
           <div>
-            <ProfileCards />
+            <ProfileCards userData={userData} />
             <ProfileReels />
           </div>
         </div>
