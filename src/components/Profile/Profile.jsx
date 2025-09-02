@@ -1,19 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { USER_API_URI, BASE_URL } from "../../assets/js/serverapi";
+import {
+  USER_API_URI,
+  BASE_URL,
+  AddUserBackground,
+  GetUserBackgrounds,
+  UpdateUserBackground,
+} from "../../assets/js/serverapi";
 import Nav from "../Nav/Nav";
-
-import "../../styles/profilestyles.css";
 import {
   ArrowCircleRightIcon,
+  CaretDownIcon,
+  CaretUpIcon,
   CircleNotchIcon,
   EnvelopeIcon,
   GlobeHemisphereEastIcon,
   PencilSimpleIcon,
   PhoneIcon,
+  PlusIcon,
   ScanSmileyIcon,
   VideoIcon,
+  XIcon,
 } from "@phosphor-icons/react";
+
+import "../../styles/profilestyles.css";
 const ProfileReels = () => {
   const testString =
     "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Aut, ad adipisci voluptatum non iure, reiciendis beatae sapiente eius unde porro odit expedita error labore fugiat, sint dolor nihil numquam voluptate. lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum, natus aspernatur. Soluta, quod? Sint, numquam voluptates doloremque laudantium sapiente cumque, est sed id reiciendis dolor amet quasi, accusamus atque a.";
@@ -175,9 +185,478 @@ const ProfileShowreel = () => {
 };
 
 const ProfileBackground = () => {
+  const navigate = useNavigate();
+
+  const [editBackgroundClicked, setEditBackgroundClicked] = useState(false);
+
+  const EditBackgroundContainer = () => {
+    const [userBackgroundData, setUserBackgroundData] = useState([]);
+    const [newUserData, setNewUserData] = useState({
+      Id: 0,
+      Title: "",
+      Production: "",
+      Role: "",
+      Director: "",
+      Year: "",
+    });
+    const [openExistingContainer, setOpenExistingContainer] = useState(0);
+    const [isLoading, setIsLoading] = useState(false); //loading for updating
+    const [mainLoading, setMainLoading] = useState(false); //main page loading
+
+    useEffect(() => {
+      setMainLoading(true);
+      handleFetchBackgrounds();
+    }, []);
+
+    const handleFetchBackgrounds = async (retry = true) => {
+      try {
+        const ID = sessionStorage.getItem("id");
+        const response = await fetch(`${GetUserBackgrounds}?userId=${ID}`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.status === 401 && retry === false) {
+          console.warn("Unauthorize. Rerouting...");
+          navigate("/");
+          return;
+        }
+
+        if (response.status === 301) {
+          console.warn("301 detected. Redirecting...");
+          navigate("/");
+          return;
+        }
+
+        if (response.status === 401 && retry) {
+          console.warn("401 detected. Retrying request...");
+          return handleFetchBackgrounds();
+        }
+
+        if (!response.ok) {
+          console.warn(response.status);
+          return;
+        }
+
+        const data = await response.json();
+        setUserBackgroundData(data);
+
+        setTimeout(() => {
+          setMainLoading(false);
+        }, 2000);
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    const handleOpenContainers = (index) => {
+      if (openExistingContainer === index + 1) {
+        setOpenExistingContainer(0);
+      } else {
+        setOpenExistingContainer(index + 1);
+      }
+    };
+
+    const handleOnChange = (e) => {
+      e.preventDefault();
+      const { name, value } = e.target;
+
+      setNewUserData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    };
+
+    const handleUpdateBackground = async (retry = true, id) => {
+      try {
+        const response = await fetch(UpdateUserBackground, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            Id: id,
+            Title: newUserData.Title,
+            Production: newUserData.Production,
+            Role: newUserData.Role,
+            Director: newUserData.Director,
+            Year: newUserData.Year,
+          }),
+        });
+
+        if (response.status === 401 && retry === false) {
+          console.warn("Unauthorized. Rerouting...");
+          navigate("/");
+          return;
+        }
+
+        if (response.status === 301) {
+          console.warn("301 detected. Redirecting...");
+          navigate("/");
+          return;
+        }
+
+        if (response.status === 401 && retry) {
+          console.warn("401 detected. Retrying request...");
+          return handleUpdateBackground(false, id);
+        }
+
+        if (!response.ok) {
+          console.warn(response.status);
+          return;
+        }
+
+        const data = await response.json();
+        console.log(data);
+
+        setNewUserData({
+          Id: 0,
+          Title: "",
+          Production: "",
+          Role: "",
+          Director: "",
+          Year: "",
+        });
+        setTimeout(() => {
+          handleFetchBackgrounds();
+          setOpenExistingContainer(0);
+          setIsLoading(false);
+        }, 2000);
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    const handleBtnClicked = async (e, id) => {
+      e.preventDefault();
+      setIsLoading(true);
+      console.log(id);
+      await handleUpdateBackground(true, id);
+    };
+
+    const AddBackgroundContainer = ({ handleFetchBackgrounds }) => {
+      const navigate = useNavigate();
+      const [isLoading, setIsLoading] = useState(false);
+      const [openAddBackground, setOpenAddBackground] = useState(false);
+      const [addNewdata, setAddNewData] = useState({
+        UserId: sessionStorage.getItem("id"),
+        Title: "",
+        Production: "",
+        Role: "",
+        Director: "",
+        Year: "",
+      });
+
+      const handleOnChange = (e) => {
+        e.preventDefault();
+        const { name, value } = e.target;
+
+        setAddNewData((prev) => ({
+          ...prev,
+          [name]: value,
+        }));
+      };
+
+      const handleAddData = async (retry = true) => {
+        try {
+          const response = await fetch(AddUserBackground, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(addNewdata),
+          });
+
+          if (response.status === 401 && retry === false) {
+            console.warn("Unauthorized. Rerouting...");
+            navigate("/");
+            return;
+          }
+
+          if (response.status === 301) {
+            console.warn("301 detected. Redirecting...");
+            navigate("/");
+            return;
+          }
+
+          if (response.status === 401 && retry) {
+            console.warn("401 detected. Retrying request...");
+            return handleAddData(false);
+          }
+
+          if (!response.ok) {
+            console.warn(response.status);
+            return;
+          }
+
+          const data = await response.json();
+          console.log(data);
+
+          setAddNewData({
+            Title: "",
+            Production: "",
+            Role: "",
+            Director: "",
+            Year: "",
+          });
+
+          setTimeout(() => {
+            handleFetchBackgrounds();
+            setIsLoading(false);
+            setOpenAddBackground(false);
+          }, 2000);
+        } catch (err) {
+          console.warn(err);
+        }
+      };
+
+      const handleBtnSubmitClicked = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        await handleAddData();
+      };
+      return (
+        <div>
+          <div
+            className="add-background-container__wrapper"
+            onClick={() => setOpenAddBackground(!openAddBackground)}
+          >
+            <div className="-display-flex-aligned-center -gap-10">
+              <PlusIcon size={20} />
+              <h3>Add a new one</h3>
+            </div>
+          </div>
+
+          <div
+            className={`add-background-open__wrapper ${
+              openAddBackground === true ? "slideopen-container" : ""
+            }`}
+          >
+            {isLoading ? (
+              <div className="-loading-icon__wrapper">
+                <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
+              </div>
+            ) : (
+              <form
+                className="add-background-form__wrapper"
+                onSubmit={handleBtnSubmitClicked}
+              >
+                <>
+                  <div className="-form-input__wrapper">
+                    <p>Title</p>
+                    <input
+                      type="text"
+                      name="Title"
+                      onChange={(e) => handleOnChange(e)}
+                    />
+                  </div>
+
+                  <div className="-display-flex-justified-spaceevenly -gap-10">
+                    <div className="-form-input__wrapper -width-50percent">
+                      <p>Production</p>
+                      <input
+                        type="text"
+                        name="Production"
+                        onChange={(e) => handleOnChange(e)}
+                      />
+                    </div>
+                    <div className="-form-input__wrapper -width-50percent">
+                      <p>Director/Company</p>
+                      <input
+                        type="text"
+                        name="Director"
+                        onChange={(e) => handleOnChange(e)}
+                      />
+                    </div>
+                  </div>
+                  <div className="-display-flex-justified-spaceevenly -gap-10">
+                    <div className="-form-input__wrapper -width-50percent">
+                      <p>Role</p>
+                      <input
+                        type="text"
+                        name="Role"
+                        onChange={(e) => handleOnChange(e)}
+                      />
+                    </div>
+                    <div className="-form-input__wrapper -width-50percent">
+                      <p>Year</p>
+                      <input
+                        type="text"
+                        name="Year"
+                        onChange={(e) => handleOnChange(e)}
+                      />
+                    </div>
+                  </div>
+                </>
+                <button type="submit" className="-form-submit__btn">
+                  Add
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      );
+    };
+    // -----------------------------------------------------------------------------------------
+
+    return (
+      <div className="edit-background-container__wrapper">
+        <button
+          className="-btn-invisible"
+          onClick={() => setEditBackgroundClicked(false)}
+        >
+          <XIcon size={20} />
+        </button>
+        <h4 style={{ marginTop: "10px" }}>
+          Add or Update an existing background
+        </h4>
+        <br />
+        <p style={{ fontSize: "12px", lineHeight: "1.5" }}>
+          This page allows you to update or add your acting background. Here,
+          you can showcase your experience by listing the projects you’ve worked
+          on, the roles you played, the production companies involved, and the
+          directors you collaborated with. Adding this information helps
+          highlight your skills and achievements, making it easier for others to
+          understand your experience and see the range of your work as an actor.
+        </p>
+
+        {mainLoading ? (
+          <div className="-loading-icon__wrapper">
+            <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
+          </div>
+        ) : (
+          <>
+            <AddBackgroundContainer
+              handleFetchBackgrounds={handleFetchBackgrounds}
+            />
+            <br />
+            <br />
+
+            {userBackgroundData.map((items, index) => (
+              <div key={index}>
+                <div
+                  className="edit-background-existing-close__wrapper -margin-top-10"
+                  onClick={() => handleOpenContainers(index)}
+                >
+                  <div>
+                    <h3>{items.title}</h3>
+                    <p>{items.production}</p>
+                  </div>
+                  <div>
+                    {openExistingContainer === true ? (
+                      <CaretUpIcon size={20} color={"#eaf2ff"} />
+                    ) : (
+                      <CaretDownIcon size={20} color={"#eaf2ff"} />
+                    )}
+                  </div>
+                </div>
+                <div
+                  className={`edit-background-existing-open__wrapper ${
+                    openExistingContainer === index + 1
+                      ? "slideopen-container"
+                      : ""
+                  }`}
+                >
+                  {isLoading ? (
+                    <div className="-loading-icon__wrapper">
+                      <CircleNotchIcon
+                        size={35}
+                        className={"-btn-loading__icon"}
+                      />
+                    </div>
+                  ) : (
+                    <form
+                      className="edit-background-form__wrapper"
+                      onSubmit={(e) => handleBtnClicked(e, items.id)}
+                    >
+                      <>
+                        <div className="-form-input__wrapper">
+                          <p>Title</p>
+                          <input
+                            type="text"
+                            placeholder={items.title}
+                            name="Title"
+                            onChange={(e) => handleOnChange(e)}
+                          />
+                        </div>
+
+                        <div className="-display-flex-justified-spaceevenly -gap-10">
+                          <div className="-form-input__wrapper -width-50percent">
+                            <p>Production</p>
+                            <input
+                              type="text"
+                              placeholder={items.production}
+                              name="Production"
+                              onChange={(e) => handleOnChange(e)}
+                            />
+                          </div>
+                          <div className="-form-input__wrapper -width-50percent">
+                            <p>Director/Company</p>
+                            <input
+                              type="text"
+                              placeholder={items.director}
+                              name="Director"
+                              onChange={(e) => handleOnChange(e)}
+                            />
+                          </div>
+                        </div>
+                        <div className="-display-flex-justified-spaceevenly -gap-10">
+                          <div className="-form-input__wrapper -width-50percent">
+                            <p>Role</p>
+                            <input
+                              type="text"
+                              placeholder={items.role}
+                              name="Role"
+                              onChange={(e) => handleOnChange(e)}
+                            />
+                          </div>
+                          <div className="-form-input__wrapper -width-50percent">
+                            <p>Year</p>
+                            <input
+                              type="text"
+                              placeholder={items.year}
+                              name="Year"
+                              onChange={(e) => handleOnChange(e)}
+                            />
+                          </div>
+                        </div>
+                      </>
+                      <button type="submit" className="-form-submit__btn">
+                        Save
+                      </button>
+                    </form>
+                  )}
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    );
+  };
+
+  // -------------------------------------------------------------------------------------------------------------------
   return (
     <div className="profile-background__wrapper">
-      <button className="profile-background-viewall__btn">View all</button>
+      {editBackgroundClicked === true && (
+        <>
+          <div className="overlay"></div>
+          <EditBackgroundContainer />
+        </>
+      )}
+      <div className="-display-flex-justified-spacebetween">
+        <button className="profile-background-viewall__btn">View all</button>
+        <button
+          className="-btn-invisible"
+          onClick={() => setEditBackgroundClicked(true)}
+        >
+          <PencilSimpleIcon size={15} />
+        </button>
+      </div>
       <div className="profile-background-lists__wrapper">
         <div>
           <p style={{ fontSize: "10px" }}>2024</p>

@@ -8,9 +8,40 @@
   font-family: "Roboto", sans-serif;
 }
 
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+
+  backdrop-filter: blur(5px);
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.-loading-icon__wrapper {
+  position: absolute;
+  left: 50%;
+}
+
 .-btn-dark- {
   background-color: #4495c7;
   color: #eaf2ff;
+}
+
+.-btn-invisible {
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+}
+
+.-form-submit__btn {
+  cursor: pointer;
+  padding: 5px 10px;
+  background-color: #4495c7;
+  color: #ffffffff;
+  border: none;
+  border-radius: 5px;
 }
 
 .-btn-loading__icon {
@@ -105,6 +136,10 @@
   margin: 0 auto;
 
   padding: 30px;
+}
+
+.-width-50percent {
+  width: 50%;
 }
 
 .-gap-10 {
