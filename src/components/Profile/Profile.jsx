@@ -67,11 +67,11 @@ const ProfileCards = ({ userData }) => {
       <div className="profile-cards__wrapper">
         <div className="profile-cards-icon-texts__wrapper">
           <EnvelopeIcon size={18} />
-          <span style={{ fontSize: "12px" }}>{userData.email}</span>
+          <span style={{ fontSize: "12px" }}>{userData?.email}</span>
         </div>
         <div className="profile-cards-icon-texts__wrapper">
           <PhoneIcon size={18} />
-          <span style={{ fontSize: "12px" }}>{userData.mobileNumber}</span>
+          <span style={{ fontSize: "12px" }}>{userData?.mobileNumber}</span>
         </div>
       </div>
       <div className="profile-cards__wrapper">
@@ -82,19 +82,27 @@ const ProfileCards = ({ userData }) => {
 
         <div className="profile-cards-appearance-details__wrapper">
           <p>Height</p>
-          <span style={{ fontSize: "12px" }}>170cm</span>
+          <span style={{ fontSize: "12px" }}>
+            {userData.appearance?.height}cm
+          </span>
         </div>
         <div className="profile-cards-appearance-details__wrapper">
           <p>Weight</p>
-          <span style={{ fontSize: "12px" }}>80kg</span>
+          <span style={{ fontSize: "12px" }}>
+            {userData.appearance?.weight}kg
+          </span>
         </div>
         <div className="profile-cards-appearance-details__wrapper">
           <p>Hair Color</p>
-          <span style={{ fontSize: "12px" }}>Brown</span>
+          <span style={{ fontSize: "12px" }}>
+            {userData.appearance?.hairColor}
+          </span>
         </div>
         <div className="profile-cards-appearance-details__wrapper">
           <p>Eye Color</p>
-          <span style={{ fontSize: "12px" }}>Brown</span>
+          <span style={{ fontSize: "12px" }}>
+            {userData.appearance?.eyeColor}
+          </span>
         </div>
       </div>
       <div className="profile-cards__wrapper">
@@ -105,11 +113,15 @@ const ProfileCards = ({ userData }) => {
 
         <div className="profile-cards-appearance-details__wrapper">
           <p>Ethnicity</p>
-          <span style={{ fontSize: "12px" }}>Filipino</span>
+          <span style={{ fontSize: "12px" }}>
+            {userData.personalBackground?.ethnicity}
+          </span>
         </div>
         <div className="profile-cards-appearance-details__wrapper">
           <p>Natural Accent</p>
-          <span style={{ fontSize: "12px" }}>American</span>
+          <span style={{ fontSize: "12px" }}>
+            {userData.personalBackground?.naturalAccent}
+          </span>
         </div>
       </div>
     </div>

@@ -21,9 +21,19 @@
   padding: 20px;
   font-size: 12px;
 }
+
 .setting-nav-active {
   font-weight: bold;
   color: #4495c7;
+}
+
+.sub-ul__wrapper {
+  list-style: none;
+  margin-left: 20px;
+}
+
+.sub-ul__wrapper li {
+  font-size: 10px;
 }
 
 .settings-display-container__wrapper {
@@ -111,7 +121,40 @@
   color: #ffffffff;
 }
 
-.account-loading-icon__wrapper {
+.form-appearance__wrapper {
+  padding: 10px;
+  width: 400px;
+}
+
+.form-appearance-submit__btn {
+  cursor: pointer;
+  padding: 5px 10px;
+  background-color: #4495c7;
+  color: #ffffffff;
+  border: none;
+  border-radius: 5px;
+}
+
+.btn-disabled {
+  cursor: default;
+  background-color: gray;
+}
+
+.settings-loading-icon__wrapper {
   position: absolute;
   left: 55%;
+}
+
+.personal-background-form__wrapper {
+  width: 400px;
+  padding: 20px;
+}
+
+.personal-background-form__btn {
+  cursor: pointer;
+  padding: 5px 10px;
+  background-color: #4495c7;
+  color: #ffffffff;
+  border: none;
+  border-radius: 5px;
 }

@@ -14,8 +14,10 @@ import {
   BASE_URL,
 } from "../../assets/js/serverapi";
 import Nav from "../Nav/Nav";
+import Appearance from "./Sub-Settings/Appearance";
 
 import "../../styles/settingsstyles.css";
+import PersonalBackground from "./Sub-Settings/PersonalBackground";
 
 const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
   const USERNAME_REGEX = /^[a-zA-Z][a-zA-Z0-9._]{2,15}$/;
@@ -112,6 +114,8 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
           ProfilePictureUrl: imageUrl,
           UserName: newUserData.userName,
           Bio: newUserData.bio,
+          Appearance: null,
+          PersonalBackground: null,
         }),
       });
 
@@ -388,6 +392,8 @@ const Account = ({ userData, handleGetUserData }) => {
           Id: sessionStorage.getItem("id"),
           ProfilePictureUrl: "",
           MobileNumber: newUserData.mobileNumber,
+          Appearance: null,
+          PersonalBackground: null,
         }),
       });
 
@@ -436,7 +442,7 @@ const Account = ({ userData, handleGetUserData }) => {
   return (
     <div>
       {isLoading === true ? (
-        <div className="account-loading-icon__wrapper">
+        <div className="settings-loading-icon__wrapper">
           <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
         </div>
       ) : (
@@ -543,10 +549,10 @@ const Settings = () => {
       <div className="-display-flex -gap-10">
         <div className="settings-nav-container__wrapper">
           <div className="-display-flex-aligned-center -gap-10">
-            <GearSixIcon color={"rgba(0,0,0,0.7)"} size={20} weight="fill" />
+            <GearSixIcon color={"rgba(0,0,0,0.7)"} size={15} weight="fill" />
             <div className="-display-flex-aligned-center -gap-10">
-              <h4>{"Settings >"}</h4>
-              <h4 style={{ color: "rgba(0,0,0,0.3)" }}>{navDisplay}</h4>
+              <h5>{"Settings >"}</h5>
+              <h5 style={{ color: "rgba(0,0,0,0.3)" }}>{navDisplay}</h5>
             </div>
           </div>
           <ul className="settings-nav-ul__wrapper">
@@ -557,11 +563,49 @@ const Settings = () => {
               Account
             </li>
             <li
-              className={navDisplay === "Profile" ? "setting-nav-active" : ""}
+              className={
+                navDisplay === "Profile" ||
+                navDisplay === "Profile > Appearance" ||
+                navDisplay === "Profile > Background"
+                  ? "setting-nav-active"
+                  : ""
+              }
               onClick={() => setNavDisplay("Profile")}
             >
               Profile
             </li>
+            {/* sub-ul__container */}
+
+            {navDisplay === "Profile" ||
+            navDisplay === "Profile > Appearance" ||
+            navDisplay === "Profile > Background" ? (
+              <>
+                <ul className="sub-ul__wrapper">
+                  <li
+                    className={
+                      navDisplay === "Profile > Appearance"
+                        ? "setting-nav-active"
+                        : ""
+                    }
+                    onClick={() => setNavDisplay("Profile > Appearance")}
+                  >
+                    Appearance
+                  </li>
+                  <li
+                    className={
+                      navDisplay === "Profile > Background"
+                        ? "setting-nav-active"
+                        : ""
+                    }
+                    onClick={() => setNavDisplay("Profile > Background")}
+                  >
+                    Background
+                  </li>
+                </ul>
+              </>
+            ) : (
+              ""
+            )}
             <li
               className={navDisplay === "Security" ? "setting-nav-active" : ""}
               onClick={() => setNavDisplay("Security")}
@@ -585,6 +629,16 @@ const Settings = () => {
           ) : navDisplay === "Profile" ? (
             <ProfileSettings
               navigate={navigate}
+              userData={userData}
+              handleGetUserData={handleGetUserData}
+            />
+          ) : navDisplay === "Profile > Appearance" ? (
+            <Appearance
+              userData={userData}
+              handleGetUserData={handleGetUserData}
+            />
+          ) : navDisplay === "Profile > Background" ? (
+            <PersonalBackground
               userData={userData}
               handleGetUserData={handleGetUserData}
             />
