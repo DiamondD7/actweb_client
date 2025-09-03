@@ -320,3 +320,23 @@
   cursor: pointer;
   margin-top: 40px;
 }
+
+.edit-background-form-delete__wrapper {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.edit-background-form-delete__btn {
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+}
+
+.edit-background-form-delete__btn .trash__icon {
+  fill: rgba(0, 0, 0, 0.3);
+  transition: all 0.5s ease-in-out;
+}
+.edit-background-form-delete__btn:hover .trash__icon {
+  fill: rgba(243, 122, 122, 0.945);
+  transition: all 0.5s ease-in-out;
+}

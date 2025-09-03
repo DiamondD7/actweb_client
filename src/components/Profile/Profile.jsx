@@ -13,12 +13,14 @@ import {
   CaretDownIcon,
   CaretUpIcon,
   CircleNotchIcon,
+  DotsThreeIcon,
   EnvelopeIcon,
   GlobeHemisphereEastIcon,
   PencilSimpleIcon,
   PhoneIcon,
   PlusIcon,
   ScanSmileyIcon,
+  TrashIcon,
   VideoIcon,
   XIcon,
 } from "@phosphor-icons/react";
@@ -186,7 +188,6 @@ const ProfileShowreel = () => {
 
 const ProfileBackground = () => {
   const navigate = useNavigate();
-
   const [editBackgroundClicked, setEditBackgroundClicked] = useState(false);
 
   const EditBackgroundContainer = () => {
@@ -199,6 +200,7 @@ const ProfileBackground = () => {
       Director: "",
       Year: "",
     });
+    const [deleteClicked, setDeleteClicked] = useState(false);
     const [openExistingContainer, setOpenExistingContainer] = useState(0);
     const [isLoading, setIsLoading] = useState(false); //loading for updating
     const [mainLoading, setMainLoading] = useState(false); //main page loading
@@ -283,6 +285,7 @@ const ProfileBackground = () => {
             Role: newUserData.Role,
             Director: newUserData.Director,
             Year: newUserData.Year,
+            IsDeleted: deleteClicked, //if the user clicks the delete icon then the state is true but if they do not, then the state is false
           }),
         });
 
@@ -319,6 +322,7 @@ const ProfileBackground = () => {
           Director: "",
           Year: "",
         });
+        setDeleteClicked(false);
         setTimeout(() => {
           handleFetchBackgrounds();
           setOpenExistingContainer(0);
@@ -332,7 +336,6 @@ const ProfileBackground = () => {
     const handleBtnClicked = async (e, id) => {
       e.preventDefault();
       setIsLoading(true);
-      console.log(id);
       await handleUpdateBackground(true, id);
     };
 
@@ -573,61 +576,93 @@ const ProfileBackground = () => {
                       className="edit-background-form__wrapper"
                       onSubmit={(e) => handleBtnClicked(e, items.id)}
                     >
-                      <>
-                        <div className="-form-input__wrapper">
-                          <p>Title</p>
-                          <input
-                            type="text"
-                            placeholder={items.title}
-                            name="Title"
-                            onChange={(e) => handleOnChange(e)}
+                      <div className="edit-background-form-delete__wrapper">
+                        <button
+                          type="button"
+                          className="edit-background-form-delete__btn"
+                          onClick={() => setDeleteClicked(true)}
+                        >
+                          <TrashIcon
+                            size={17}
+                            className={"trash__icon"}
+                            weight="fill"
                           />
-                        </div>
+                        </button>
+                      </div>
 
-                        <div className="-display-flex-justified-spaceevenly -gap-10">
-                          <div className="-form-input__wrapper -width-50percent">
-                            <p>Production</p>
-                            <input
-                              type="text"
-                              placeholder={items.production}
-                              name="Production"
-                              onChange={(e) => handleOnChange(e)}
-                            />
-                          </div>
-                          <div className="-form-input__wrapper -width-50percent">
-                            <p>Director/Company</p>
-                            <input
-                              type="text"
-                              placeholder={items.director}
-                              name="Director"
-                              onChange={(e) => handleOnChange(e)}
-                            />
-                          </div>
+                      {deleteClicked === true ? (
+                        <div style={{ textAlign: "center" }}>
+                          <h4>Are you sure want to delete?</h4>
+                          <button
+                            className="-btn-invisible"
+                            onClick={() => setDeleteClicked(false)}
+                          >
+                            No
+                          </button>
+                          <button
+                            type="submit"
+                            className="-btn-confirmation-delete -margin-left-20 -margin-top-20"
+                          >
+                            Yes
+                          </button>
                         </div>
-                        <div className="-display-flex-justified-spaceevenly -gap-10">
-                          <div className="-form-input__wrapper -width-50percent">
-                            <p>Role</p>
+                      ) : (
+                        <>
+                          <div className="-form-input__wrapper">
+                            <p>Title</p>
                             <input
                               type="text"
-                              placeholder={items.role}
-                              name="Role"
+                              placeholder={items.title}
+                              name="Title"
                               onChange={(e) => handleOnChange(e)}
                             />
                           </div>
-                          <div className="-form-input__wrapper -width-50percent">
-                            <p>Year</p>
-                            <input
-                              type="text"
-                              placeholder={items.year}
-                              name="Year"
-                              onChange={(e) => handleOnChange(e)}
-                            />
+
+                          <div className="-display-flex-justified-spaceevenly -gap-10">
+                            <div className="-form-input__wrapper -width-50percent">
+                              <p>Production</p>
+                              <input
+                                type="text"
+                                placeholder={items.production}
+                                name="Production"
+                                onChange={(e) => handleOnChange(e)}
+                              />
+                            </div>
+                            <div className="-form-input__wrapper -width-50percent">
+                              <p>Director/Company</p>
+                              <input
+                                type="text"
+                                placeholder={items.director}
+                                name="Director"
+                                onChange={(e) => handleOnChange(e)}
+                              />
+                            </div>
                           </div>
-                        </div>
-                      </>
-                      <button type="submit" className="-form-submit__btn">
-                        Save
-                      </button>
+                          <div className="-display-flex-justified-spaceevenly -gap-10">
+                            <div className="-form-input__wrapper -width-50percent">
+                              <p>Role</p>
+                              <input
+                                type="text"
+                                placeholder={items.role}
+                                name="Role"
+                                onChange={(e) => handleOnChange(e)}
+                              />
+                            </div>
+                            <div className="-form-input__wrapper -width-50percent">
+                              <p>Year</p>
+                              <input
+                                type="text"
+                                placeholder={items.year}
+                                name="Year"
+                                onChange={(e) => handleOnChange(e)}
+                              />
+                            </div>
+                          </div>
+                          <button type="submit" className="-form-submit__btn">
+                            Save
+                          </button>
+                        </>
+                      )}
                     </form>
                   )}
                 </div>

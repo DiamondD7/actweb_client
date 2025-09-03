@@ -24,6 +24,16 @@
   left: 50%;
 }
 
+.-btn-confirmation-delete {
+  cursor: pointer;
+  background-color: rgba(243, 122, 122, 0.945);
+  color: #eaf2ff;
+  border: none;
+
+  border-radius: 5px;
+  padding: 5px 10px;
+}
+
 .-btn-dark- {
   background-color: #4495c7;
   color: #eaf2ff;
