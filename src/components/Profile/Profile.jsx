@@ -6,6 +6,7 @@ import {
   AddUserBackground,
   GetUserBackgrounds,
   UpdateUserBackground,
+  GetFeaturedBackgrounds,
 } from "../../assets/js/serverapi";
 import Nav from "../Nav/Nav";
 import {
@@ -20,6 +21,7 @@ import {
   PhoneIcon,
   PlusIcon,
   ScanSmileyIcon,
+  StarIcon,
   TrashIcon,
   VideoIcon,
   XIcon,
@@ -189,8 +191,50 @@ const ProfileShowreel = () => {
 const ProfileBackground = () => {
   const navigate = useNavigate();
   const [editBackgroundClicked, setEditBackgroundClicked] = useState(false);
+  const [featuredBackgrounds, setFeaturedBackgrounds] = useState([]);
 
-  const EditBackgroundContainer = () => {
+  useEffect(() => {
+    handleFeatureBackgrounds();
+  }, []);
+
+  const handleFeatureBackgrounds = async (retry = true) => {
+    try {
+      const ID = sessionStorage.getItem("id");
+      const response = await fetch(`${GetFeaturedBackgrounds}?userId=${ID}`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorize. Rerouting...");
+        navigate("/");
+        return;
+      }
+
+      if (response.status === 301) {
+        console.warn("301 detected. Redirecting...");
+        navigate("/");
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Retrying request...");
+        return handleFeatureBackgrounds(false);
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return;
+      }
+
+      const data = await response.json();
+      setFeaturedBackgrounds(data);
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const EditBackgroundContainer = ({ handleFeatureBackgrounds }) => {
     const [userBackgroundData, setUserBackgroundData] = useState([]);
     const [newUserData, setNewUserData] = useState({
       Id: 0,
@@ -232,7 +276,7 @@ const ProfileBackground = () => {
 
         if (response.status === 401 && retry) {
           console.warn("401 detected. Retrying request...");
-          return handleFetchBackgrounds();
+          return handleFetchBackgrounds(false);
         }
 
         if (!response.ok) {
@@ -269,7 +313,7 @@ const ProfileBackground = () => {
       }));
     };
 
-    const handleUpdateBackground = async (retry = true, id) => {
+    const handleUpdateBackground = async (retry = true, id, featured) => {
       try {
         const response = await fetch(UpdateUserBackground, {
           method: "PUT",
@@ -286,6 +330,7 @@ const ProfileBackground = () => {
             Director: newUserData.Director,
             Year: newUserData.Year,
             IsDeleted: deleteClicked, //if the user clicks the delete icon then the state is true but if they do not, then the state is false
+            IsFeatured: featured,
           }),
         });
 
@@ -303,7 +348,7 @@ const ProfileBackground = () => {
 
         if (response.status === 401 && retry) {
           console.warn("401 detected. Retrying request...");
-          return handleUpdateBackground(false, id);
+          return handleUpdateBackground(false, id, featured);
         }
 
         if (!response.ok) {
@@ -322,11 +367,13 @@ const ProfileBackground = () => {
           Director: "",
           Year: "",
         });
+
         setDeleteClicked(false);
         setTimeout(() => {
           handleFetchBackgrounds();
           setOpenExistingContainer(0);
           setIsLoading(false);
+          setMainLoading(false);
         }, 2000);
       } catch (err) {
         console.warn(err);
@@ -336,7 +383,21 @@ const ProfileBackground = () => {
     const handleBtnClicked = async (e, id) => {
       e.preventDefault();
       setIsLoading(true);
-      await handleUpdateBackground(true, id);
+      await handleUpdateBackground(true, id, null); //parameter: (retry, id, feature)  retry is for the jwt service, id is the background id and the feature is wether user sets the background a feature (null here because we are only updating the values except for feature)
+    };
+
+    const handleBtnFeatureClicked = async (e, id, feature) => {
+      e.preventDefault();
+      setMainLoading(true);
+
+      const isFeature = feature === true ? false : true;
+      await handleUpdateBackground(true, id, isFeature); //parameter: (retry, id, feature)  retry is for the jwt service, id is the background id and the feature is wether user sets the background a feature
+    };
+
+    const handleCloseModal = (e) => {
+      e.preventDefault();
+      setEditBackgroundClicked(false);
+      handleFeatureBackgrounds();
     };
 
     const AddBackgroundContainer = ({ handleFetchBackgrounds }) => {
@@ -508,10 +569,7 @@ const ProfileBackground = () => {
 
     return (
       <div className="edit-background-container__wrapper">
-        <button
-          className="-btn-invisible"
-          onClick={() => setEditBackgroundClicked(false)}
-        >
+        <button className="-btn-invisible" onClick={(e) => handleCloseModal(e)}>
           <XIcon size={20} />
         </button>
         <h4 style={{ marginTop: "10px" }}>
@@ -549,7 +607,25 @@ const ProfileBackground = () => {
                     <h3>{items.title}</h3>
                     <p>{items.production}</p>
                   </div>
-                  <div>
+                  <div className="-display-flex-aligned-center -gap-10">
+                    <button
+                      type="button"
+                      className="-btn-invisible feature-icon__btn"
+                      onClick={(e) =>
+                        handleBtnFeatureClicked(e, items.id, items.isFeatured)
+                      }
+                    >
+                      {items.isFeatured === false ? (
+                        <StarIcon
+                          size={12}
+                          weight="fill"
+                          className={"star-default-icon"}
+                        />
+                      ) : (
+                        <StarIcon size={12} weight="fill" color="yellow" />
+                      )}
+                    </button>
+
                     {openExistingContainer === true ? (
                       <CaretUpIcon size={20} color={"#eaf2ff"} />
                     ) : (
@@ -680,7 +756,9 @@ const ProfileBackground = () => {
       {editBackgroundClicked === true && (
         <>
           <div className="overlay"></div>
-          <EditBackgroundContainer />
+          <EditBackgroundContainer
+            handleFeatureBackgrounds={handleFeatureBackgrounds}
+          />
         </>
       )}
       <div className="-display-flex-justified-spacebetween">
@@ -692,68 +770,56 @@ const ProfileBackground = () => {
           <PencilSimpleIcon size={15} />
         </button>
       </div>
-      <div className="profile-background-lists__wrapper">
-        <div>
-          <p style={{ fontSize: "10px" }}>2024</p>
-          <h4>Feature Film</h4>
-          <ul className="profile-background__list">
-            <li>
-              Production:{" "}
-              <strong className="profile-background-list__li-strong">
-                Bean
-              </strong>
-            </li>
-            <li>
-              Role:{" "}
-              <strong className="profile-background-list__li-strong">
-                Tree
-              </strong>
-            </li>
-            <li>
-              Director/Company:{" "}
-              <strong className="profile-background-list__li-strong">
-                Lusty
-              </strong>
-            </li>
-          </ul>
-        </div>
 
-        <div className="profile-background-lists-view__wrapper">
-          <span>View</span>
-          <ArrowCircleRightIcon size={23} weight="fill" color={"#4495c7"} />
+      {featuredBackgrounds.length <= 0 ? (
+        <div className="profile-background-feature-empty__wrapper">
+          <h4>Feature your background</h4>
+          <p>
+            No features yet. You have to <StarIcon size={12} /> feature 2
+            backgrounds
+          </p>
         </div>
-      </div>
+      ) : (
+        <>
+          {featuredBackgrounds.map((data, index) => (
+            <div className="profile-background-lists__wrapper" key={index}>
+              <div>
+                <p style={{ fontSize: "10px" }}>{data.year}</p>
+                <h4>{data.title}</h4>
+                <ul className="profile-background__list">
+                  <li>
+                    Production:{" "}
+                    <strong className="profile-background-list__li-strong">
+                      {data.production}
+                    </strong>
+                  </li>
+                  <li>
+                    Role:{" "}
+                    <strong className="profile-background-list__li-strong">
+                      {data.role}
+                    </strong>
+                  </li>
+                  <li>
+                    Director/Company:{" "}
+                    <strong className="profile-background-list__li-strong">
+                      {data.director}
+                    </strong>
+                  </li>
+                </ul>
+              </div>
 
-      <div className="profile-background-lists__wrapper">
-        <div>
-          <p style={{ fontSize: "10px" }}>2023</p>
-          <h4>Commercial</h4>
-          <ul className="profile-background__list">
-            <li>
-              Production:{" "}
-              <strong className="profile-background-list__li-strong">
-                Briscoes
-              </strong>
-            </li>
-            <li>
-              Role:{" "}
-              <strong className="profile-background-list__li-strong">
-                Featured
-              </strong>
-            </li>
-            <li>
-              Director/Company:{" "}
-              <strong className="profile-background-list__li-strong">
-                Stanley
-              </strong>
-            </li>
-          </ul>
-        </div>
-        <div className="profile-background-lists-view__wrapper">
-          <span>View</span>
-          <ArrowCircleRightIcon size={23} weight="fill" color={"#4495c7"} />
-        </div>
-      </div>
+              <div className="profile-background-lists-view__wrapper">
+                <span>View</span>
+                <ArrowCircleRightIcon
+                  size={23}
+                  weight="fill"
+                  color={"#4495c7"}
+                />
+              </div>
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 };

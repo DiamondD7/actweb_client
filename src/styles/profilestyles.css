@@ -64,12 +64,24 @@
 .profile-background__wrapper {
   margin-top: 10px;
   width: 450px;
+  height: 287px;
 
   background-color: #ffffffff;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
     rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
   border-radius: 10px;
   padding: 20px;
+}
+
+.profile-background-feature-empty__wrapper {
+  margin-top: 60px;
+  text-align: center;
+}
+
+.profile-background-feature-empty__wrapper p {
+  margin-top: 10px;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.4);
 }
 
 .profile-background-lists__wrapper {
@@ -339,4 +351,15 @@
 .edit-background-form-delete__btn:hover .trash__icon {
   fill: rgba(243, 122, 122, 0.945);
   transition: all 0.5s ease-in-out;
+}
+
+.feature-icon__btn {
+  z-index: 2;
+}
+.feature-icon__btn .star-default-icon {
+  fill: #eaf2ff;
+}
+
+.feature-icon__btn:hover .star-default-icon {
+  fill: yellow;
 }

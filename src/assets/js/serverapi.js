@@ -2,6 +2,8 @@ export const BASE_URL = "http://localhost:5195";
 export const USER_API_URI = "http://localhost:5195/api/Users";
 export const GetUserBackgrounds =
   "http://localhost:5195/api/Users/get-user-backgrounds";
+export const GetFeaturedBackgrounds =
+  "http://localhost:5195/api/Users/get-featured-backgrounds";
 export const UserCreation = "http://localhost:5195/api/Users/create-user";
 export const CheckLogin = "http://localhost:5195/api/Users/check-login";
 export const ValidateTokens = "http://localhost:5195/api/Users/validate-tokens";
