@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { data, useNavigate } from "react-router-dom";
 import {
   USER_API_URI,
   BASE_URL,
@@ -16,7 +16,9 @@ import {
   CircleNotchIcon,
   DotsThreeIcon,
   EnvelopeIcon,
+  FilmSlateIcon,
   GlobeHemisphereEastIcon,
+  LinkIcon,
   PencilSimpleIcon,
   PhoneIcon,
   PlusIcon,
@@ -142,55 +144,10 @@ const ProfileCards = ({ userData }) => {
   );
 };
 
-const ProfileShowreel = () => {
-  return (
-    <div className="profile-background__wrapper">
-      <div className="profile-showreel-lists-container__wrapper">
-        <p style={{ fontSize: "10px" }}>1</p>
-        <div className="profile-showreel-list__wrapper">
-          <h4>Feature Film</h4>
-          <p className="profile-showreel-title__text">Bean</p>
-        </div>
-        <div className="profile-showreel-link__wrapper">
-          <VideoIcon size={18} />
-          <a href="https://www.youtube.com" target="_blank">
-            Bean Season 1, Episode 2
-          </a>
-        </div>
-      </div>
-      <div className="profile-showreel-lists-container__wrapper">
-        <p style={{ fontSize: "10px" }}>2</p>
-        <div className="profile-showreel-list__wrapper">
-          <h4>Commercial</h4>
-          <p className="profile-showreel-title__text">Briscoes</p>
-        </div>
-        <div className="profile-showreel-link__wrapper">
-          <VideoIcon size={18} />
-          <a href="https://www.youtube.com" target="_blank">
-            Briscoes Christmas 2024
-          </a>
-        </div>
-      </div>
-      <div className="profile-showreel-lists-container__wrapper">
-        <p style={{ fontSize: "10px" }}>3</p>
-        <div className="profile-showreel-list__wrapper">
-          <h4>Commercial</h4>
-          <p className="profile-showreel-title__text">PB Tech</p>
-        </div>
-        <div className="profile-showreel-link__wrapper">
-          <VideoIcon size={18} />
-          <a href="https://www.youtube.com" target="_blank">
-            PB Tech Back to School 2024
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const ProfileBackground = () => {
   const navigate = useNavigate();
   const [editBackgroundClicked, setEditBackgroundClicked] = useState(false);
+  const [openViewAllBtn, setOpenViewAllBtn] = useState(false);
   const [featuredBackgrounds, setFeaturedBackgrounds] = useState([]);
 
   useEffect(() => {
@@ -234,7 +191,146 @@ const ProfileBackground = () => {
     }
   };
 
-  const EditBackgroundContainer = ({ handleFeatureBackgrounds }) => {
+  const ViewAllContainer = ({ setOpenViewAllBtn }) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [userBackgroundData, setUserBackgroundData] = useState([]);
+
+    useEffect(() => {
+      setIsLoading(true);
+      handleFetchBackgrounds();
+    }, []);
+
+    const handleFetchBackgrounds = async (retry = true) => {
+      try {
+        const ID = sessionStorage.getItem("id");
+        const response = await fetch(`${GetUserBackgrounds}?userId=${ID}`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.status === 401 && retry === false) {
+          console.warn("Unauthorize. Rerouting...");
+          navigate("/");
+          return;
+        }
+
+        if (response.status === 301) {
+          console.warn("301 detected. Redirecting...");
+          navigate("/");
+          return;
+        }
+
+        if (response.status === 401 && retry) {
+          console.warn("401 detected. Retrying request...");
+          return handleFetchBackgrounds(false);
+        }
+
+        if (!response.ok) {
+          console.warn(response.status);
+          return;
+        }
+
+        const data = await response.json();
+        setUserBackgroundData(data);
+
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 2000);
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    return (
+      <>
+        <div className="viewall-background__wrapper">
+          <div className="profile-background-headers__wrapper">
+            <button
+              className="-btn-invisible"
+              onClick={() => setOpenViewAllBtn(false)}
+            >
+              <XIcon size={15} />
+            </button>
+            <h4 style={{ marginTop: "10px" }}>Aaron's Background</h4>
+            <br />
+            <p style={{ fontSize: "12px", lineHeight: "1.5" }}>
+              This page gives you a quick look at Aaron’s background — where
+              they’ve come from, what they’ve worked on, and a bit about their
+              journey in acting. It’s here so you can get to know them better
+              beyond just their roles.
+            </p>
+          </div>
+
+          {isLoading ? (
+            <div className="-loading-icon__wrapper">
+              <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
+            </div>
+          ) : (
+            <>
+              {userBackgroundData.map((data, index) => (
+                <div className="-padding-20">
+                  <div className="background__wrapper" key={index}>
+                    <div className="-display-flex-justified-spacebetween">
+                      <div className="background-details__wrapper">
+                        <FilmSlateIcon size={20} />
+                        <p style={{ fontSize: "10px" }}>{data.year}</p>
+                        <h4>{data.title}</h4>
+
+                        <br />
+                        <p style={{ fontSize: "12px", marginTop: "10px" }}>
+                          Production Type -{" "}
+                          <strong>{data.productionType}</strong>
+                        </p>
+                        <p style={{ fontSize: "12px", marginTop: "10px" }}>
+                          Production - <strong>{data.production}</strong>
+                        </p>
+                        <p style={{ fontSize: "12px", marginTop: "10px" }}>
+                          Director - <strong>{data.director}</strong>
+                        </p>
+                        <p style={{ fontSize: "12px", marginTop: "10px" }}>
+                          Role - <strong>{data.role}</strong>
+                        </p>
+                      </div>
+                      <div className="background-details-moreinfo__wrapper">
+                        <div className="background-details-note__wrapper">
+                          <h5>Note</h5>
+                          <p>{data.note}</p>
+                        </div>
+
+                        <div>
+                          <h5>Links</h5>
+                          {data.videoUrls.map((items, index) => (
+                            <div key={index}>
+                              <a
+                                className="view-links__anchor"
+                                href={items}
+                                target="_blank"
+                              >
+                                <LinkIcon size={15} /> {items}
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      </>
+    );
+  };
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  const EditBackgroundContainer = ({
+    handleFeatureBackgrounds,
+    featuredBackgrounds,
+  }) => {
+    const [urlInputValue, setUrlInputValue] = useState("");
+    const [urlError, setUrlError] = useState(null);
     const [userBackgroundData, setUserBackgroundData] = useState([]);
     const [newUserData, setNewUserData] = useState({
       Id: 0,
@@ -243,7 +339,11 @@ const ProfileBackground = () => {
       Role: "",
       Director: "",
       Year: "",
+      Note: "",
+      ProductionType: "",
+      VideoUrls: [],
     });
+
     const [deleteClicked, setDeleteClicked] = useState(false);
     const [openExistingContainer, setOpenExistingContainer] = useState(0);
     const [isLoading, setIsLoading] = useState(false); //loading for updating
@@ -313,8 +413,43 @@ const ProfileBackground = () => {
       }));
     };
 
+    const handleAddUrl = (e, index) => {
+      e.preventDefault();
+
+      if (isValidUrl(urlInputValue)) {
+        setUrlError(false);
+        //putting the new url value to the userBackground state for user to see the new values.
+        setUserBackgroundData((prev) =>
+          prev.map((item, i) => {
+            if (i === index) {
+              return {
+                ...item,
+                videoUrls: [...item.videoUrls, urlInputValue.trim()],
+              };
+            }
+            return item;
+          })
+        );
+        setUrlInputValue(""); //setting it to default empty string once it is added to the array.
+      } else {
+        setUrlError(true);
+      }
+    };
+
+    const isValidUrl = (string) => {
+      try {
+        new URL(string);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
     const handleUpdateBackground = async (retry = true, id, featured) => {
       try {
+        const newUrls =
+          userBackgroundData.find((item, i) => item.id === id)?.videoUrls || [];
+
         const response = await fetch(UpdateUserBackground, {
           method: "PUT",
           headers: {
@@ -331,6 +466,9 @@ const ProfileBackground = () => {
             Year: newUserData.Year,
             IsDeleted: deleteClicked, //if the user clicks the delete icon then the state is true but if they do not, then the state is false
             IsFeatured: featured,
+            Note: newUserData.Note,
+            ProductionType: newUserData.ProductionType,
+            VideoUrls: newUrls,
           }),
         });
 
@@ -366,11 +504,15 @@ const ProfileBackground = () => {
           Role: "",
           Director: "",
           Year: "",
+          Note: "",
+          ProductionType: "",
+          VideoUrls: [],
         });
 
+        handleFeatureBackgrounds();
         setDeleteClicked(false);
         setTimeout(() => {
-          handleFetchBackgrounds();
+          handleFetchBackgrounds(); //calling for resresh data, once update finish
           setOpenExistingContainer(0);
           setIsLoading(false);
           setMainLoading(false);
@@ -382,6 +524,7 @@ const ProfileBackground = () => {
 
     const handleBtnClicked = async (e, id) => {
       e.preventDefault();
+
       setIsLoading(true);
       await handleUpdateBackground(true, id, null); //parameter: (retry, id, feature)  retry is for the jwt service, id is the background id and the feature is wether user sets the background a feature (null here because we are only updating the values except for feature)
     };
@@ -397,13 +540,33 @@ const ProfileBackground = () => {
     const handleCloseModal = (e) => {
       e.preventDefault();
       setEditBackgroundClicked(false);
-      handleFeatureBackgrounds();
+    };
+
+    // Remove a URL from the list
+    const handleRemoveUrl = (e, index, chosenUrlToDelete) => {
+      e.preventDefault();
+
+      setUserBackgroundData((prev) =>
+        prev.map((item, i) => {
+          if (i === index) {
+            return {
+              ...item,
+              videoUrls: item.videoUrls.filter(
+                (_, j) => j !== chosenUrlToDelete
+              ),
+            };
+          }
+          return item;
+        })
+      );
     };
 
     const AddBackgroundContainer = ({ handleFetchBackgrounds }) => {
       const navigate = useNavigate();
       const [isLoading, setIsLoading] = useState(false);
       const [openAddBackground, setOpenAddBackground] = useState(false);
+      const [isUrlError, setIsUrlError] = useState(false);
+      const [currentUrl, setCurrentUrl] = useState("");
       const [addNewdata, setAddNewData] = useState({
         UserId: sessionStorage.getItem("id"),
         Title: "",
@@ -411,6 +574,9 @@ const ProfileBackground = () => {
         Role: "",
         Director: "",
         Year: "",
+        Note: "",
+        ProductionType: "",
+        VideoUrls: [],
       });
 
       const handleOnChange = (e) => {
@@ -421,6 +587,25 @@ const ProfileBackground = () => {
           ...prev,
           [name]: value,
         }));
+      };
+
+      const handleAddVideoUrl = (e) => {
+        e.preventDefault();
+
+        try {
+          new URL(currentUrl);
+          setAddNewData((prev) => ({
+            ...prev,
+            VideoUrls: [...prev.VideoUrls, currentUrl.trim()],
+          }));
+
+          setCurrentUrl("");
+          setIsUrlError(false);
+          return true;
+        } catch {
+          setIsUrlError(true);
+          return false;
+        }
       };
 
       const handleAddData = async (retry = true) => {
@@ -466,6 +651,9 @@ const ProfileBackground = () => {
             Role: "",
             Director: "",
             Year: "",
+            Note: "",
+            ProductionType: "",
+            VideoUrls: [],
           });
 
           setTimeout(() => {
@@ -482,6 +670,15 @@ const ProfileBackground = () => {
         e.preventDefault();
         setIsLoading(true);
         await handleAddData();
+      };
+
+      // Remove a URL from the list
+      const handleRemoveUrl = (e, index) => {
+        e.preventDefault();
+        setAddNewData((prev) => ({
+          ...prev,
+          VideoUrls: prev.VideoUrls.filter((_, i) => i !== index),
+        }));
       };
       return (
         <div>
@@ -528,13 +725,32 @@ const ProfileBackground = () => {
                         onChange={(e) => handleOnChange(e)}
                       />
                     </div>
+
                     <div className="-form-input__wrapper -width-50percent">
-                      <p>Director/Company</p>
-                      <input
-                        type="text"
-                        name="Director"
+                      <p>Production Type</p>
+                      <select
+                        name="ProductionType"
                         onChange={(e) => handleOnChange(e)}
-                      />
+                      >
+                        <option></option>
+                        <option value="Feature Film">Feature Film</option>
+                        <option value="Short Film">Short Film</option>
+                        <option value="Television Series">
+                          Television Series
+                        </option>
+                        <option value="Television Movie">
+                          Television Movie
+                        </option>
+                        <option value="Pilot">Pilot</option>
+                        <option calue="Documentary">Documentary</option>
+                        <option value="Docuseries">Docuseries</option>
+                        <option value="Reality TV">Reality TV</option>
+                        <option value="Animated Feature">
+                          Animated Feature
+                        </option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Branded Content">Branded Content</option>
+                      </select>
                     </div>
                   </div>
                   <div className="-display-flex-justified-spaceevenly -gap-10">
@@ -547,6 +763,50 @@ const ProfileBackground = () => {
                       />
                     </div>
                     <div className="-form-input__wrapper -width-50percent">
+                      <p>Director/Company</p>
+                      <input
+                        type="text"
+                        name="Director"
+                        onChange={(e) => handleOnChange(e)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="-form-input__wrapper">
+                    <p>Note</p>
+                    <textarea
+                      className="form-edit-note__wrapper"
+                      name="Note"
+                      onChange={(e) => handleOnChange(e)}
+                    ></textarea>
+                  </div>
+
+                  <div className="-display-flex-justified-spaceevenly -gap-10">
+                    <div className="-form-input__wrapper -width-50percent">
+                      <p>Add video links here</p>
+                      <p style={{ color: "red" }}>
+                        {isUrlError
+                          ? "Error: Enter a valid link to a video"
+                          : ""}
+                      </p>
+                      <div className="-display-flex-justified-spacebetween">
+                        <input
+                          type="text"
+                          value={currentUrl}
+                          placeholder="eg. https://www.thelinkhere.com/Rtfh52"
+                          onChange={(e) => setCurrentUrl(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="-btn-invisible"
+                          onClick={(e) => handleAddVideoUrl(e)}
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="-form-input__wrapper -width-50percent">
                       <p>Year</p>
                       <input
                         type="text"
@@ -555,8 +815,26 @@ const ProfileBackground = () => {
                       />
                     </div>
                   </div>
+
+                  <div>
+                    {addNewdata?.VideoUrls.map((items, index) => (
+                      <div className="link__text" key={index}>
+                        {items}{" "}
+                        <button
+                          type="button"
+                          className="-btn-invisible"
+                          onClick={(e) => handleRemoveUrl(e, index)}
+                        >
+                          <XIcon size={15} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </>
-                <button type="submit" className="-form-submit__btn">
+                <button
+                  type="submit"
+                  className="-form-submit__btn -margin-top-50"
+                >
                   Add
                 </button>
               </form>
@@ -569,28 +847,34 @@ const ProfileBackground = () => {
 
     return (
       <div className="edit-background-container__wrapper">
-        <button className="-btn-invisible" onClick={(e) => handleCloseModal(e)}>
-          <XIcon size={20} />
-        </button>
-        <h4 style={{ marginTop: "10px" }}>
-          Add or Update an existing background
-        </h4>
-        <br />
-        <p style={{ fontSize: "12px", lineHeight: "1.5" }}>
-          This page allows you to update or add your acting background. Here,
-          you can showcase your experience by listing the projects you’ve worked
-          on, the roles you played, the production companies involved, and the
-          directors you collaborated with. Adding this information helps
-          highlight your skills and achievements, making it easier for others to
-          understand your experience and see the range of your work as an actor.
-        </p>
+        <div className="profile-background-headers__wrapper">
+          <button
+            className="-btn-invisible"
+            onClick={(e) => handleCloseModal(e)}
+          >
+            <XIcon size={15} />
+          </button>
+          <h4 style={{ marginTop: "10px" }}>
+            Add or Update an existing background
+          </h4>
+          <br />
+          <p style={{ fontSize: "12px", lineHeight: "1.5" }}>
+            This page allows you to update or add your acting background. Here,
+            you can showcase your experience by listing the projects you’ve
+            worked on, the roles you played, the production companies involved,
+            and the directors you collaborated with. Adding this information
+            helps highlight your skills and achievements, making it easier for
+            others to understand your experience and see the range of your work
+            as an actor.
+          </p>
+        </div>
 
         {mainLoading ? (
           <div className="-loading-icon__wrapper">
             <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
           </div>
         ) : (
-          <>
+          <div className="-padding-20">
             <AddBackgroundContainer
               handleFetchBackgrounds={handleFetchBackgrounds}
             />
@@ -605,26 +889,33 @@ const ProfileBackground = () => {
                 >
                   <div>
                     <h3>{items.title}</h3>
+                    <h5>{items.productionType}</h5>
                     <p>{items.production}</p>
                   </div>
                   <div className="-display-flex-aligned-center -gap-10">
-                    <button
-                      type="button"
-                      className="-btn-invisible feature-icon__btn"
-                      onClick={(e) =>
-                        handleBtnFeatureClicked(e, items.id, items.isFeatured)
-                      }
-                    >
-                      {items.isFeatured === false ? (
-                        <StarIcon
-                          size={12}
-                          weight="fill"
-                          className={"star-default-icon"}
-                        />
-                      ) : (
-                        <StarIcon size={12} weight="fill" color="yellow" />
-                      )}
-                    </button>
+                    {featuredBackgrounds.length < 4 ||
+                    items.isFeatured === true ? (
+                      <button
+                        type="button"
+                        className="-btn-invisible feature-icon__btn"
+                        onClick={(e) =>
+                          handleBtnFeatureClicked(e, items.id, items.isFeatured)
+                        }
+                      >
+                        {items.isFeatured === false ||
+                        items.isFeatured === null ? (
+                          <StarIcon
+                            size={12}
+                            weight="fill"
+                            className={"star-default-icon"}
+                          />
+                        ) : (
+                          <StarIcon size={12} weight="fill" color="yellow" />
+                        )}
+                      </button>
+                    ) : (
+                      ""
+                    )}
 
                     {openExistingContainer === true ? (
                       <CaretUpIcon size={20} color={"#eaf2ff"} />
@@ -704,14 +995,37 @@ const ProfileBackground = () => {
                                 onChange={(e) => handleOnChange(e)}
                               />
                             </div>
+
                             <div className="-form-input__wrapper -width-50percent">
-                              <p>Director/Company</p>
-                              <input
-                                type="text"
-                                placeholder={items.director}
-                                name="Director"
+                              <p>Production Type</p>
+                              <select
+                                name="ProductionType"
                                 onChange={(e) => handleOnChange(e)}
-                              />
+                              >
+                                <option value="">{items.productionType}</option>
+                                <option value=""></option>
+                                <option value="Feature Film">
+                                  Feature Film
+                                </option>
+                                <option value="Short Film">Short Film</option>
+                                <option value="Television Series">
+                                  Television Series
+                                </option>
+                                <option value="Television Movie">
+                                  Television Movie
+                                </option>
+                                <option value="Pilot">Pilot</option>
+                                <option value="Documentary">Documentary</option>
+                                <option value="Docuseries">Docuseries</option>
+                                <option value="Reality TV">Reality TV</option>
+                                <option value="Animated Feature">
+                                  Animated Feature
+                                </option>
+                                <option value="Commercial">Commercial</option>
+                                <option value="Branded Content">
+                                  Branded Content
+                                </option>
+                              </select>
                             </div>
                           </div>
                           <div className="-display-flex-justified-spaceevenly -gap-10">
@@ -725,6 +1039,53 @@ const ProfileBackground = () => {
                               />
                             </div>
                             <div className="-form-input__wrapper -width-50percent">
+                              <p>Director/Company</p>
+                              <input
+                                type="text"
+                                placeholder={items.director}
+                                name="Director"
+                                onChange={(e) => handleOnChange(e)}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="-form-input__wrapper">
+                            <p>Note</p>
+                            <textarea
+                              className="form-edit-note__wrapper"
+                              placeholder={items.note}
+                            ></textarea>
+                          </div>
+
+                          <div className="-display-flex-justified-spaceevenly -gap-10">
+                            <div className="-form-input__wrapper -width-50percent">
+                              <p>Add video links here</p>
+                              {urlError === true && (
+                                <p style={{ color: "red" }}>
+                                  error: invalid url
+                                </p>
+                              )}
+                              <div className="-display-flex-justified-spacebetween">
+                                <input
+                                  type="text"
+                                  name="VideoUrls"
+                                  value={urlInputValue}
+                                  onChange={(e) =>
+                                    setUrlInputValue(e.target.value)
+                                  }
+                                />
+
+                                <button
+                                  className="-btn-invisible"
+                                  type="button"
+                                  onClick={(e) => handleAddUrl(e, index)}
+                                >
+                                  Add
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="-form-input__wrapper -width-50percent">
                               <p>Year</p>
                               <input
                                 type="text"
@@ -734,7 +1095,28 @@ const ProfileBackground = () => {
                               />
                             </div>
                           </div>
-                          <button type="submit" className="-form-submit__btn">
+
+                          {items.videoUrls.map((items, indexOfUrl) => (
+                            <div
+                              className="-display-flex-justified-spacebetween -width-50percent"
+                              key={indexOfUrl}
+                            >
+                              <p style={{ fontSize: "12px" }}>{items}</p>
+                              <button
+                                type="button"
+                                className="-btn-invisible"
+                                onClick={(e) =>
+                                  handleRemoveUrl(e, index, indexOfUrl)
+                                }
+                              >
+                                <XIcon size={15} />
+                              </button>
+                            </div>
+                          ))}
+                          <button
+                            type="submit"
+                            className="-form-submit__btn -margin-top-50"
+                          >
                             Save
                           </button>
                         </>
@@ -744,7 +1126,7 @@ const ProfileBackground = () => {
                 </div>
               </div>
             ))}
-          </>
+          </div>
         )}
       </div>
     );
@@ -758,11 +1140,23 @@ const ProfileBackground = () => {
           <div className="overlay"></div>
           <EditBackgroundContainer
             handleFeatureBackgrounds={handleFeatureBackgrounds}
+            featuredBackgrounds={featuredBackgrounds}
           />
         </>
       )}
+      {openViewAllBtn === true && (
+        <>
+          <div className="overlay"></div>
+          <ViewAllContainer setOpenViewAllBtn={setOpenViewAllBtn} />
+        </>
+      )}
       <div className="-display-flex-justified-spacebetween">
-        <button className="profile-background-viewall__btn">View all</button>
+        <button
+          className="profile-background-viewall__btn"
+          onClick={() => setOpenViewAllBtn(true)}
+        >
+          View all
+        </button>
         <button
           className="-btn-invisible"
           onClick={() => setEditBackgroundClicked(true)}
@@ -788,17 +1182,18 @@ const ProfileBackground = () => {
                 <h4>{data.title}</h4>
                 <ul className="profile-background__list">
                   <li>
+                    Production Type:{" "}
+                    <strong className="profile-background-list__li-strong">
+                      {data.productionType}
+                    </strong>
+                  </li>
+                  <li>
                     Production:{" "}
                     <strong className="profile-background-list__li-strong">
                       {data.production}
                     </strong>
                   </li>
-                  <li>
-                    Role:{" "}
-                    <strong className="profile-background-list__li-strong">
-                      {data.role}
-                    </strong>
-                  </li>
+
                   <li>
                     Director/Company:{" "}
                     <strong className="profile-background-list__li-strong">
@@ -806,15 +1201,6 @@ const ProfileBackground = () => {
                     </strong>
                   </li>
                 </ul>
-              </div>
-
-              <div className="profile-background-lists-view__wrapper">
-                <span>View</span>
-                <ArrowCircleRightIcon
-                  size={23}
-                  weight="fill"
-                  color={"#4495c7"}
-                />
               </div>
             </div>
           ))}
@@ -925,7 +1311,6 @@ const Profile = () => {
           <div>
             <ProfileDetails navigate={navigate} userData={userData} />
             <ProfileBackground />
-            <ProfileShowreel />
           </div>
           <div>
             <ProfileCards userData={userData} />

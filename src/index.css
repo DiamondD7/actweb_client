@@ -95,12 +95,14 @@
   color: rgba(0, 0, 0, 0.4);
 }
 .-form-input__wrapper input,
+.-form-input__wrapper textarea,
 .-form-password-input__wrapper input,
 .-form-input__wrapper select {
   width: 100%;
   outline: none;
   background-color: transparent;
   border: none;
+  resize: none;
 }
 
 .-form-half-input__wrapper {
@@ -243,4 +245,8 @@
 }
 .-margin-top-50 {
   margin-top: 20px;
+}
+
+.-padding-20 {
+  padding: 20px;
 }
