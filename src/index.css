@@ -45,6 +45,10 @@
   border: none;
 }
 
+.fontSize-12 {
+  font-size: 12px;
+}
+
 .-form-submit__btn {
   cursor: pointer;
   padding: 5px 10px;
