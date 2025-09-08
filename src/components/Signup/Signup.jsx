@@ -249,7 +249,7 @@ const Signup = () => {
             {validUserName === false ? (
               <p className="-error-form-p">
                 {" "}
-                2 to 16 characters. Must start with a letter and can include
+                3 to 16 characters. Must start with a letter and can include
                 letters, numbers, underscores, or dots.
               </p>
             ) : (

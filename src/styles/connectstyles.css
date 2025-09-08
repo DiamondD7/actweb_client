@@ -6,7 +6,7 @@
 .connect-filters__wrapper {
   width: 300px;
   height: 82vh;
-  background-color: #fefae0;
+  background-color: #ffffffff;
 
   border-radius: 10px;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
@@ -32,7 +32,7 @@
 .connect-followers-list__wrapper {
   width: 1100px;
   height: 82vh;
-  background-color: #fefae0;
+  background-color: #ffffffff;
 
   border-radius: 10px;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
@@ -117,7 +117,7 @@
 .find-connections__wrapper {
   width: 1100px;
   height: 82vh;
-  background-color: #fefae0;
+  background-color: #ffffffff;
 
   border-radius: 10px;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,

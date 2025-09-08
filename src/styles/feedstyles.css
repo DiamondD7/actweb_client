@@ -4,7 +4,7 @@
 }
 
 .feed-whatsonyourmind__wrapper {
-  background-color: hsl(52, 94%, 94%);
+  background-color: #ffffffff;
 
   width: 400px;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
@@ -46,7 +46,7 @@
 }
 
 .hashtag-container__wrapper {
-  background-color: hsl(52, 94%, 94%);
+  background-color: #ffffffff;
 
   width: 400px;
   height: 583px;
@@ -57,7 +57,7 @@
   margin-left: 30px;
 }
 .post-container__wrapper {
-  background-color: hsl(52, 94%, 94%);
+  background-color: #ffffffff;
 
   width: 1070px;
   height: 755px;

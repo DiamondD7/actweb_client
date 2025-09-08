@@ -14,14 +14,43 @@ import {
   BASE_URL,
 } from "../../assets/js/serverapi";
 import Nav from "../Nav/Nav";
+import Appearance from "./Sub-Settings/Appearance";
 
 import "../../styles/settingsstyles.css";
+import PersonalBackground from "./Sub-Settings/PersonalBackground";
+
 const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
-  const [bio, setBio] = useState("");
+  const USERNAME_REGEX = /^[a-zA-Z][a-zA-Z0-9._]{2,15}$/;
+  const [isUserNameValid, setIsUserNameValid] = useState(null);
+  const [usernameErrorMsg, setUsernameErrorMsg] = useState("");
+  const [newUserData, setNewUserData] = useState({
+    userName: "",
+    bio: "",
+  });
   const [isUpdated, setIsUpdated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
+
+  useEffect(() => {
+    if (newUserData.userName.length > 0) {
+      const validate = USERNAME_REGEX.test(newUserData.userName);
+      if (!validate) {
+        setIsUserNameValid(false);
+      } else {
+        setIsUserNameValid(true);
+      }
+    }
+  }, [newUserData.userName]);
+
+  const handleFormOnChange = (e) => {
+    const { name, value } = e.target;
+
+    setNewUserData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -42,7 +71,7 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
       });
 
       if (response.status === 302) {
-        console.warn("301 detected, redirecting...");
+        console.warn("302 detected, redirecting...");
         navigate("/", { replace: true });
         return;
       }
@@ -83,7 +112,10 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
         body: JSON.stringify({
           Id: sessionStorage.getItem("id"),
           ProfilePictureUrl: imageUrl,
-          Bio: bio,
+          UserName: newUserData.userName,
+          Bio: newUserData.bio,
+          Appearance: null,
+          PersonalBackground: null,
         }),
       });
 
@@ -104,6 +136,13 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
         return handleUpdateData(imageUrl, false);
       }
 
+      if (response.status === 409) {
+        const res = await response.json();
+        setUsernameErrorMsg(res.message);
+        setIsLoading(false);
+        return;
+      }
+
       if (!response.ok) {
         console.warn(response.status);
         setIsLoading(false);
@@ -114,14 +153,20 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
 
       setSelectedFile(null);
       setPreview(null);
+      setUsernameErrorMsg(""); //setting to empty string when the request/update is successful
       handleGetUserData();
 
       setTimeout(() => {
         setIsLoading(false);
-        if (bio.length > 0) {
+        const isFormUsed =
+          newUserData.bio.length > 0 || newUserData.userName.length > 0;
+        if (isFormUsed === true) {
           setIsUpdated(true);
         }
-        setBio("");
+        setNewUserData({
+          userName: "",
+          bio: "",
+        });
       }, 2000);
     } catch (err) {
       console.warn(err);
@@ -238,7 +283,7 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
               className="-margin-top-50"
             >
               Update Your Details{" "}
-              {isUpdated && (
+              {isUpdated === true && (
                 <>
                   <CheckCircleIcon
                     size={16}
@@ -249,31 +294,54 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
                 </>
               )}
             </p>
+
+            {usernameErrorMsg ? (
+              <p className="-error-form-p">{usernameErrorMsg}</p>
+            ) : (
+              ""
+            )}
+
+            {isUserNameValid === false ? (
+              <p className="-error-form-p">
+                Invalid username: 3 to 16 characters. Must start with a letter
+                and can include letters, numbers, underscores, or dots.
+              </p>
+            ) : (
+              ""
+            )}
             <div className="-form-input__wrapper">
               <p>Username</p>
-              {/* <input required type="text" name="username" /> */}
+              <input
+                type="text"
+                name="userName"
+                placeholder={userData.userName}
+                onChange={(e) => handleFormOnChange(e)}
+              />
             </div>
             <div className="-form-input__wrapper">
               <p>Bio</p>
               <textarea
                 maxLength="250"
-                value={bio}
+                name="bio"
+                value={newUserData.bio}
                 placeholder={userData.bio}
-                onChange={(e) => setBio(e.target.value)}
+                onChange={(e) => handleFormOnChange(e)}
                 className="settings-profile-form-bio__textarea"
               ></textarea>
               <span className="settings-textarea-counter__span">
-                {bio.length} / 250
+                {newUserData.bio.length} / 250
               </span>
             </div>
 
-            {bio.length > 0 && (
+            {newUserData.bio.length > 0 || newUserData.userName.length > 0 ? (
               <button
                 type="submit"
                 className="settings-profile-form-submit__btn"
               >
                 Update
               </button>
+            ) : (
+              ""
             )}
           </form>
         </>
@@ -282,10 +350,143 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
   );
 };
 
-const Account = () => {
+const Account = ({ userData, handleGetUserData }) => {
+  const NUM_REGEX = /^\d*$/;
+  const [isNumberValid, setIsNumberValid] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUpdated, setIsUpdated] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    mobileNumber: "",
+  });
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const validate = NUM_REGEX.test(newUserData.mobileNumber);
+
+    if (!validate) {
+      setIsNumberValid(false);
+    } else {
+      setIsNumberValid(true);
+    }
+  }, [newUserData.mobileNumber]);
+
+  const handleOnInputChange = (e) => {
+    const { name, value } = e.target;
+
+    setNewUserData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleUpdateData = async (retry = true) => {
+    try {
+      const response = await fetch(UpdateData, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          Id: sessionStorage.getItem("id"),
+          ProfilePictureUrl: "",
+          MobileNumber: newUserData.mobileNumber,
+          Appearance: null,
+          PersonalBackground: null,
+        }),
+      });
+
+      if (response.status === 302) {
+        console.warn("Detected a 302. rerouting...");
+        navigate("/");
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. Rerouting...");
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("Detected a 402. Retrying request");
+        await handleUpdateData(false);
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        setIsLoading(false);
+      }
+
+      const data = await response.json();
+      console.log(data);
+
+      setNewUserData({
+        mobileNumber: "",
+      });
+
+      setIsUpdated(true);
+      handleGetUserData();
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const handleBtnClicked = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    await handleUpdateData();
+  };
+
   return (
     <div>
-      <div>Account</div>
+      {isLoading === true ? (
+        <div className="settings-loading-icon__wrapper">
+          <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
+        </div>
+      ) : (
+        <form className="account-form__wrapper">
+          <div className="-display-flex-aligned-center -gap-10">
+            <h5>Update your contact details</h5>
+            {isUpdated === true && (
+              <>
+                <CheckCircleIcon size={16} weight="fill" color={"limegreen"} />
+                <label className="update__text">updated</label>
+              </>
+            )}
+          </div>
+
+          {isNumberValid === false ? (
+            <p className="-error-form-p">Mobile number is not valid</p>
+          ) : (
+            ""
+          )}
+          <div className="-form-input__wrapper">
+            <p>Mobile Number</p>
+            <input
+              type="text"
+              value={newUserData.mobileNumber}
+              name="mobileNumber"
+              placeholder={
+                userData.mobileNumber === null
+                  ? "64XXXXXXXX"
+                  : userData.mobileNumber
+              }
+              onChange={(e) => handleOnInputChange(e)}
+            />
+          </div>
+
+          {newUserData.mobileNumber !== "" && (
+            <button
+              disabled={isNumberValid === true ? false : true}
+              onClick={(e) => handleBtnClicked(e)}
+            >
+              Save
+            </button>
+          )}
+        </form>
+      )}
     </div>
   );
 };
@@ -348,10 +549,10 @@ const Settings = () => {
       <div className="-display-flex -gap-10">
         <div className="settings-nav-container__wrapper">
           <div className="-display-flex-aligned-center -gap-10">
-            <GearSixIcon color={"rgba(0,0,0,0.7)"} size={20} weight="fill" />
+            <GearSixIcon color={"rgba(0,0,0,0.7)"} size={15} weight="fill" />
             <div className="-display-flex-aligned-center -gap-10">
-              <h4>{"Settings >"}</h4>
-              <h4 style={{ color: "rgba(0,0,0,0.3)" }}>{navDisplay}</h4>
+              <h5>{"Settings >"}</h5>
+              <h5 style={{ color: "rgba(0,0,0,0.3)" }}>{navDisplay}</h5>
             </div>
           </div>
           <ul className="settings-nav-ul__wrapper">
@@ -362,11 +563,49 @@ const Settings = () => {
               Account
             </li>
             <li
-              className={navDisplay === "Profile" ? "setting-nav-active" : ""}
+              className={
+                navDisplay === "Profile" ||
+                navDisplay === "Profile > Appearance" ||
+                navDisplay === "Profile > Background"
+                  ? "setting-nav-active"
+                  : ""
+              }
               onClick={() => setNavDisplay("Profile")}
             >
               Profile
             </li>
+            {/* sub-ul__container */}
+
+            {navDisplay === "Profile" ||
+            navDisplay === "Profile > Appearance" ||
+            navDisplay === "Profile > Background" ? (
+              <>
+                <ul className="sub-ul__wrapper">
+                  <li
+                    className={
+                      navDisplay === "Profile > Appearance"
+                        ? "setting-nav-active"
+                        : ""
+                    }
+                    onClick={() => setNavDisplay("Profile > Appearance")}
+                  >
+                    Appearance
+                  </li>
+                  <li
+                    className={
+                      navDisplay === "Profile > Background"
+                        ? "setting-nav-active"
+                        : ""
+                    }
+                    onClick={() => setNavDisplay("Profile > Background")}
+                  >
+                    Background
+                  </li>
+                </ul>
+              </>
+            ) : (
+              ""
+            )}
             <li
               className={navDisplay === "Security" ? "setting-nav-active" : ""}
               onClick={() => setNavDisplay("Security")}
@@ -383,10 +622,23 @@ const Settings = () => {
         </div>
         <div className="settings-display-container__wrapper">
           {navDisplay === "Account" ? (
-            <Account />
+            <Account
+              userData={userData}
+              handleGetUserData={handleGetUserData}
+            />
           ) : navDisplay === "Profile" ? (
             <ProfileSettings
               navigate={navigate}
+              userData={userData}
+              handleGetUserData={handleGetUserData}
+            />
+          ) : navDisplay === "Profile > Appearance" ? (
+            <Appearance
+              userData={userData}
+              handleGetUserData={handleGetUserData}
+            />
+          ) : navDisplay === "Profile > Background" ? (
+            <PersonalBackground
               userData={userData}
               handleGetUserData={handleGetUserData}
             />
