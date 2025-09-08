@@ -71,7 +71,7 @@ const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
       });
 
       if (response.status === 302) {
-        console.warn("301 detected, redirecting...");
+        console.warn("302 detected, redirecting...");
         navigate("/", { replace: true });
         return;
       }

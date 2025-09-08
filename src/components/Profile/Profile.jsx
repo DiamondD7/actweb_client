@@ -7,6 +7,9 @@ import {
   GetUserBackgrounds,
   UpdateUserBackground,
   GetFeaturedBackgrounds,
+  ValidateToken,
+  AddPost,
+  UploadVideo,
 } from "../../assets/js/serverapi";
 import Nav from "../Nav/Nav";
 import {
@@ -22,6 +25,7 @@ import {
   FoldersIcon,
   GlobeHemisphereEastIcon,
   LinkIcon,
+  MonitorArrowUpIcon,
   MonitorPlayIcon,
   PencilSimpleIcon,
   PhoneIcon,
@@ -39,9 +43,316 @@ import {
 
 import "../../styles/profilestyles.css";
 const ProfileReels = ({ userData }) => {
+  const navigate = useNavigate();
+  const [isAddPostClicked, setIsAddPostClicked] = useState(false);
   const [isPostClicked, setIsPostClicked] = useState(false);
   const testString =
     "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Aut, ad adipisci voluptatum non iure, reiciendis beatae sapiente eius unde porro odit expedita error labore fugiat, sint dolor nihil numquam voluptate. lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum, natus aspernatur. Soluta, quod? Sint, numquam voluptates doloremque laudantium sapiente cumque, est sed id reiciendis dolor amet quasi, accusamus atque a.";
+
+  const handleValidate = async (retry = true) => {
+    try {
+      const response = await fetch(ValidateToken, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.status === 302) {
+        console.warn("302 detected. redirecting...");
+        navigate("/");
+        return;
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. rerouting...");
+        navigate("/");
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Retrying request...");
+        return handleValidate(false);
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return;
+      }
+
+      const data = await response.json();
+      console.log(data);
+
+      handleTry(false);
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const handleTry = async (retry = true) => {
+    try {
+      const response = await fetch(AddPost, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (response.status === 302) {
+        console.warn("302 detected. redirecting...");
+        navigate("/");
+        return;
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. rerouting...");
+        navigate("/");
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Retrying request...");
+        return handleValidate();
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return;
+      }
+
+      const data = await response.json();
+      console.log(data);
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const handleBtnClicked = async (e) => {
+    e.preventDefault();
+
+    await handleTry();
+  };
+
+  // ---------------------------------------------------------------------------------------
+
+  const AddPostModalContainer = ({ setIsAddPostClicked }) => {
+    const [newPost, setNewPost] = useState({
+      Caption: "",
+      File: null,
+      Preview: null,
+    });
+
+    const handleFileChange = (e) => {
+      const file = e.target.files[0];
+
+      setNewPost((prev) => ({
+        ...prev,
+        File: file,
+        Preview: URL.createObjectURL(file),
+      }));
+    };
+
+    const handleOnChange = (e) => {
+      const { name, value } = e.target;
+      setNewPost((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    };
+
+    const handleValidate = async (retry = true) => {
+      try {
+        const response = await fetch(ValidateToken, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.status === 302) {
+          console.warn("302 detected. redirecting...");
+          navigate("/");
+          return;
+        }
+
+        if (response.status === 401 && retry === false) {
+          console.warn("Unauthorized. rerouting...");
+          navigate("/");
+          return;
+        }
+
+        if (response.status === 401 && retry) {
+          console.warn("401 detected. Retrying request...");
+          return handleValidate(false);
+        }
+
+        if (!response.ok) {
+          console.warn(response.status);
+          return;
+        }
+
+        const data = await response.json();
+        console.log(data);
+
+        handleUploadVideo(false);
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    const handleAddPost = async (retry = true, postUrl) => {
+      try {
+        const response = await fetch(AddPost, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            UserId: sessionStorage.getItem("id"),
+            Caption: newPost.Caption,
+            PostUrl: postUrl,
+          }),
+        });
+
+        if (response.status === 302) {
+          console.warn("302 detected. Redirecting...");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        if (response.status === 401 && retry === false) {
+          console.warn("Unauthorized. Rerouting...");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        if (response.status === 401 && retry) {
+          console.warn("401 detected. Retrying request...");
+          return handleAddPost(false);
+        }
+
+        if (!response.ok) {
+          console.warn(response.status);
+          return;
+        }
+
+        const data = await response.json();
+        console.log(data);
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    const handleUploadVideo = async (retry = true) => {
+      try {
+        const formData = new FormData();
+        formData.append("File", newPost.File);
+
+        console.log(newPost);
+        const response = await fetch(UploadVideo, {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
+
+        if (response.status === 302) {
+          console.warn("302 detected. Redirecting...");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        if (response.status === 401 && retry === false) {
+          console.warn("Unauthorized. Rerouting...");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        if (response.status === 401 && retry) {
+          console.warn("401 detected. Retrying request...");
+          return handleValidate(false);
+        }
+
+        if (!response.ok) {
+          console.warn(response.status);
+          return;
+        }
+
+        const data = await response.json();
+        console.log(data);
+        handleAddPost(true, data.postUrl);
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    const handleAddClick = async (e) => {
+      e.preventDefault();
+      await handleUploadVideo();
+    };
+    return (
+      <div className="post-open-modal__wrapper">
+        <div className="-display-flex">
+          <div className="add-post-videoPreview__wrapper">
+            {newPost.Preview === null ? (
+              <>
+                <label htmlFor="actual-btn">
+                  Upload a Media <br />
+                  <MonitorArrowUpIcon
+                    size={52}
+                    color={"rgba(0,0,0,0.5)"}
+                    weight="fill"
+                    className={"upload-icon"}
+                  />
+                </label>
+                <input
+                  accept="video/*"
+                  id="actual-btn"
+                  type="file"
+                  onChange={(e) => handleFileChange(e)}
+                  style={{ display: "none" }}
+                />
+              </>
+            ) : (
+              <video
+                className="video-thumbnail"
+                src={newPost.Preview}
+                disablePictureInPicture
+                disableRemotePlayback
+                autoPlay={true}
+                controls
+                controlsList="nodownload noremoteplayback noplaybackrate"
+                loop={true}
+                alt="video-thumbnail"
+                height="700px"
+                width="100%"
+              />
+            )}
+          </div>
+          <div className="add-post-details__wrapper">
+            <h4>Make a Post</h4>
+            <p>Make a caption</p>
+            <textarea
+              name="Caption"
+              onChange={(e) => handleOnChange(e)}
+            ></textarea>
+
+            <div className="add-post-btns__wrapper">
+              <button
+                className="-btn-invisible"
+                onClick={() => setIsAddPostClicked(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="-form-submit__btn"
+                onClick={(e) => handleAddClick(e)}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ---------------------------------------------------------------------------------------
 
   const PostModalContainer = ({ userData, setIsPostClicked }) => {
     return (
@@ -98,8 +409,25 @@ const ProfileReels = ({ userData }) => {
       </div>
     );
   };
+
+  // ---------------------------------------------------------------------------------------
   return (
     <div>
+      {isPostClicked === true || isAddPostClicked === true ? (
+        <div className="overlay"></div>
+      ) : (
+        ""
+      )}
+      {isPostClicked === true && (
+        <PostModalContainer
+          userData={userData}
+          setIsPostClicked={setIsPostClicked}
+        />
+      )}
+
+      {isAddPostClicked === true && (
+        <AddPostModalContainer setIsAddPostClicked={setIsAddPostClicked} />
+      )}
       <div className="profile-reels-call-to-action__wrapper">
         <button className="profile-reels-actions__btn">
           <SquaresFourIcon size={15} /> Posts
@@ -109,9 +437,13 @@ const ProfileReels = ({ userData }) => {
           <MonitorPlayIcon size={15} /> Reels
         </button>
 
-        <button className="profile-reels-makeapost-icon__btn">
+        <button
+          className="profile-reels-makeapost-icon__btn"
+          onClick={() => setIsAddPostClicked(true)}
+        >
           <PlusIcon size={15} color={"#eaf2ff"} /> Make a Post
         </button>
+
         <button className="profile-reels-actions__btn">
           <FoldersIcon size={15} /> Drafts
         </button>
@@ -120,14 +452,6 @@ const ProfileReels = ({ userData }) => {
         </button>
       </div>
       <div className="profile-reels-container__wrapper">
-        {isPostClicked === true && <div className="overlay"></div>}
-        {isPostClicked === true && (
-          <PostModalContainer
-            userData={userData}
-            setIsPostClicked={setIsPostClicked}
-          />
-        )}
-
         <div
           className="profile-reels-content-thumbnail__wrapper"
           onClick={() => setIsPostClicked(true)}

@@ -559,3 +559,59 @@
   border: none;
   z-index: 2;
 }
+
+.add-post-videoPreview__wrapper {
+  width: 60%;
+  height: 700px;
+}
+
+.add-post-videoPreview__wrapper label {
+  cursor: pointer;
+  font-size: 13px;
+
+  position: absolute;
+  top: 44%;
+  left: 32%;
+  transform: translate(-50%, -50%);
+}
+
+.upload-icon {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.video-thumbnail {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+.add-post-details__wrapper {
+  width: 40%;
+  padding: 10px;
+}
+
+.add-post-details__wrapper p {
+  font-size: 12px;
+  margin: 20px 0 10px 0;
+}
+
+.add-post-details__wrapper textarea {
+  border-radius: 5px;
+
+  min-width: 100%;
+  max-width: 100%;
+  min-height: 10%;
+  max-height: 10%;
+
+  outline: none;
+  resize: none;
+}
+
+.add-post-btns__wrapper {
+  display: flex;
+  gap: 20px;
+
+  position: absolute;
+  bottom: 0;
+
+  padding: 10px;
+}
