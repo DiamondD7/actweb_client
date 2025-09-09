@@ -10,6 +10,8 @@ import {
   ValidateToken,
   AddPost,
   UploadVideo,
+  GetPosts,
+  BASE_POST_API,
 } from "../../assets/js/serverapi";
 import Nav from "../Nav/Nav";
 import {
@@ -27,6 +29,7 @@ import {
   LinkIcon,
   MonitorArrowUpIcon,
   MonitorPlayIcon,
+  PaperPlaneRightIcon,
   PencilSimpleIcon,
   PhoneIcon,
   PlusIcon,
@@ -44,10 +47,16 @@ import {
 import "../../styles/profilestyles.css";
 const ProfileReels = ({ userData }) => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [chosenPost, setChosenPost] = useState([]);
+  const [usersPosts, setUsersPosts] = useState([]);
+  const [seeMoreCaptionClicked, setSeeMoreCaptionClicked] = useState(false);
   const [isAddPostClicked, setIsAddPostClicked] = useState(false);
   const [isPostClicked, setIsPostClicked] = useState(false);
-  const testString =
-    "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Aut, ad adipisci voluptatum non iure, reiciendis beatae sapiente eius unde porro odit expedita error labore fugiat, sint dolor nihil numquam voluptate. lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum, natus aspernatur. Soluta, quod? Sint, numquam voluptates doloremque laudantium sapiente cumque, est sed id reiciendis dolor amet quasi, accusamus atque a.";
+
+  useEffect(() => {
+    handleGetPosts();
+  }, []);
 
   const handleValidate = async (retry = true) => {
     try {
@@ -59,13 +68,13 @@ const ProfileReels = ({ userData }) => {
       if (response.status === 302) {
         console.warn("302 detected. redirecting...");
         navigate("/");
-        return;
+        return false;
       }
 
       if (response.status === 401 && retry === false) {
         console.warn("Unauthorized. rerouting...");
         navigate("/");
-        return;
+        return false;
       }
 
       if (response.status === 401 && retry) {
@@ -75,24 +84,28 @@ const ProfileReels = ({ userData }) => {
 
       if (!response.ok) {
         console.warn(response.status);
-        return;
+        return false;
       }
 
       const data = await response.json();
       console.log(data);
-
-      handleTry(false);
+      handleGetPosts(false);
+      return true;
     } catch (err) {
       console.warn(err);
     }
   };
 
-  const handleTry = async (retry = true) => {
+  const handleGetPosts = async (retry = true) => {
+    setIsLoading(true);
     try {
-      const response = await fetch(AddPost, {
-        method: "POST",
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${GetPosts}/${sessionStorage.getItem("id")}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
 
       if (response.status === 302) {
         console.warn("302 detected. redirecting...");
@@ -101,13 +114,13 @@ const ProfileReels = ({ userData }) => {
       }
 
       if (response.status === 401 && retry === false) {
-        console.warn("Unauthorized. rerouting...");
+        console.warn("Unauthorized. Rerouting...");
         navigate("/");
         return;
       }
 
       if (response.status === 401 && retry) {
-        console.warn("401 detected. Retrying request...");
+        console.warn("401 detected. Validating token...");
         return handleValidate();
       }
 
@@ -117,21 +130,33 @@ const ProfileReels = ({ userData }) => {
       }
 
       const data = await response.json();
-      console.log(data);
+      //console.log(data);
+
+      setUsersPosts(data.posts);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
     } catch (err) {
       console.warn(err);
     }
   };
 
-  const handleBtnClicked = async (e) => {
+  const handlePostClicked = (e, data) => {
     e.preventDefault();
 
-    await handleTry();
+    setIsPostClicked(true);
+    setChosenPost(data);
+  };
+
+  const handleSeeMore = (e) => {
+    e.preventDefault();
+    setSeeMoreCaptionClicked(!seeMoreCaptionClicked);
   };
 
   // ---------------------------------------------------------------------------------------
 
-  const AddPostModalContainer = ({ setIsAddPostClicked }) => {
+  const AddPostModalContainer = ({ setIsAddPostClicked, handleGetPosts }) => {
+    const [isLoading, setIsLoading] = useState(false);
     const [newPost, setNewPost] = useState({
       Caption: "",
       File: null,
@@ -166,13 +191,13 @@ const ProfileReels = ({ userData }) => {
         if (response.status === 302) {
           console.warn("302 detected. redirecting...");
           navigate("/");
-          return;
+          return false;
         }
 
         if (response.status === 401 && retry === false) {
           console.warn("Unauthorized. rerouting...");
           navigate("/");
-          return;
+          return false;
         }
 
         if (response.status === 401 && retry) {
@@ -182,13 +207,13 @@ const ProfileReels = ({ userData }) => {
 
         if (!response.ok) {
           console.warn(response.status);
-          return;
+          return false;
         }
 
         const data = await response.json();
         console.log(data);
-
         handleUploadVideo(false);
+        return true;
       } catch (err) {
         console.warn(err);
       }
@@ -224,7 +249,13 @@ const ProfileReels = ({ userData }) => {
 
         if (response.status === 401 && retry) {
           console.warn("401 detected. Retrying request...");
-          return handleAddPost(false);
+          var isValidated = await handleValidate();
+          if (isValidated === true) {
+            return handleUploadVideo(false);
+          } else {
+            console.warn("Unauthorized. Rerouting...");
+            navigate("/", { replace: true });
+          }
         }
 
         if (!response.ok) {
@@ -234,6 +265,12 @@ const ProfileReels = ({ userData }) => {
 
         const data = await response.json();
         console.log(data);
+
+        handleGetPosts();
+        setIsAddPostClicked(false);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 2000);
       } catch (err) {
         console.warn(err);
       }
@@ -244,7 +281,6 @@ const ProfileReels = ({ userData }) => {
         const formData = new FormData();
         formData.append("File", newPost.File);
 
-        console.log(newPost);
         const response = await fetch(UploadVideo, {
           method: "POST",
           credentials: "include",
@@ -257,15 +293,9 @@ const ProfileReels = ({ userData }) => {
           return;
         }
 
-        if (response.status === 401 && retry === false) {
-          console.warn("Unauthorized. Rerouting...");
-          navigate("/", { replace: true });
-          return;
-        }
-
         if (response.status === 401 && retry) {
           console.warn("401 detected. Retrying request...");
-          return handleValidate(false);
+          return handleValidate();
         }
 
         if (!response.ok) {
@@ -275,7 +305,7 @@ const ProfileReels = ({ userData }) => {
 
         const data = await response.json();
         console.log(data);
-        handleAddPost(true, data.postUrl);
+        await handleAddPost(true, data.postUrl);
       } catch (err) {
         console.warn(err);
       }
@@ -283,78 +313,85 @@ const ProfileReels = ({ userData }) => {
 
     const handleAddClick = async (e) => {
       e.preventDefault();
+      setIsLoading(true);
       await handleUploadVideo();
     };
     return (
       <div className="post-open-modal__wrapper">
-        <div className="-display-flex">
-          <div className="add-post-videoPreview__wrapper">
-            {newPost.Preview === null ? (
-              <>
-                <label htmlFor="actual-btn">
-                  Upload a Media <br />
-                  <MonitorArrowUpIcon
-                    size={52}
-                    color={"rgba(0,0,0,0.5)"}
-                    weight="fill"
-                    className={"upload-icon"}
-                  />
-                </label>
-                <input
-                  accept="video/*"
-                  id="actual-btn"
-                  type="file"
-                  onChange={(e) => handleFileChange(e)}
-                  style={{ display: "none" }}
-                />
-              </>
-            ) : (
-              <video
-                className="video-thumbnail"
-                src={newPost.Preview}
-                disablePictureInPicture
-                disableRemotePlayback
-                autoPlay={true}
-                controls
-                controlsList="nodownload noremoteplayback noplaybackrate"
-                loop={true}
-                alt="video-thumbnail"
-                height="700px"
-                width="100%"
-              />
-            )}
+        {isLoading === true ? (
+          <div className="-loading-icon__wrapper">
+            <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
           </div>
-          <div className="add-post-details__wrapper">
-            <h4>Make a Post</h4>
-            <p>Make a caption</p>
-            <textarea
-              name="Caption"
-              onChange={(e) => handleOnChange(e)}
-            ></textarea>
+        ) : (
+          <div className="-display-flex">
+            <div className="add-post-videoPreview__wrapper">
+              {newPost.Preview === null ? (
+                <>
+                  <label htmlFor="actual-btn">
+                    Upload a Media <br />
+                    <MonitorArrowUpIcon
+                      size={52}
+                      color={"rgba(0,0,0,0.5)"}
+                      weight="fill"
+                      className={"upload-icon"}
+                    />
+                  </label>
+                  <input
+                    accept="video/*"
+                    id="actual-btn"
+                    type="file"
+                    onChange={(e) => handleFileChange(e)}
+                    style={{ display: "none" }}
+                  />
+                </>
+              ) : (
+                <video
+                  className="video-thumbnail"
+                  src={newPost.Preview}
+                  disablePictureInPicture
+                  disableRemotePlayback
+                  autoPlay={true}
+                  controls
+                  controlsList="nodownload noremoteplayback noplaybackrate"
+                  loop={true}
+                  alt="video-thumbnail"
+                  height="700px"
+                  width="100%"
+                />
+              )}
+            </div>
+            <div className="add-post-details__wrapper">
+              <h4>Make a Post</h4>
+              <p>Make a caption</p>
+              <textarea
+                name="Caption"
+                onChange={(e) => handleOnChange(e)}
+              ></textarea>
 
-            <div className="add-post-btns__wrapper">
-              <button
-                className="-btn-invisible"
-                onClick={() => setIsAddPostClicked(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="-form-submit__btn"
-                onClick={(e) => handleAddClick(e)}
-              >
-                Save
-              </button>
+              <div className="add-post-btns__wrapper">
+                <button
+                  className="-btn-invisible"
+                  onClick={() => setIsAddPostClicked(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="-form-submit__btn"
+                  onClick={(e) => handleAddClick(e)}
+                >
+                  Save
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     );
   };
 
   // ---------------------------------------------------------------------------------------
 
-  const PostModalContainer = ({ userData, setIsPostClicked }) => {
+  const PostModalContainer = ({ chosenPost, userData, setIsPostClicked }) => {
     return (
       <div>
         <div className="post-open-modal__wrapper">
@@ -366,10 +403,18 @@ const ProfileReels = ({ userData }) => {
           </button>
           <div className="-display-flex">
             <div className="post-open-modal-thumbnail__wrapper">
-              <img
-                className="profile-open-modal-thumbnail__img "
-                src="https://plus.unsplash.com/premium_photo-1683219368443-cb52cb4bf023?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              <video
+                className="video-thumbnail"
+                src={`${BASE_POST_API}/${chosenPost.postUrl}`}
+                disablePictureInPicture
+                disableRemotePlayback
+                autoPlay={true}
+                controls
+                controlsList="nodownload noremoteplayback noplaybackrate"
+                loop={true}
                 alt="video-thumbnail"
+                height="700px"
+                width="100%"
               />
             </div>
 
@@ -381,26 +426,69 @@ const ProfileReels = ({ userData }) => {
                   alt="dp-thumbnail"
                 />
                 <div>
-                  <p>Aaron Sierra</p>
-                  <label>diamonddamn_</label>
+                  <p>{userData.fullName}</p>
+                  <label>{userData.userName}</label>
                 </div>
               </div>
-              <p className="profile-post-captions__text">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Praesentium impedit, quas aut perspiciatis enim deserunt
-                incidunt doloribus voluptate quia rem soluta! Sit quasi rerum
-                dolorum asperiores molestiae eligendi dignissimos alias!
-              </p>
+              <div
+                className={`profile-post-captions__text ${
+                  seeMoreCaptionClicked === true ? "-overflow-auto" : ""
+                }`}
+              >
+                {chosenPost.caption.length > 540 ? (
+                  <>
+                    {seeMoreCaptionClicked === false ? (
+                      <>{chosenPost.caption.substring(0, 540)}...</>
+                    ) : (
+                      <>{chosenPost.caption}</>
+                    )}
+
+                    {seeMoreCaptionClicked === false ? (
+                      <button
+                        className="-btn-invisible"
+                        onClick={(e) => handleSeeMore(e)}
+                      >
+                        <strong>see more</strong>
+                      </button>
+                    ) : (
+                      <button
+                        className="-btn-invisible"
+                        onClick={(e) => handleSeeMore(e)}
+                      >
+                        <strong>see less</strong>
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  chosenPost.caption
+                )}
+              </div>
 
               <div className="-display-flex-justified-spacebetween -margin-top-10">
                 <button className="-btn-invisible -display-flex-aligned-center -gap-10 -padding-20">
                   <SparkleIcon size={20} /> Like
                 </button>
                 <button className="-btn-invisible -display-flex-aligned-center -gap-10 -padding-20">
-                  <ChatCenteredTextIcon size={20} /> Like
+                  <ChatCenteredTextIcon size={20} /> Comment
                 </button>
                 <button className="-btn-invisible -display-flex-aligned-center -gap-10 -padding-20">
-                  <ShareFatIcon size={20} /> Like
+                  <ShareFatIcon size={20} /> Share
+                </button>
+              </div>
+
+              <div className="profile-post-comments__wrapper"></div>
+
+              <div className="profile-post-comment-textarea__wrapper">
+                <textarea
+                  className="profile-post-comment__textarea"
+                  placeholder="Write a comment..."
+                ></textarea>
+                <button className="-btn-invisible">
+                  <PaperPlaneRightIcon
+                    size={25}
+                    weight="fill"
+                    color={"#4495c7"}
+                  />
                 </button>
               </div>
             </div>
@@ -420,13 +508,17 @@ const ProfileReels = ({ userData }) => {
       )}
       {isPostClicked === true && (
         <PostModalContainer
+          chosenPost={chosenPost}
           userData={userData}
           setIsPostClicked={setIsPostClicked}
         />
       )}
 
       {isAddPostClicked === true && (
-        <AddPostModalContainer setIsAddPostClicked={setIsAddPostClicked} />
+        <AddPostModalContainer
+          setIsAddPostClicked={setIsAddPostClicked}
+          handleGetPosts={handleGetPosts}
+        />
       )}
       <div className="profile-reels-call-to-action__wrapper">
         <button className="profile-reels-actions__btn">
@@ -451,22 +543,34 @@ const ProfileReels = ({ userData }) => {
           <BookmarkSimpleIcon size={15} /> Saved
         </button>
       </div>
+
       <div className="profile-reels-container__wrapper">
-        <div
-          className="profile-reels-content-thumbnail__wrapper"
-          onClick={() => setIsPostClicked(true)}
-        >
-          <img
-            className="profile-reels-thumbnail__img"
-            src="https://plus.unsplash.com/premium_photo-1683219368443-cb52cb4bf023?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt="video-thumbnail"
-          />
-          <p className="profile-reels-thumbnail__text">
-            {testString.length > 250
-              ? testString.substring(0, 250) + "...."
-              : testString}
-          </p>
-        </div>
+        {isLoading === true ? (
+          <div className="-loading-icon__wrapper">
+            <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
+          </div>
+        ) : (
+          <>
+            {usersPosts.map((post, index) => (
+              <div
+                className="profile-reels-content-thumbnail__wrapper"
+                onClick={(e) => handlePostClicked(e, post)}
+                key={index}
+              >
+                <video
+                  className="profile-reels-thumbnail__video"
+                  src={`${BASE_POST_API}/${post.postUrl}`}
+                  alt="video-thumbnail"
+                />
+                <p className="profile-reels-thumbnail__text">
+                  {post.caption.length > 250
+                    ? post.caption.substring(0, 250) + "...."
+                    : post.caption}
+                </p>
+              </div>
+            ))}
+          </>
+        )}
       </div>
     </div>
   );
