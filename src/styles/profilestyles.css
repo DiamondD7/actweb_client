@@ -562,7 +562,20 @@
   display: flex;
   align-items: center;
   justify-content: space-evenly;
-  margin-top: 10px;
+}
+
+.comment-profilepic__img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.comment-loading__icon {
+  display: inline-block;
+  position: relative;
+  left: 50%;
 }
 
 .profile-post-comment__textarea {
@@ -647,4 +660,48 @@
   bottom: 0;
 
   padding: 10px;
+}
+
+.comment__text {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  width: 290px;
+}
+
+.likes-preview__btn {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+.likes-preview__btn:hover {
+  text-decoration: underline;
+}
+
+.open-likes-modal__wrapper {
+  width: 700px;
+  height: 500px;
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  background-color: #ffffffff;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  border-radius: 10px;
+  z-index: 2;
+
+  overflow: auto;
+  padding: 10px;
+  opacity: 1;
+  animation: openAnimate 0.5s ease-in-out;
+}
+
+.likes-modal-user-profilepic__img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.2);
 }

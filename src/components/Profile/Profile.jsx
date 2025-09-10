@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { data, useNavigate } from "react-router-dom";
+import { TimeAgo } from "../../assets/js/timeAgo";
 import {
   USER_API_URI,
   BASE_URL,
@@ -12,6 +13,12 @@ import {
   UploadVideo,
   GetPosts,
   BASE_POST_API,
+  AddComment,
+  GetComments,
+  GetUsersByIds,
+  AddLike,
+  GetLikes,
+  CheckLike,
 } from "../../assets/js/serverapi";
 import Nav from "../Nav/Nav";
 import {
@@ -190,13 +197,13 @@ const ProfileReels = ({ userData }) => {
 
         if (response.status === 302) {
           console.warn("302 detected. redirecting...");
-          navigate("/");
+          navigate("/", { replace: true });
           return false;
         }
 
         if (response.status === 401 && retry === false) {
           console.warn("Unauthorized. rerouting...");
-          navigate("/");
+          navigate("/", { replace: true });
           return false;
         }
 
@@ -392,9 +399,394 @@ const ProfileReels = ({ userData }) => {
   // ---------------------------------------------------------------------------------------
 
   const PostModalContainer = ({ chosenPost, userData, setIsPostClicked }) => {
+    const navigate = useNavigate();
+    const [isOpenLikesModal, setIsOpenLikesModal] = useState(false);
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [comments, setComments] = useState([]);
+    const [usersComment, setUsersComment] = useState([]);
+
+    const [allLikes, setAllLikes] = useState([]);
+    const [postLikes, setPostLikes] = useState([]);
+    const [isLikedByUser, setIsLikedByUser] = useState(false);
+
+    const [newCommentandLike, setNewCommentAndLike] = useState({
+      PostId: chosenPost.id,
+      UserId: sessionStorage.getItem("id"),
+      Comment: "",
+    });
+
+    const handleOnChange = (e) => {
+      const { name, value } = e.target;
+      setNewCommentAndLike((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    };
+
+    useEffect(() => {
+      setIsLoading(true);
+      handleCheckLike();
+      handleFetchComments();
+    }, []);
+
+    const handleValidate = async (retry = true, nameOfFunction) => {
+      try {
+        const response = await fetch(ValidateToken, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.status === 302) {
+          console.warn("302 detected. redirecting...");
+          navigate("/", { replace: true });
+          return false;
+        }
+
+        if (response.status === 401 && retry === false) {
+          console.warn("Unauthorized. rerouting...");
+          navigate("/", { replace: true });
+          return false;
+        }
+
+        if (response.status === 401 && retry) {
+          console.warn("401 detected. Validating tokens...");
+          return handleValidate(false, nameOfFunction);
+        }
+
+        if (!response.ok) {
+          console.warn(response.status);
+          return false;
+        }
+
+        const data = await response.json();
+        //console.log(data);
+        if (nameOfFunction === "fetchComments") {
+          handleFetchComments(false);
+        } else if (nameOfFunction === "addComment") {
+          handleAddComment(false);
+        } else if (nameOfFunction === "addLike") {
+          handleAddLike(false);
+        } else if (nameOfFunction === "fetchLikes") {
+          hadnleFetchLikes(false);
+        }
+        return true;
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    const handleFetchComments = async (retry = true) => {
+      try {
+        const response = await fetch(`${GetComments}/${chosenPost.id}`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.status === 302) {
+          console.warn("302 detected. Redirecting...");
+          return;
+        }
+
+        if (response.status === 401 && retry === false) {
+          console.warn("Unauthorized. Rerouting...");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        if (response.status === 401 && retry) {
+          console.warn("401 detected. Validating tokens...");
+          return handleValidate(true, "fetchComments");
+        }
+
+        if (!response.ok) {
+          console.warn(response.status);
+          return;
+        }
+
+        const data = await response.json();
+        //console.log(data);
+        setComments(data);
+        const ids = data.map((items) => items.userId);
+        handleFetchUsers(true, ids, "comments");
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    //fetched all the user that commented/liked a post
+    const handleFetchUsers = async (retry = true, ids, functionName) => {
+      try {
+        const response = await fetch(GetUsersByIds, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(ids),
+        });
+
+        if (response.status === 302) {
+          console.warn("302 detected. Redirecting...");
+          return;
+        }
+
+        if (response.status === 401 && retry === false) {
+          console.warn("Unauthorized. Rerouting...");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        if (response.status === 401 && retry) {
+          console.warn("401 detected. Retrying request...");
+          return handleFetchUsers(false, ids, functionName);
+        }
+
+        if (!response.ok) {
+          console.warn(response.status);
+          return;
+        }
+
+        const data = await response.json();
+        //console.log(data);
+
+        if (functionName === "comments") {
+          setUsersComment(data);
+        } else {
+          setAllLikes(data);
+        }
+
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 2000);
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    const handleAddComment = async (retry = true) => {
+      try {
+        const response = await fetch(AddComment, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(newCommentandLike),
+        });
+
+        if (response.status === 302) {
+          console.warn("302 detected. Redirecting...");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        if (response.status === 401 && retry === false) {
+          console.warn("Unauthorized. Rerouting...");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        if (response.status === 401 && retry) {
+          console.warn("401 detected. Validating tokens...");
+          return handleValidate(true, "addComment");
+        }
+
+        if (!response.ok) {
+          console.warn(response.status);
+          return;
+        }
+
+        const data = await response.json();
+        console.log(data);
+
+        setNewCommentAndLike((prev) => ({
+          ...prev,
+          Comment: "",
+        }));
+
+        setIsLoading(true);
+        handleFetchComments();
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setIsLoading(true);
+      await handleAddComment();
+    };
+
+    //--------------------------------------------------------------------------------
+
+    const handleCheckLike = async () => {
+      try {
+        const response = await fetch(CheckLike, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(newCommentandLike),
+        });
+
+        if (!response.ok) {
+          console.warn(response.status);
+          return;
+        }
+
+        const data = await response.json();
+
+        setIsLikedByUser(data);
+        handleFetchLikes();
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    const handleFetchLikes = async (retry = true) => {
+      try {
+        const response = await fetch(`${GetLikes}/${chosenPost.id}`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.status === 302) {
+          console.warn("302 detected. Redirecting...");
+          return;
+        }
+
+        if (response.status === 401 && retry === false) {
+          console.warn("Unauthorized. Rerouting...");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        if (response.status === 401 && retry) {
+          console.warn("401 detected. Validating tokens...");
+          return handleValidate(true, "fetchLikes");
+        }
+
+        if (!response.ok) {
+          console.warn(response.status);
+          return;
+        }
+
+        const data = await response.json();
+        //console.log(data);
+        setPostLikes(data);
+        const ids = data.map((items) => items.userId);
+        handleFetchUsers(true, ids, "likes");
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    const handleAddLike = async (retry = true) => {
+      try {
+        const response = await fetch(AddLike, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            PostId: newCommentandLike.PostId,
+            UserId: newCommentandLike.UserId,
+            IsLiked: false, //just need a value because logic is in backend whether user wants to like or unlike
+          }),
+        });
+
+        if (response.status === 302) {
+          console.warn("302 detected. Redirecting...");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        if (response.status === 401 && retry === false) {
+          console.warn("Unauthorized. Rerouting...");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        if (response.status === 401 && retry) {
+          console.warn("401 detected. Validating tokens...");
+          return handleValidate(true, "addLike");
+        }
+
+        if (!response.ok) {
+          console.warn(response.status);
+          return;
+        }
+
+        const data = await response.json();
+        //console.log(data);
+
+        setIsLikedByUser(data.likedOrUnliked);
+        handleFetchLikes();
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    const handleLikeClicked = async (e) => {
+      e.preventDefault();
+      await handleAddLike();
+    };
+
+    const OpenLikesModal = ({ setIsOpenLikesModal, allLikes }) => {
+      return (
+        <div className="open-likes-modal__wrapper">
+          <button
+            className="-btn-invisible"
+            onClick={() => setIsOpenLikesModal(false)}
+          >
+            <XIcon size={25} />
+          </button>
+
+          <h4 className="-margin-top-20">Likes</h4>
+
+          {allLikes.map((user) => (
+            <div
+              className="-display-flex-justified-spacebetween -padding-20"
+              key={user.id}
+            >
+              <div className="-display-flex-aligned-center -gap-10">
+                <img
+                  className="likes-modal-user-profilepic__img"
+                  src={`${BASE_URL}/${user.profilePictureUrl}`}
+                  alt="profilepicture"
+                />
+                <div>
+                  <p style={{ fontSize: "11px" }}>{user.fullName}</p>
+                  <p style={{ fontSize: "10px" }}>{user.userName}</p>
+                </div>
+              </div>
+
+              <div>
+                <button className="-form-submit__btn">Follow</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    };
+
+    // ------------------------------------------------------------------------------------------------
+
     return (
       <div>
         <div className="post-open-modal__wrapper">
+          {isOpenLikesModal === true && (
+            <OpenLikesModal
+              setIsOpenLikesModal={setIsOpenLikesModal}
+              allLikes={allLikes}
+            />
+          )}
           <button
             className="post-post-close-icon__btn"
             onClick={() => setIsPostClicked(false)}
@@ -419,16 +811,22 @@ const ProfileReels = ({ userData }) => {
             </div>
 
             <div className="post-open-modal-postDetails__wrapper">
-              <div className="-display-flex-aligned-center -gap-10">
-                <img
-                  className="profile-post-profilepic-thumbnail__img"
-                  src={`${BASE_URL}/${userData.profilePictureUrl}`}
-                  alt="dp-thumbnail"
-                />
-                <div>
-                  <p>{userData.fullName}</p>
-                  <label>{userData.userName}</label>
+              <div className="-display-flex-justified-spacebetween">
+                <div className="-display-flex-aligned-center -gap-10">
+                  <img
+                    className="profile-post-profilepic-thumbnail__img"
+                    src={`${BASE_URL}/${userData.profilePictureUrl}`}
+                    alt="dp-thumbnail"
+                  />
+                  <div>
+                    <p>{userData.fullName}</p>
+                    <label>{userData.userName}</label>
+                  </div>
                 </div>
+
+                <p style={{ fontSize: "10px", color: "rgba(0,0,0,0.4)" }}>
+                  {TimeAgo(chosenPost.createdAt)}
+                </p>
               </div>
               <div
                 className={`profile-post-captions__text ${
@@ -464,9 +862,34 @@ const ProfileReels = ({ userData }) => {
                 )}
               </div>
 
-              <div className="-display-flex-justified-spacebetween -margin-top-10">
-                <button className="-btn-invisible -display-flex-aligned-center -gap-10 -padding-20">
-                  <SparkleIcon size={20} /> Like
+              {postLikes.filter((data) => data.isLiked).length <= 0 ? (
+                ""
+              ) : (
+                <button
+                  className="likes-preview__btn -margin-top-10"
+                  onClick={() => setIsOpenLikesModal(true)}
+                >
+                  <SparkleIcon size={12} weight="fill" color={"gold"} />{" "}
+                  {postLikes.length}
+                </button>
+              )}
+
+              <div className="-display-flex-justified-spacebetween">
+                <button
+                  type="button"
+                  onClick={(e) => handleLikeClicked(e)}
+                  className="-btn-invisible -display-flex-aligned-center -gap-10 -padding-20"
+                >
+                  {isLikedByUser === true ? (
+                    <>
+                      <SparkleIcon size={20} weight="fill" color={"gold"} />{" "}
+                      Liked
+                    </>
+                  ) : (
+                    <>
+                      <SparkleIcon size={20} /> Like
+                    </>
+                  )}
                 </button>
                 <button className="-btn-invisible -display-flex-aligned-center -gap-10 -padding-20">
                   <ChatCenteredTextIcon size={20} /> Comment
@@ -476,21 +899,67 @@ const ProfileReels = ({ userData }) => {
                 </button>
               </div>
 
-              <div className="profile-post-comments__wrapper"></div>
+              <div className="profile-post-comments__wrapper">
+                {isLoading === true ? (
+                  <div className="comment-loading__icon">
+                    <CircleNotchIcon
+                      size={35}
+                      className={"-btn-loading__icon"}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    {usersComment.map((user) => (
+                      <div key={user.id}>
+                        {comments.map((comment, index) => (
+                          <div
+                            className="-display-flex-justified-spacebetween -margin-top-10"
+                            key={index}
+                          >
+                            <div className="-display-flex -gap-10">
+                              <img
+                                className="comment-profilepic__img"
+                                src={`${BASE_URL}/${user.profilePictureUrl}`}
+                                alt="profilepic"
+                              />
+                              <div>
+                                <p>{user.fullName}</p>
+                                <p className="comment__text">
+                                  {user.id === comment.userId &&
+                                    comment.comment}
+                                </p>
+                              </div>
+                            </div>
 
-              <div className="profile-post-comment-textarea__wrapper">
-                <textarea
-                  className="profile-post-comment__textarea"
-                  placeholder="Write a comment..."
-                ></textarea>
-                <button className="-btn-invisible">
-                  <PaperPlaneRightIcon
-                    size={25}
-                    weight="fill"
-                    color={"#4495c7"}
-                  />
-                </button>
+                            <div>
+                              <label>{TimeAgo(comment.commentedAt)}</label>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
+
+              <form onSubmit={handleSubmit}>
+                <div className="profile-post-comment-textarea__wrapper">
+                  <textarea
+                    className="profile-post-comment__textarea"
+                    placeholder="Write a comment..."
+                    name="Comment"
+                    value={newCommentandLike.Comment}
+                    onChange={(e) => handleOnChange(e)}
+                  ></textarea>
+                  <button type="submit" className="-btn-invisible">
+                    <PaperPlaneRightIcon
+                      size={25}
+                      weight="fill"
+                      color={"#4495c7"}
+                    />
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

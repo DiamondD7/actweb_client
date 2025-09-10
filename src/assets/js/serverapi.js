@@ -5,6 +5,7 @@ export const ValidateToken =
   "http://localhost:5016/api/Users/validate-user-token";
 export const GetUserBackgrounds =
   "http://localhost:5016/api/Users/get-user-backgrounds";
+export const GetUsersByIds = "http://localhost:5016/api/Users/userIds";
 export const GetFeaturedBackgrounds =
   "http://localhost:5016/api/Users/get-featured-backgrounds";
 export const UserCreation = "http://localhost:5016/api/Users/create-user";
@@ -24,3 +25,12 @@ export const BASE_POST_API = "http://localhost:5123";
 export const GetPosts = "http://localhost:5123/api/Post/get-posts";
 export const UploadVideo = "http://localhost:5123/api/Post/upload-video";
 export const AddPost = "http://localhost:5123/api/Post/add-post";
+
+//POST COMMENT
+export const AddComment = "http://localhost:5123/api/Comment";
+export const GetComments = "http://localhost:5123/api/Comment/comments";
+
+//POST LIKE
+export const AddLike = "http://localhost:5123/api/Like";
+export const GetLikes = "http://localhost:5123/api/Like/likes";
+export const CheckLike = "http://localhost:5123/api/Like/user-like";
