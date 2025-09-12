@@ -19,6 +19,7 @@ import {
   AddLike,
   GetLikes,
   CheckLike,
+  UpdatePost,
 } from "../../assets/js/serverapi";
 import Nav from "../Nav/Nav";
 import {
@@ -398,8 +399,21 @@ const ProfileReels = ({ userData }) => {
 
   // ---------------------------------------------------------------------------------------
 
-  const PostModalContainer = ({ chosenPost, userData, setIsPostClicked }) => {
+  const PostModalContainer = ({
+    chosenPost,
+    userData,
+    setIsPostClicked,
+    handleGetPosts,
+  }) => {
     const navigate = useNavigate();
+    const [isUpdateLoading, setUpdateLoading] = useState(false);
+    const [isOpenMenuModal, setIsOpenMenuModal] = useState(false);
+    const [updatePostData, setUpdatePostData] = useState({
+      PostId: null,
+      Caption: "",
+      IsDeleted: null,
+    });
+
     const [isOpenLikesModal, setIsOpenLikesModal] = useState(false);
 
     const [isLoading, setIsLoading] = useState(false);
@@ -468,7 +482,9 @@ const ProfileReels = ({ userData }) => {
         } else if (nameOfFunction === "addLike") {
           handleAddLike(false);
         } else if (nameOfFunction === "fetchLikes") {
-          hadnleFetchLikes(false);
+          handleFetchLikes(false);
+        } else if (nameOfFunction === "updatePost") {
+          handleUpdatePost(false);
         }
         return true;
       } catch (err) {
@@ -738,6 +754,120 @@ const ProfileReels = ({ userData }) => {
       await handleAddLike();
     };
 
+    //handle update post
+    const handleUpdatePost = async (retry = true) => {
+      try {
+        const response = await fetch(UpdatePost, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            Id: updatePostData.PostId,
+            Caption: updatePostData.Caption,
+            IsDeleted: updatePostData.IsDeleted,
+          }),
+        });
+
+        if (response.status === 302) {
+          console.warn("302 detected. Redirecting...");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        if (response.status === 401 && retry === false) {
+          console.warn("Unauthorized. Redirecting...");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        if (response.status === 401 && retry) {
+          console.warn("401 detected. Retrying request...");
+          return handleValidate(true, "updatePost");
+        }
+
+        if (!response.ok) {
+          console.warn(response.status);
+          return;
+        }
+
+        const data = await response.json();
+        console.log(data);
+
+        setTimeout(() => {
+          handleGetPosts();
+          setUpdateLoading(false);
+          setIsPostClicked(false);
+        }, 2000);
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    const handleDeleteClick = async (e) => {
+      e.preventDefault();
+
+      setUpdatePostData((prev) => ({
+        ...prev,
+        PostId: chosenPost.id,
+        IsDeleted: true,
+      }));
+    };
+
+    const DeleteConfirmationModal = ({
+      setUpdatePostData,
+      handleUpdatePost,
+      setUpdateLoading,
+    }) => {
+      const handleDeleteClick = async (e) => {
+        e.preventDefault();
+        setUpdateLoading(true);
+        await handleUpdatePost();
+      };
+
+      return (
+        <>
+          <div className="delete-confirmation__wrapper">
+            <div style={{ marginTop: "50px" }}>
+              <h4>Delete post?</h4>
+              <p style={{ fontSize: "12px", marginTop: "20px" }}>
+                Are you sure you want to delete this post?
+              </p>
+            </div>
+
+            <div className="-display-flex-justified-center -gap-20 -margin-top-30">
+              <button
+                className="-btn-invisible"
+                onClick={() =>
+                  setUpdatePostData((prev) => ({ ...prev, IsDeleted: false }))
+                }
+              >
+                Cancel
+              </button>
+              <button
+                className="-btn-confirmation-delete"
+                onClick={(e) => handleDeleteClick(e)}
+              >
+                {isUpdateLoading === true ? (
+                  <CircleNotchIcon
+                    size={10}
+                    className={"-btn-loading__icon"}
+                    color="#ffff"
+                  />
+                ) : (
+                  "Delete"
+                )}
+              </button>
+            </div>
+          </div>
+        </>
+      );
+    };
+
+    // ------------------------------------------------------------------------------------------------
+
     const OpenLikesModal = ({ setIsOpenLikesModal, allLikes }) => {
       return (
         <div className="open-likes-modal__wrapper">
@@ -781,6 +911,14 @@ const ProfileReels = ({ userData }) => {
     return (
       <div>
         <div className="post-open-modal__wrapper">
+          {updatePostData.IsDeleted === true && (
+            <DeleteConfirmationModal
+              setUpdatePostData={setUpdatePostData}
+              handleUpdatePost={handleUpdatePost}
+              setUpdateLoading={setUpdateLoading}
+            />
+          )}
+
           {isOpenLikesModal === true && (
             <OpenLikesModal
               setIsOpenLikesModal={setIsOpenLikesModal}
@@ -810,7 +948,37 @@ const ProfileReels = ({ userData }) => {
               />
             </div>
 
+            {isOpenMenuModal === true && (
+              <div className="menu-modal-open__wrapper">
+                <ul>
+                  <li>
+                    <button className="-btn-invisible">Edit</button>
+                  </li>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeleteClick(e)}
+                      className="-btn-invisible menu-delete__li"
+                    >
+                      Delete
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            )}
+
             <div className="post-open-modal-postDetails__wrapper">
+              <div style={{ textAlign: "end" }}>
+                <button
+                  className="-btn-invisible"
+                  onClick={() => setIsOpenMenuModal(!isOpenMenuModal)}
+                >
+                  <DotsThreeIcon
+                    size={19}
+                    color={isOpenMenuModal === true ? "#4495c7" : ""}
+                  />
+                </button>
+              </div>
               <div className="-display-flex-justified-spacebetween">
                 <div className="-display-flex-aligned-center -gap-10">
                   <img
@@ -980,6 +1148,7 @@ const ProfileReels = ({ userData }) => {
           chosenPost={chosenPost}
           userData={userData}
           setIsPostClicked={setIsPostClicked}
+          handleGetPosts={handleGetPosts}
         />
       )}
 

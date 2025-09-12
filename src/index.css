@@ -163,6 +163,10 @@
   width: 50%;
 }
 
+.-width-100percent {
+  width: 100%;
+}
+
 .-gap-10 {
   gap: 10px;
 }

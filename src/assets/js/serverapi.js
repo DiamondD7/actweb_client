@@ -22,6 +22,7 @@ export const Logout = "http://localhost:5016/api/Users/logout";
 
 //-----PostAPI
 export const BASE_POST_API = "http://localhost:5123";
+export const UpdatePost = "http://localhost:5123/api/Post";
 export const GetPosts = "http://localhost:5123/api/Post/get-posts";
 export const UploadVideo = "http://localhost:5123/api/Post/upload-video";
 export const AddPost = "http://localhost:5123/api/Post/add-post";
