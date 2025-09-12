@@ -28,6 +28,7 @@ import {
   CaretDownIcon,
   CaretUpIcon,
   ChatCenteredTextIcon,
+  CheckIcon,
   CircleNotchIcon,
   DotsThreeIcon,
   EnvelopeIcon,
@@ -53,14 +54,19 @@ import {
 } from "@phosphor-icons/react";
 
 import "../../styles/profilestyles.css";
+import Posts from "./Posts/Posts";
+import Reels from "./Reels/Reels";
 const ProfileReels = ({ userData }) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [chosenPost, setChosenPost] = useState([]);
   const [usersPosts, setUsersPosts] = useState([]);
   const [seeMoreCaptionClicked, setSeeMoreCaptionClicked] = useState(false);
+  const [isAddReelClicked, setIsAddReelClicked] = useState(false);
   const [isAddPostClicked, setIsAddPostClicked] = useState(false);
   const [isPostClicked, setIsPostClicked] = useState(false);
+
+  const [postNavs, setPostNavs] = useState("posts");
 
   useEffect(() => {
     handleGetPosts();
@@ -159,6 +165,18 @@ const ProfileReels = ({ userData }) => {
   const handleSeeMore = (e) => {
     e.preventDefault();
     setSeeMoreCaptionClicked(!seeMoreCaptionClicked);
+  };
+
+  const handleOpenAddModals = () => {
+    if (postNavs === "posts") {
+      setIsAddPostClicked(true);
+    } else {
+      setIsAddReelClicked(true);
+    }
+  };
+
+  const handleNavs = (nav) => {
+    setPostNavs(nav);
   };
 
   // ---------------------------------------------------------------------------------------
@@ -407,6 +425,7 @@ const ProfileReels = ({ userData }) => {
   }) => {
     const navigate = useNavigate();
     const [isUpdateLoading, setUpdateLoading] = useState(false);
+    const [editClicked, setEditClicked] = useState(false);
     const [isOpenMenuModal, setIsOpenMenuModal] = useState(false);
     const [updatePostData, setUpdatePostData] = useState({
       PostId: null,
@@ -800,10 +819,24 @@ const ProfileReels = ({ userData }) => {
           handleGetPosts();
           setUpdateLoading(false);
           setIsPostClicked(false);
+          setEditClicked(false);
         }, 2000);
       } catch (err) {
         console.warn(err);
       }
+    };
+
+    const handleEditClick = (e) => {
+      e.preventDefault();
+      setIsOpenMenuModal(false);
+      setEditClicked(true);
+    };
+
+    const handleEditSubmitClick = async (e) => {
+      e.preventDefault();
+      setUpdateLoading(true);
+
+      await handleUpdatePost();
     };
 
     const handleDeleteClick = async (e) => {
@@ -815,6 +848,8 @@ const ProfileReels = ({ userData }) => {
         IsDeleted: true,
       }));
     };
+
+    // ------------------------------------------------------------------------------------------------
 
     const DeleteConfirmationModal = ({
       setUpdatePostData,
@@ -952,7 +987,13 @@ const ProfileReels = ({ userData }) => {
               <div className="menu-modal-open__wrapper">
                 <ul>
                   <li>
-                    <button className="-btn-invisible">Edit</button>
+                    <button
+                      type="button"
+                      className="-btn-invisible"
+                      onClick={(e) => handleEditClick(e)}
+                    >
+                      Edit
+                    </button>
                   </li>
                   <li>
                     <button
@@ -996,39 +1037,79 @@ const ProfileReels = ({ userData }) => {
                   {TimeAgo(chosenPost.createdAt)}
                 </p>
               </div>
-              <div
-                className={`profile-post-captions__text ${
-                  seeMoreCaptionClicked === true ? "-overflow-auto" : ""
-                }`}
-              >
-                {chosenPost.caption.length > 540 ? (
-                  <>
-                    {seeMoreCaptionClicked === false ? (
-                      <>{chosenPost.caption.substring(0, 540)}...</>
-                    ) : (
-                      <>{chosenPost.caption}</>
-                    )}
 
-                    {seeMoreCaptionClicked === false ? (
-                      <button
-                        className="-btn-invisible"
-                        onClick={(e) => handleSeeMore(e)}
-                      >
-                        <strong>see more</strong>
-                      </button>
-                    ) : (
-                      <button
-                        className="-btn-invisible"
-                        onClick={(e) => handleSeeMore(e)}
-                      >
-                        <strong>see less</strong>
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  chosenPost.caption
-                )}
-              </div>
+              {editClicked === false ? (
+                <div
+                  className={`profile-post-captions__text ${
+                    seeMoreCaptionClicked === true ? "-overflow-auto" : ""
+                  }`}
+                >
+                  {chosenPost.caption.length > 540 ? (
+                    <>
+                      {seeMoreCaptionClicked === false ? (
+                        <>{chosenPost.caption.substring(0, 540)}...</>
+                      ) : (
+                        <>{chosenPost.caption}</>
+                      )}
+
+                      {seeMoreCaptionClicked === false ? (
+                        <button
+                          className="-btn-invisible"
+                          onClick={(e) => handleSeeMore(e)}
+                        >
+                          <strong>see more</strong>
+                        </button>
+                      ) : (
+                        <button
+                          className="-btn-invisible"
+                          onClick={(e) => handleSeeMore(e)}
+                        >
+                          <strong>see less</strong>
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    chosenPost.caption
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="-display-flex-justified-end -gap-20">
+                    <button
+                      className="-btn-invisible"
+                      onClick={() => setEditClicked(false)}
+                    >
+                      <XIcon size={16} color="red" />
+                    </button>
+
+                    <button
+                      className="-btn-invisible"
+                      onClick={(e) => handleEditSubmitClick(e)}
+                    >
+                      {isUpdateLoading === true ? (
+                        <CircleNotchIcon
+                          size={15}
+                          className={"-btn-loading__icon"}
+                        />
+                      ) : (
+                        <CheckIcon size={16} color="limegreen" />
+                      )}
+                    </button>
+                  </div>
+                  <textarea
+                    className="caption-edit-open__textarea"
+                    onChange={(e) =>
+                      setUpdatePostData((prev) => ({
+                        ...prev,
+                        PostId: chosenPost.id,
+                        Caption: e.target.value,
+                      }))
+                    }
+                  >
+                    {chosenPost.caption}
+                  </textarea>
+                </>
+              )}
 
               {postLikes.filter((data) => data.isLiked).length <= 0 ? (
                 ""
@@ -1159,54 +1240,73 @@ const ProfileReels = ({ userData }) => {
         />
       )}
       <div className="profile-reels-call-to-action__wrapper">
-        <button className="profile-reels-actions__btn">
+        <button
+          className={`profile-reels-actions__btn ${
+            postNavs === "posts" ? "active-post-navs" : ""
+          }`}
+          onClick={() => handleNavs("posts")}
+        >
           <SquaresFourIcon size={15} /> Posts
         </button>
 
-        <button className="profile-reels-actions__btn">
+        <button
+          className={`profile-reels-actions__btn ${
+            postNavs === "reels" ? "active-post-navs" : ""
+          }`}
+          onClick={() => handleNavs("reels")}
+        >
           <MonitorPlayIcon size={15} /> Reels
         </button>
 
         <button
-          className="profile-reels-makeapost-icon__btn"
-          onClick={() => setIsAddPostClicked(true)}
+          className="profile-reels-makeapost-icon__btn "
+          onClick={() => handleOpenAddModals()}
         >
           <PlusIcon size={15} color={"#eaf2ff"} /> Make a Post
         </button>
 
-        <button className="profile-reels-actions__btn">
+        <button
+          className={`profile-reels-actions__btn ${
+            postNavs === "drafts" ? "active-post-navs" : ""
+          }`}
+          onClick={() => handleNavs("drafts")}
+        >
           <FoldersIcon size={15} /> Drafts
         </button>
-        <button className="profile-reels-actions__btn">
+        <button
+          className={`profile-reels-actions__btn ${
+            postNavs === "saved" ? "active-post-navs" : ""
+          }`}
+          onClick={() => handleNavs("saved")}
+        >
           <BookmarkSimpleIcon size={15} /> Saved
         </button>
       </div>
 
-      <div className="profile-reels-container__wrapper">
+      {/* this is the post nav contents */}
+      <div>
         {isLoading === true ? (
           <div className="-loading-icon__wrapper">
             <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
           </div>
         ) : (
           <>
-            {usersPosts.map((post, index) => (
-              <div
-                className="profile-reels-content-thumbnail__wrapper"
-                onClick={(e) => handlePostClicked(e, post)}
-                key={index}
-              >
-                <video
-                  className="profile-reels-thumbnail__video"
-                  src={`${BASE_POST_API}/${post.postUrl}`}
-                  alt="video-thumbnail"
+            {postNavs === "posts" ? (
+              <>
+                <Posts
+                  usersPosts={usersPosts}
+                  handlePostClicked={handlePostClicked}
                 />
-                <p className="profile-reels-thumbnail__text">
-                  {post.caption.length > 250
-                    ? post.caption.substring(0, 250) + "...."
-                    : post.caption}
-                </p>
+              </>
+            ) : postNavs === "reels" ? (
+              <div>
+                <Reels />
               </div>
-            ))}
+            ) : postNavs === "drafts" ? (
+              <div></div>
+            ) : (
+              <div></div>
+            )}
           </>
         )}
       </div>

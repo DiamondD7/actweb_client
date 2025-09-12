@@ -187,6 +187,11 @@
   display: flex;
 }
 
+.-display-flex-justified-end {
+  display: flex;
+  justify-content: end;
+}
+
 .-display-flex-justified-center {
   display: flex;
   justify-content: center;

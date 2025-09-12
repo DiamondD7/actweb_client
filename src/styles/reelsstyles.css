@@ -1,0 +1,137 @@
+.profile-reels-reels-container__wrapper {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 10px;
+
+  margin-top: 20px;
+  overflow: auto;
+
+  margin-top: 10px;
+  width: 1050px;
+  height: 535px;
+
+  background-color: #ffffffff;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.profile-reels-reels-content-thumbnail__wrapper {
+  cursor: pointer;
+  width: 190px;
+  height: 300px;
+}
+
+.profile-reels-reels-thumbnail__video {
+  width: 190px;
+  height: 300px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 10px;
+}
+
+.reels-close__btn {
+  position: absolute;
+  top: 10%;
+
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+}
+
+.reels-open-modal__wrapper {
+  width: 800px;
+  height: 713px;
+
+  position: absolute;
+  top: 50%;
+  left: 60%;
+  transform: translate(-50%, -50%);
+
+  /* background-color: #ffffffff;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  border-radius: 10px; */
+  z-index: 2;
+
+  opacity: 1;
+  animation: openAnimate 0.5s ease-in-out;
+}
+
+@keyframes openAnimate {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.reels-details-container__wrapper {
+  height: 711px;
+  position: absolute;
+  top: 0;
+  background-color: #fff;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  border-radius: 10px;
+  z-index: 1;
+
+  transition: left 0.6s ease-in-out;
+  left: 0%; /* hidden by default */
+}
+
+.reels-details-container__wrapper.activeSlide {
+  left: 50%; /* slides in when active */
+  transform: translateX(0%); /* centers it */
+}
+
+.reels-video__wrapper {
+  max-width: 400px;
+  aspect-ratio: 9/16;
+  z-index: 2;
+}
+
+.reels__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.reels-details__wrapper {
+  padding: 20px;
+}
+
+.reels-caption__text {
+  padding: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  width: 400px;
+  height: 200px;
+  overflow: auto;
+}
+
+.reels-comment-section__wrapper {
+  overflow: auto;
+  width: 100%;
+  height: 300px;
+}
+
+.reels-comment__text {
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  width: 280px;
+}
+
+.reels-details-slide__btn {
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 50px;
+  border: none;
+}

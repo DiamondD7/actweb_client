@@ -247,17 +247,21 @@
 
 .profile-reels-actions__btn {
   display: flex;
+  justify-content: center;
   align-items: center;
   cursor: pointer;
 
   width: 120px;
   gap: 10px;
-  padding: 5px 10px;
   font-size: 12px;
 
   background-color: transparent;
   border: none;
   border-radius: 5px;
+}
+
+.active-post-navs {
+  background-color: rgba(0, 0, 0, 0.06);
 }
 
 .profile-reels-content-thumbnail__wrapper {
@@ -754,4 +758,22 @@
   z-index: 2;
 
   padding: 10px;
+}
+
+.caption-edit-open__textarea {
+  font-size: 12px;
+  line-height: 1.5;
+
+  resize: none;
+  min-width: 100%;
+  max-width: 100%;
+
+  min-height: 150px;
+  max-height: 150px;
+
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
 }
