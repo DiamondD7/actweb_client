@@ -52,10 +52,10 @@ import {
   VideoIcon,
   XIcon,
 } from "@phosphor-icons/react";
+import Reels from "./Reels/Reels";
+import Posts from "./Posts/Posts";
 
 import "../../styles/profilestyles.css";
-import Posts from "./Posts/Posts";
-import Reels from "./Reels/Reels";
 const ProfileReels = ({ userData }) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -184,6 +184,7 @@ const ProfileReels = ({ userData }) => {
   const AddPostModalContainer = ({ setIsAddPostClicked, handleGetPosts }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [newPost, setNewPost] = useState({
+      Type: "Post",
       Caption: "",
       File: null,
       Preview: null,
@@ -245,6 +246,7 @@ const ProfileReels = ({ userData }) => {
       }
     };
 
+    //FIX 401 LOGIC
     const handleAddPost = async (retry = true, postUrl) => {
       try {
         const response = await fetch(AddPost, {
@@ -1239,6 +1241,7 @@ const ProfileReels = ({ userData }) => {
           handleGetPosts={handleGetPosts}
         />
       )}
+
       <div className="profile-reels-call-to-action__wrapper">
         <button
           className={`profile-reels-actions__btn ${
@@ -1262,7 +1265,12 @@ const ProfileReels = ({ userData }) => {
           className="profile-reels-makeapost-icon__btn "
           onClick={() => handleOpenAddModals()}
         >
-          <PlusIcon size={15} color={"#eaf2ff"} /> Make a Post
+          <PlusIcon size={15} color={"#eaf2ff"} />{" "}
+          {postNavs === "posts"
+            ? "Make a Post"
+            : postNavs === "reels"
+            ? "Make a Reel"
+            : "Make a Post"}
         </button>
 
         <button
@@ -1300,7 +1308,10 @@ const ProfileReels = ({ userData }) => {
               </>
             ) : postNavs === "reels" ? (
               <div>
-                <Reels />
+                <Reels
+                  isAddReelClicked={isAddReelClicked}
+                  setIsAddReelClicked={setIsAddReelClicked}
+                />
               </div>
             ) : postNavs === "drafts" ? (
               <div></div>
