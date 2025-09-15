@@ -32,6 +32,7 @@ const ReelsModal = ({
   handleGetReels,
 }) => {
   const navigate = useNavigate();
+  const [seeMoreCaptionClicked, setSeeMoreCaptionClicked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [openDetailsSection, setOpenDetailsSection] = useState(false);
   const [comments, setComments] = useState([]);
@@ -451,6 +452,11 @@ const ReelsModal = ({
     setIsOpenMenuModal(false);
   };
 
+  const handleSeeMore = (e) => {
+    e.preventDefault();
+    setSeeMoreCaptionClicked(!seeMoreCaptionClicked);
+  };
+
   // ------------------------------------------------------------------------------------------------
 
   const DeleteConfirmationModal = ({
@@ -640,7 +646,7 @@ const ReelsModal = ({
             }`}
           >
             <div>
-              <div className="reels-details__wrapper">
+              <div className="reels-details__wrapper -padding-10">
                 <div style={{ textAlign: "end" }}>
                   <button
                     className="-btn-invisible"
@@ -676,7 +682,39 @@ const ReelsModal = ({
               </div>
 
               {editClicked === false ? (
-                <p className="reels-caption__text">{chosenReel.caption}</p>
+                <div
+                  className={`profile-reels-captions__text ${
+                    seeMoreCaptionClicked === true ? "-overflow-auto" : ""
+                  }`}
+                >
+                  {chosenReel.caption.length > 540 ? (
+                    <>
+                      {seeMoreCaptionClicked === false ? (
+                        <>{chosenReel.caption.substring(0, 540)}...</>
+                      ) : (
+                        <>{chosenReel.caption}</>
+                      )}
+
+                      {seeMoreCaptionClicked === false ? (
+                        <button
+                          className="-btn-invisible"
+                          onClick={(e) => handleSeeMore(e)}
+                        >
+                          <strong>see more</strong>
+                        </button>
+                      ) : (
+                        <button
+                          className="-btn-invisible"
+                          onClick={(e) => handleSeeMore(e)}
+                        >
+                          <strong>see less</strong>
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    chosenReel.caption
+                  )}
+                </div>
               ) : (
                 <>
                   <div className="-display-flex-justified-end -gap-20">
@@ -720,7 +758,7 @@ const ReelsModal = ({
                 ""
               ) : (
                 <button
-                  className="likes-preview__btn -margin-top-10"
+                  className="likes-preview__btn -padding-10"
                   onClick={() => setIsOpenLikesModal(true)}
                 >
                   <SparkleIcon size={12} weight="fill" color={"gold"} />{" "}
@@ -768,7 +806,7 @@ const ReelsModal = ({
                           (comment) =>
                             comment.userId === user.id && (
                               <div
-                                className="-display-flex -gap-10 -margin-top-10"
+                                className="-display-flex-justified-spacearound -margin-top-10"
                                 key={comment.id}
                               >
                                 <div>
