@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MonitorArrowUpIcon } from "@phosphor-icons/react";
+import { CircleNotchIcon, MonitorArrowUpIcon } from "@phosphor-icons/react";
 import {
   AddPost,
   UploadVideo,
@@ -11,7 +11,7 @@ const AddReels = ({ setIsAddReelClicked, handleGetReels }) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [newReel, setNewReel] = useState({
-    Type: "Reel",
+    Type: 1, //1 is reel, 0 is post
     Caption: "",
     File: null,
     Preview: null,
@@ -71,7 +71,6 @@ const AddReels = ({ setIsAddReelClicked, handleGetReels }) => {
       console.warn(err);
     }
   };
-
   const handleAddPost = async (retry = true, postUrl) => {
     try {
       const response = await fetch(AddPost, {
@@ -128,6 +127,7 @@ const AddReels = ({ setIsAddReelClicked, handleGetReels }) => {
     try {
       const formData = new FormData();
       formData.append("File", newReel.File);
+      formData.append("isreelorpost", "reels");
 
       const response = await fetch(UploadVideo, {
         method: "POST",
@@ -159,9 +159,85 @@ const AddReels = ({ setIsAddReelClicked, handleGetReels }) => {
     }
   };
 
+  const handleAddClick = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    await handleUploadVideo();
+  };
+
   return (
     <div>
-      <div className="post-open-modal__wrapper"></div>
+      <div className="reel-upload-container__wrapper">
+        {isLoading === true ? (
+          <div className="-loading-icon__wrapper">
+            <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
+          </div>
+        ) : (
+          <div className="-display-flex">
+            <div className="reel-upload__wrapper">
+              {newReel.Preview === null ? (
+                <>
+                  <label style={{ fontSize: "12px" }} htmlFor="actual-btn">
+                    Upload Media <br />
+                    <MonitorArrowUpIcon
+                      size={32}
+                      color={"rgba(0,0,0,0.5)"}
+                      weight="fill"
+                      className={"upload-icon"}
+                    />
+                  </label>
+                  <input
+                    accept="video/*"
+                    id="actual-btn"
+                    type="file"
+                    onChange={(e) => handleOnFileChange(e)}
+                    style={{ display: "none" }}
+                  />
+                </>
+              ) : (
+                <video
+                  className="video-thumbnail"
+                  src={newReel.Preview}
+                  disablePictureInPicture
+                  disableRemotePlayback
+                  autoPlay={true}
+                  controls
+                  controlsList="nodownload noremoteplayback noplaybackrate"
+                  loop={true}
+                  alt="video-thumbnail"
+                  height="700px"
+                  width="100%"
+                />
+              )}
+            </div>
+            <div className="reel-details__wrapper">
+              <h4>Make a Reel</h4>
+              <p>Make a caption</p>
+              <textarea
+                className="reel-caption__textarea"
+                name="Caption"
+                onChange={(e) => handleOnChange(e)}
+              ></textarea>
+
+              <div className="add-post-btns__wrapper">
+                <button
+                  className="-btn-invisible"
+                  onClick={() => setIsAddReelClicked(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="-form-submit__btn"
+                  onClick={(e) => handleAddClick(e)}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
