@@ -674,7 +674,7 @@ const ReelsModal = ({
                   </div>
 
                   <div>
-                    <p style={{ fontSize: "10px" }}>
+                    <p style={{ fontSize: "10px", color: "rgba(0,0,0,0.4)" }}>
                       {TimeAgo(chosenReel.createdAt)}
                     </p>
                   </div>
