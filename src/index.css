@@ -205,6 +205,10 @@
   display: flex;
   justify-content: space-between;
 }
+.-display-flex-justified-spacearound {
+  display: flex;
+  justify-content: space-around;
+}
 
 .-display-flex-aligned-center {
   display: flex;
@@ -270,4 +274,10 @@
 }
 .-padding-20 {
   padding: 20px;
+}
+
+.-btn-disabled {
+  cursor: default;
+  background-color: #494949;
+  border: none;
 }

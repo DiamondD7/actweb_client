@@ -20,6 +20,7 @@ import {
   GetLikes,
   CheckLike,
   UpdatePost,
+  GetReels,
 } from "../../assets/js/serverapi";
 import Nav from "../Nav/Nav";
 import {
@@ -65,14 +66,16 @@ const ProfileReels = ({ userData }) => {
   const [isAddReelClicked, setIsAddReelClicked] = useState(false);
   const [isAddPostClicked, setIsAddPostClicked] = useState(false);
   const [isPostClicked, setIsPostClicked] = useState(false);
+  const [userReels, setUserReels] = useState([]);
 
   const [postNavs, setPostNavs] = useState("posts");
 
   useEffect(() => {
     handleGetPosts();
+    handleGetReels();
   }, []);
 
-  const handleValidate = async (retry = true) => {
+  const handleValidate = async (retry = true, nameOfFunction) => {
     try {
       const response = await fetch(ValidateToken, {
         method: "GET",
@@ -93,7 +96,7 @@ const ProfileReels = ({ userData }) => {
 
       if (response.status === 401 && retry) {
         console.warn("401 detected. Retrying request...");
-        return handleValidate(false);
+        return handleValidate(false, nameOfFunction);
       }
 
       if (!response.ok) {
@@ -103,7 +106,12 @@ const ProfileReels = ({ userData }) => {
 
       const data = await response.json();
       console.log(data);
-      handleGetPosts(false);
+
+      if (nameOfFunction === "post") {
+        handleGetPosts(false);
+      } else {
+        handleGetReels(false);
+      }
       return true;
     } catch (err) {
       console.warn(err);
@@ -135,7 +143,7 @@ const ProfileReels = ({ userData }) => {
 
       if (response.status === 401 && retry) {
         console.warn("401 detected. Validating token...");
-        return handleValidate();
+        return handleValidate(true, "post");
       }
 
       if (!response.ok) {
@@ -147,6 +155,51 @@ const ProfileReels = ({ userData }) => {
       //console.log(data);
 
       setUsersPosts(data.posts);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const handleGetReels = async (retry = true) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `${GetReels}/${sessionStorage.getItem("id")}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      if (response.status === 302) {
+        console.warn("302 detected. redirecting...");
+        navigate("/");
+        return;
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. Rerouting...");
+        navigate("/");
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Validating token...");
+        return handleValidate(true, "reel");
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return;
+      }
+
+      const data = await response.json();
+      //console.log(data);
+
+      setUserReels(data.reels);
       setTimeout(() => {
         setIsLoading(false);
       }, 2000);
@@ -182,9 +235,11 @@ const ProfileReels = ({ userData }) => {
   // ---------------------------------------------------------------------------------------
 
   const AddPostModalContainer = ({ setIsAddPostClicked, handleGetPosts }) => {
+    const [videoError, setVideoError] = useState(null);
+    const [videoNotAllowed, setVideoNotAllowed] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [newPost, setNewPost] = useState({
-      Type: "Post",
+      Type: 0, //0 is "Post", 1 is "Reel"
       Caption: "",
       File: null,
       Preview: null,
@@ -192,12 +247,37 @@ const ProfileReels = ({ userData }) => {
 
     const handleFileChange = (e) => {
       const file = e.target.files[0];
+      const maxSizeMB = 600;
+      const maxDuration = 180;
+
+      if (file.size > maxSizeMB * 1024 * 1024) {
+        setVideoError("File is too large. Max size is 600MB");
+        setVideoNotAllowed(true);
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+      const video = document.createElement("video");
+
+      video.preload = "metadata";
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        if (video.duration > maxDuration) {
+          setVideoError(
+            "Video is too long. Your video will be trimmed after uploading, to 3 minutes."
+          );
+        }
+      };
+
+      video.src = url;
 
       setNewPost((prev) => ({
         ...prev,
         File: file,
         Preview: URL.createObjectURL(file),
       }));
+
+      setVideoNotAllowed(false);
     };
 
     const handleOnChange = (e) => {
@@ -208,7 +288,7 @@ const ProfileReels = ({ userData }) => {
       }));
     };
 
-    const handleValidate = async (retry = true) => {
+    const handleValidate = async (retry = true, nameOfFunction) => {
       try {
         const response = await fetch(ValidateToken, {
           method: "GET",
@@ -239,14 +319,17 @@ const ProfileReels = ({ userData }) => {
 
         const data = await response.json();
         console.log(data);
-        handleUploadVideo(false);
+        if (nameOfFunction === "uploadvideo") {
+          handleUploadVideo(false);
+        } else {
+          handleAddPost(false);
+        }
         return true;
       } catch (err) {
         console.warn(err);
       }
     };
 
-    //FIX 401 LOGIC
     const handleAddPost = async (retry = true, postUrl) => {
       try {
         const response = await fetch(AddPost, {
@@ -257,6 +340,7 @@ const ProfileReels = ({ userData }) => {
           },
           credentials: "include",
           body: JSON.stringify({
+            Type: newPost.Type,
             UserId: sessionStorage.getItem("id"),
             Caption: newPost.Caption,
             PostUrl: postUrl,
@@ -277,13 +361,7 @@ const ProfileReels = ({ userData }) => {
 
         if (response.status === 401 && retry) {
           console.warn("401 detected. Retrying request...");
-          var isValidated = await handleValidate();
-          if (isValidated === true) {
-            return handleUploadVideo(false);
-          } else {
-            console.warn("Unauthorized. Rerouting...");
-            navigate("/", { replace: true });
-          }
+          return handleValidate(true, "addpost");
         }
 
         if (!response.ok) {
@@ -308,6 +386,7 @@ const ProfileReels = ({ userData }) => {
       try {
         const formData = new FormData();
         formData.append("File", newPost.File);
+        formData.append("isreelorpost", "posts");
 
         const response = await fetch(UploadVideo, {
           method: "POST",
@@ -321,9 +400,15 @@ const ProfileReels = ({ userData }) => {
           return;
         }
 
+        if (response.status === 401 && retry === false) {
+          console.warn("Unauthorized. Redirecting...");
+          navigate("/");
+          return;
+        }
+
         if (response.status === 401 && retry) {
           console.warn("401 detected. Retrying request...");
-          return handleValidate();
+          return handleValidate(true, "uploadvideo");
         }
 
         if (!response.ok) {
@@ -389,6 +474,9 @@ const ProfileReels = ({ userData }) => {
               )}
             </div>
             <div className="add-post-details__wrapper">
+              {videoError !== null && (
+                <p className="-error-form-p">{videoError}</p>
+              )}
               <h4>Make a Post</h4>
               <p>Make a caption</p>
               <textarea
@@ -404,8 +492,11 @@ const ProfileReels = ({ userData }) => {
                   Cancel
                 </button>
                 <button
-                  className="-form-submit__btn"
+                  className={`-form-submit__btn ${
+                    videoNotAllowed === true ? "-btn-disabled" : ""
+                  }`}
                   onClick={(e) => handleAddClick(e)}
+                  disabled={videoNotAllowed === true ? true : false}
                 >
                   Save
                 </button>
@@ -426,7 +517,7 @@ const ProfileReels = ({ userData }) => {
     handleGetPosts,
   }) => {
     const navigate = useNavigate();
-    const [isUpdateLoading, setUpdateLoading] = useState(false);
+    const [updateLoading, setUpdateLoading] = useState(false);
     const [editClicked, setEditClicked] = useState(false);
     const [isOpenMenuModal, setIsOpenMenuModal] = useState(false);
     const [updatePostData, setUpdatePostData] = useState({
@@ -849,6 +940,7 @@ const ProfileReels = ({ userData }) => {
         PostId: chosenPost.id,
         IsDeleted: true,
       }));
+      setIsOpenMenuModal(false);
     };
 
     // ------------------------------------------------------------------------------------------------
@@ -887,7 +979,7 @@ const ProfileReels = ({ userData }) => {
                 className="-btn-confirmation-delete"
                 onClick={(e) => handleDeleteClick(e)}
               >
-                {isUpdateLoading === true ? (
+                {updateLoading === true ? (
                   <CircleNotchIcon
                     size={10}
                     className={"-btn-loading__icon"}
@@ -1088,7 +1180,7 @@ const ProfileReels = ({ userData }) => {
                       className="-btn-invisible"
                       onClick={(e) => handleEditSubmitClick(e)}
                     >
-                      {isUpdateLoading === true ? (
+                      {updateLoading === true ? (
                         <CircleNotchIcon
                           size={15}
                           className={"-btn-loading__icon"}
@@ -1309,6 +1401,9 @@ const ProfileReels = ({ userData }) => {
             ) : postNavs === "reels" ? (
               <div>
                 <Reels
+                  userData={userData}
+                  userReels={userReels}
+                  handleGetReels={handleGetReels}
                   isAddReelClicked={isAddReelClicked}
                   setIsAddReelClicked={setIsAddReelClicked}
                 />
