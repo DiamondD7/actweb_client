@@ -235,6 +235,8 @@ const ProfileReels = ({ userData }) => {
   // ---------------------------------------------------------------------------------------
 
   const AddPostModalContainer = ({ setIsAddPostClicked, handleGetPosts }) => {
+    const [videoError, setVideoError] = useState(null);
+    const [videoNotAllowed, setVideoNotAllowed] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [newPost, setNewPost] = useState({
       Type: 0, //0 is "Post", 1 is "Reel"
@@ -245,12 +247,37 @@ const ProfileReels = ({ userData }) => {
 
     const handleFileChange = (e) => {
       const file = e.target.files[0];
+      const maxSizeMB = 600;
+      const maxDuration = 180;
+
+      if (file.size > maxSizeMB * 1024 * 1024) {
+        setVideoError("File is too large. Max size is 600MB");
+        setVideoNotAllowed(true);
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+      const video = document.createElement("video");
+
+      video.preload = "metadata";
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        if (video.duration > maxDuration) {
+          setVideoError(
+            "Video is too long. Your video will be trimmed after uploading, to 3 minutes."
+          );
+        }
+      };
+
+      video.src = url;
 
       setNewPost((prev) => ({
         ...prev,
         File: file,
         Preview: URL.createObjectURL(file),
       }));
+
+      setVideoNotAllowed(false);
     };
 
     const handleOnChange = (e) => {
@@ -447,6 +474,9 @@ const ProfileReels = ({ userData }) => {
               )}
             </div>
             <div className="add-post-details__wrapper">
+              {videoError !== null && (
+                <p className="-error-form-p">{videoError}</p>
+              )}
               <h4>Make a Post</h4>
               <p>Make a caption</p>
               <textarea
@@ -462,8 +492,11 @@ const ProfileReels = ({ userData }) => {
                   Cancel
                 </button>
                 <button
-                  className="-form-submit__btn"
+                  className={`-form-submit__btn ${
+                    videoNotAllowed === true ? "-btn-disabled" : ""
+                  }`}
                   onClick={(e) => handleAddClick(e)}
+                  disabled={videoNotAllowed === true ? true : false}
                 >
                   Save
                 </button>

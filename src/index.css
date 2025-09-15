@@ -271,3 +271,9 @@
 .-padding-20 {
   padding: 20px;
 }
+
+.-btn-disabled {
+  cursor: default;
+  background-color: #494949;
+  border: none;
+}

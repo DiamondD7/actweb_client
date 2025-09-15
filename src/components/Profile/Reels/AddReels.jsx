@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 
 const AddReels = ({ setIsAddReelClicked, handleGetReels }) => {
   const navigate = useNavigate();
+  const [videoError, setVideoError] = useState(null);
+  const [videoNotAllowed, setVideoNotAllowed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [newReel, setNewReel] = useState({
     Type: 1, //1 is reel, 0 is post
@@ -19,11 +21,37 @@ const AddReels = ({ setIsAddReelClicked, handleGetReels }) => {
 
   const handleOnFileChange = (e) => {
     const file = e.target.files[0];
+    const maxSizeMB = 600;
+    const maxDuration = 90;
+
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      setVideoError("File is too large. Max size is 600MB");
+      setVideoNotAllowed(true);
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+    const video = document.createElement("video");
+
+    video.preload = "metadata";
+    video.onloadedmetadata = () => {
+      window.URL.revokeObjectURL(video.src);
+      if (video.duration > maxDuration) {
+        setVideoError(
+          "Video is too long. Your video will be trimmed after uploading, to 1 minute and 30 seconds."
+        );
+      }
+    };
+
+    video.src = url;
+
     setNewReel((prev) => ({
       ...prev,
       File: file,
       Preview: URL.createObjectURL(file),
     }));
+
+    setVideoNotAllowed(false);
   };
 
   const handleOnChange = (e) => {
@@ -165,6 +193,7 @@ const AddReels = ({ setIsAddReelClicked, handleGetReels }) => {
     await handleUploadVideo();
   };
 
+  console.log(videoError);
   return (
     <div>
       <div className="reel-upload-container__wrapper">
@@ -211,6 +240,9 @@ const AddReels = ({ setIsAddReelClicked, handleGetReels }) => {
               )}
             </div>
             <div className="reel-details__wrapper">
+              {videoError !== null && (
+                <p className="-error-form-p">{videoError}</p>
+              )}
               <h4>Make a Reel</h4>
               <p>Make a caption</p>
               <textarea
@@ -228,8 +260,11 @@ const AddReels = ({ setIsAddReelClicked, handleGetReels }) => {
                 </button>
                 <button
                   type="button"
-                  className="-form-submit__btn"
+                  className={`-form-submit__btn ${
+                    videoNotAllowed === true ? "-btn-disabled" : ""
+                  }`}
                   onClick={(e) => handleAddClick(e)}
+                  disabled={videoNotAllowed === true ? true : false}
                 >
                   Save
                 </button>
