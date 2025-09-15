@@ -940,6 +940,7 @@ const ProfileReels = ({ userData }) => {
         PostId: chosenPost.id,
         IsDeleted: true,
       }));
+      setIsOpenMenuModal(false);
     };
 
     // ------------------------------------------------------------------------------------------------

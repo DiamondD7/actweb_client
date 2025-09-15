@@ -443,12 +443,12 @@ const ReelsModal = ({
 
   const handleDeleteClick = async (e) => {
     e.preventDefault();
-
     setUpdatePostData((prev) => ({
       ...prev,
       PostId: chosenReel.id,
       IsDeleted: true,
     }));
+    setIsOpenMenuModal(false);
   };
 
   // ------------------------------------------------------------------------------------------------
