@@ -652,16 +652,24 @@ const ReelsModal = ({
                     />
                   </button>
                 </div>
-                <div className="-display-flex-aligned-center -gap-10">
-                  <img
-                    className="profile-post-profilepic-thumbnail__img"
-                    src={`${BASE_URL}/${userData.profilePictureUrl}`}
-                    alt="profilepic"
-                  />
+                <div className="-display-flex-justified-spacebetween">
+                  <div className="-display-flex-aligned-center -gap-10">
+                    <img
+                      className="profile-post-profilepic-thumbnail__img"
+                      src={`${BASE_URL}/${userData.profilePictureUrl}`}
+                      alt="profilepic"
+                    />
+                    <div>
+                      <p style={{ fontSize: "12px" }}>{userData.fullName}</p>
+                      <p style={{ fontSize: "11px", color: "rgba(0,0,0,0.4)" }}>
+                        {userData.userName}
+                      </p>
+                    </div>
+                  </div>
+
                   <div>
-                    <p style={{ fontSize: "12px" }}>{userData.fullName}</p>
-                    <p style={{ fontSize: "11px", color: "rgba(0,0,0,0.4)" }}>
-                      {userData.userName}
+                    <p style={{ fontSize: "10px" }}>
+                      {TimeAgo(chosenReel.createdAt)}
                     </p>
                   </div>
                 </div>
