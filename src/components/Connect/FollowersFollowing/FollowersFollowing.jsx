@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  AddFollowing,
   BASE_URL,
   GetFollowers,
   GetFollowing,
@@ -11,14 +12,13 @@ const FollowersFollowing = () => {
   const USER_ID = sessionStorage.getItem("id");
   const navigate = useNavigate();
   const [followerBtnClicked, setFollowerBtnClicked] = useState("following");
+
+  const [following, setFollowing] = useState([]);
   const [followData, setFollowData] = useState([]);
 
   useEffect(() => {
-    if (followerBtnClicked === "following") {
-      fetchFollowing();
-    } else {
-      fetchFollowers();
-    }
+    fetchFollowing();
+    fetchFollowers();
   }, [followerBtnClicked]);
 
   const fetchFollowing = async (retry = true) => {
@@ -52,7 +52,11 @@ const FollowersFollowing = () => {
 
       const data = await response.json();
       console.log(data);
-      setFollowData(data);
+      if (followerBtnClicked === "following") {
+        setFollowData(data);
+      }
+
+      setFollowing(data);
     } catch (err) {
       console.warn(err);
     }
@@ -89,7 +93,9 @@ const FollowersFollowing = () => {
 
       const data = await response.json();
       console.log(data);
-      setFollowData(data);
+      if (followerBtnClicked === "followers") {
+        setFollowData(data);
+      }
     } catch (err) {
       console.warn(err);
     }
@@ -133,20 +139,68 @@ const FollowersFollowing = () => {
       }
 
       const data = await response.json();
-      console.log(data);
-      if (followerBtnClicked === "following") {
-        fetchFollowing();
-      } else {
-        fetchFollowers();
-      }
+      //console.log(data);
+
+      fetchFollowing();
+      fetchFollowers();
     } catch (err) {
       console.warn(err);
     }
   };
 
-  const handleFollowClicked = async (e, id) => {
+  const handleUnFollowClicked = async (e, id) => {
     e.preventDefault();
     await handleUnfollow(true, id);
+  };
+
+  const handleFollow = async (retry = true, followId) => {
+    try {
+      const response = await fetch(AddFollowing, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          UserId: USER_ID,
+          FollowingId: followId,
+        }),
+      });
+
+      if (response.status === 302) {
+        console.warn("302 detected. Redirecting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. Redirecting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Retrying request...");
+        return handleFollow(false);
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return;
+      }
+
+      const data = await response.json();
+      console.log(data);
+      fetchFollowing();
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const handleFollowClick = async (e, followId) => {
+    e.preventDefault();
+    await handleFollow(true, followId);
   };
 
   return (
@@ -188,18 +242,36 @@ const FollowersFollowing = () => {
               />
               <div>
                 <p>{user.fullName}</p>
-                <span>200 Following</span>
-                <span>10 Followers</span>
               </div>
             </div>
 
             <div>
-              <button
-                className="connect-follower-following__btn"
-                onClick={(e) => handleFollowClicked(e, user.id)}
-              >
-                Following
-              </button>
+              {followerBtnClicked === "followers" ? (
+                <>
+                  {following.some((f) => f.id === user.id) ? (
+                    <button
+                      className="connect-follower-following__btn"
+                      onClick={(e) => handleUnFollowClicked(e, user.id)}
+                    >
+                      Following
+                    </button>
+                  ) : (
+                    <button
+                      className="connect-not-following__btn"
+                      onClick={(e) => handleFollowClick(e, user.id)}
+                    >
+                      Follow
+                    </button>
+                  )}
+                </>
+              ) : (
+                <button
+                  className="connect-follower-following__btn"
+                  onClick={(e) => handleUnFollowClicked(e, user.id)}
+                >
+                  Following
+                </button>
+              )}
             </div>
           </div>
         ))}

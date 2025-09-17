@@ -21,6 +21,8 @@ import {
   CheckLike,
   UpdatePost,
   GetReels,
+  GetFollowing,
+  GetFollowers,
 } from "../../assets/js/serverapi";
 import Nav from "../Nav/Nav";
 import {
@@ -2553,7 +2555,7 @@ const ProfileBackground = () => {
   );
 };
 
-const ProfileDetails = ({ navigate, userData }) => {
+const ProfileDetails = ({ navigate, userData, following, followers }) => {
   return (
     <div>
       <div className="profile-deatils__wrapper">
@@ -2569,8 +2571,8 @@ const ProfileDetails = ({ navigate, userData }) => {
             {userData.userName}
           </p>
           <div className="profile-details-followers__wrapper">
-            <p>Followers: 200</p>
-            <p>Following: 200</p>
+            <p>Following: {following.length}</p>
+            <p>Followers: {followers.length}</p>
           </div>
           <p className="profile-details-bio__text">
             {userData.bio?.length > 250
@@ -2591,12 +2593,17 @@ const ProfileDetails = ({ navigate, userData }) => {
 };
 
 const Profile = () => {
+  const USER_ID = sessionStorage.getItem("id");
   const [isLoading, setIsLoading] = useState(false);
   const [userData, setUserData] = useState([]);
+  const [following, setFollowing] = useState([]);
+  const [followers, setFollowers] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     handleGetUserData();
+    fetchFollowing();
+    fetchFollowers();
   }, []);
 
   const handleGetUserData = async (retry = true) => {
@@ -2641,6 +2648,81 @@ const Profile = () => {
       console.warn(err);
     }
   };
+
+  const fetchFollowing = async (retry = true) => {
+    try {
+      const response = await fetch(`${GetFollowing}/${USER_ID}`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.status === 302) {
+        console.warn("302 detected. Redirecting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. Redirecting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Retrying request...");
+        return fetchFollowing(false);
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return;
+      }
+
+      const data = await response.json();
+      console.log(data);
+      setFollowing(data);
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const fetchFollowers = async (retry = true) => {
+    try {
+      const response = await fetch(`${GetFollowers}/${USER_ID}`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.status === 302) {
+        console.warn("302 detected. Redirecting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. Redirecting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Retrying request...");
+        return fetchFollowers(false);
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return;
+      }
+
+      const data = await response.json();
+      console.log(data);
+      setFollowers(data);
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
   return (
     <div className="-main-container__wrapper">
       <Nav />
@@ -2652,7 +2734,12 @@ const Profile = () => {
       ) : (
         <div className="profile-container__wrapper">
           <div>
-            <ProfileDetails navigate={navigate} userData={userData} />
+            <ProfileDetails
+              navigate={navigate}
+              userData={userData}
+              following={following}
+              followers={followers}
+            />
             <ProfileBackground />
           </div>
           <div>

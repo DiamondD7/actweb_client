@@ -123,9 +123,6 @@ const FindConnection = () => {
             />
             <div>
               <p>{user.fullName}</p>
-              {/* <span>Auckland</span> */}
-              <span>200 Following</span>
-              <span>10 Followers</span>
             </div>
           </div>
 
