@@ -43,3 +43,7 @@ export const GetComments = "http://localhost:5123/api/Comment/comments";
 export const AddLike = "http://localhost:5123/api/Like";
 export const GetLikes = "http://localhost:5123/api/Like/likes";
 export const CheckLike = "http://localhost:5123/api/Like/user-like";
+
+//ChatAPI
+export const GetChats = "http://localhost:5188/api/Message/chats";
+export const CreateChatRoom = "http://localhost:5188/api/Message/chatroom";
