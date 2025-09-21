@@ -8,9 +8,12 @@ import {
   CreateChatRoom,
   GetChats,
   GetUsersByIds,
+  MessageSent,
+  GetMessages,
 } from "../../assets/js/serverapi";
 import { useNavigate } from "react-router-dom";
 import useValidateUser from "../../assets/js/validate-user";
+import { TimeAgo } from "../../assets/js/timeago";
 
 import "../../styles/messagesstyles.css";
 const NewChatUsersPreview = ({ following, validateToken, fetchChatRooms }) => {
@@ -52,7 +55,7 @@ const NewChatUsersPreview = ({ following, validateToken, fetchChatRooms }) => {
 
       if (response.status === 401 && retry) {
         console.warn("401 detected, retrying...");
-        return validateToken(true, handleFunctionCallback());
+        return validateToken(true, handleFunctionCallback);
       }
 
       if (!response.ok) {
@@ -98,9 +101,24 @@ const NewChatUsersPreview = ({ following, validateToken, fetchChatRooms }) => {
   );
 };
 
-const ChatsPreviews = ({ chatRooms, chatRoomsUsers }) => {
+const ChatsPreviews = ({
+  chatRooms,
+  chatRoomsUsers,
+  setOpenChatClicked,
+  setChosenChatRoom,
+}) => {
   const stringMessage =
     "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum et optio explicabo vero aliquid nostrum doloremque veniam aperiam. Magnam consectetur eaque dolore suscipit beatae, fugiat maxime qui porro inventore voluptate? Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex ipsum expedita laboriosam, accusantium quasi deleniti pariatur ut. Mollitia fugiat repellat, dignissimos in nisi placeat itaque ut quaerat odio est voluptas.";
+
+  const handleChatRoomClicked = (e, chatroom, chatuser) => {
+    e.preventDefault();
+    setOpenChatClicked(true);
+    setChosenChatRoom({
+      chatroom: chatroom,
+      userFullName: chatuser.fullName,
+      userProfilePicture: chatuser.profilePictureUrl,
+    });
+  };
   return (
     <div className="messages-chats__wrapper">
       <h2>Chats</h2>
@@ -117,7 +135,11 @@ const ChatsPreviews = ({ chatRooms, chatRoomsUsers }) => {
             (user) =>
               (chat.senderId === user.id || chat.recipientId === user.id) &&
               user.id !== sessionStorage.getItem("id") && (
-                <div className="messages-chat-preview__wrapper" key={user.id}>
+                <div
+                  className="messages-chat-preview__wrapper"
+                  key={user.id}
+                  onClick={(e) => handleChatRoomClicked(e, chat, user)}
+                >
                   <img
                     className="messages-thumbnail__img"
                     src={`${BASE_URL}/${user.profilePictureUrl}`}
@@ -142,42 +164,202 @@ const ChatsPreviews = ({ chatRooms, chatRoomsUsers }) => {
   );
 };
 
-const TheirMessage = () => {
+const MessageContainer = ({ chosenChatRoom, messages, setMessages }) => {
+  const navigate = useNavigate();
+  const validateUser = useValidateUser();
+  const USER_ID = sessionStorage.getItem("id");
+  const { chatroom, userFullName, userProfilePicture } = chosenChatRoom;
+  const [messageModel, setMessageModel] = useState({
+    ChatId: chatroom.id,
+    SenderId: USER_ID,
+    Content: "",
+  });
+
+  useEffect(() => {
+    handleFetchMessages();
+  }, [chatroom.id]);
+
+  const handleFetchMessages = async (retry = true) => {
+    try {
+      const response = await fetch(`${GetMessages}/${chatroom.id}`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.status === 301) {
+        console.warn("301 detected. Redirecting...");
+        sessionStorage.clear();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && !retry) {
+        console.error("Unauthorized. Please log in again.");
+        sessionStorage.clear();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Retrying request....");
+        return validateUser(true, handleFetchMessages);
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch messages");
+      }
+
+      const data = await response.json();
+      console.log(data);
+      setMessages(data);
+    } catch (err) {
+      console.error("Error fetching messages:", err);
+      throw err;
+    }
+  };
+
+  const handleSendMessage = async (retry = true) => {
+    try {
+      const response = await fetch(MessageSent, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(messageModel),
+      });
+
+      if (response.status === 301) {
+        console.warn("301 detected. Redirecting...");
+        sessionStorage.clear();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && !retry) {
+        console.error("Unauthorized. Please log in again.");
+        sessionStorage.clear();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Retrying request....");
+        return validateUser(true, handleSendMessage);
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+
+      const data = await response.json();
+      console.log(data);
+      setMessageModel((prev) => ({
+        ...prev,
+        Content: "",
+      }));
+    } catch (err) {
+      console.error("Error sending message:", err);
+      throw err;
+    }
+  };
+
+  const handleMessageBtnClicked = async (e) => {
+    e.preventDefault();
+    await handleSendMessage();
+  };
+
+  const handleOnChange = (e) => {
+    const { name, value } = e.target;
+    setMessageModel((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  return (
+    <div>
+      <div className="messages-conversation__wrapper">
+        <div className="messages-conversation-header__wrapper">
+          <img
+            className="messages-thumbnail__img"
+            src={`${BASE_URL}/${userProfilePicture}`}
+            alt="profile-message-thumbnail-picture"
+          />
+          <p>{userFullName}</p>
+        </div>
+        <br />
+        <br />
+
+        {messages.length !== 0 ? (
+          <>
+            {messages.map((msg) =>
+              msg.senderId === USER_ID ? (
+                <MyMessage msg={msg} />
+              ) : (
+                <TheirMessage
+                  msg={msg}
+                  userProfilePicture={userProfilePicture}
+                />
+              )
+            )}
+          </>
+        ) : (
+          <p>No messages yet. Say hi to {userFullName}!</p>
+        )}
+      </div>
+
+      <div className="messages-conversation-message-textarea__wrapper">
+        <textarea
+          placeholder="send your message here..."
+          name="Content"
+          onChange={(e) => handleOnChange(e)}
+          value={messageModel.Content}
+        ></textarea>
+        <button
+          className="messages-conversation-send__btn"
+          onClick={(e) => handleMessageBtnClicked(e)}
+        >
+          <PaperPlaneRightIcon size={20} weight="fill" color={"#4495c7"} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const TheirMessage = ({ msg, userProfilePicture }) => {
   return (
     <div className="messaages-conversation-theirmessage-container__wrapper">
       <div className="messages-conversation-theirmessage__wrapper">
-        <img
-          className="messages-thumbnail__img"
-          src="https://randomuser.me/api/portraits/men/32.jpg"
-          alt="profile-message-thumbnail-picture"
-        />
+        <div>
+          <img
+            className="messages-thumbnail__img"
+            src={`${BASE_URL}/${userProfilePicture}`}
+            alt="profile-message-thumbnail-picture"
+          />
+        </div>
 
         <div className="messages-conversation-theirmessage-bubble__wrapper">
-          <p className="message-conversation-timeStamp__text">11:36 AM</p>
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda
-            quis totam in ratione quibusdam, vero obcaecati animi odit mollitia
-            unde impedit adipisci omnis consequatur repellendus, beatae, hic
-            magni sapiente autem?
+          <p className="message-conversation-timeStamp__text">
+            {TimeAgo(msg.timeStamp)}
           </p>
+          <p>{msg.content}</p>
         </div>
       </div>
     </div>
   );
 };
 
-const MyMessage = () => {
+const MyMessage = ({ msg }) => {
   return (
     <div className="messages-conversation-mymessage-container__wrapper">
       <div className="messages-conversation-mymessage__wrapper">
-        <p className="message-conversation-timeStamp__text">12:00 PM</p>
+        <p className="message-conversation-timeStamp__text">
+          {TimeAgo(msg.timeStamp)}
+        </p>
         <div className="messages-conversation-mymessage-bubble__wrapper">
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda
-            quis totam in ratione quibusdam, vero obcaecati animi odit mollitia
-            unde impedit adipisci omnis consequatur repellendus, beatae, hic
-            magni sapiente autem?
-          </p>
+          <p>{msg.content}</p>
         </div>
       </div>
     </div>
@@ -186,8 +368,18 @@ const MyMessage = () => {
 
 const Messages = () => {
   const USER_ID = sessionStorage.getItem("id");
-  const validateToken = useValidateUser();
   const navigate = useNavigate();
+  const validateToken = useValidateUser();
+
+  const [openChatClicked, setOpenChatClicked] = useState(false);
+  const [chosenChatRoom, setChosenChatRoom] = useState({
+    chatroom: {},
+    userFullName: "",
+    userProfilePicture: "",
+  });
+  const [chatRooms, setChatRooms] = useState([]);
+  const [chatRoomsUsers, setChatRoomsUsers] = useState([]);
+  const [following, setFollowing] = useState([]);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
 
@@ -196,16 +388,12 @@ const Messages = () => {
   );
 
   // useEffect(() => {
-  //   startConnection();
+  //   startConnection();v
   //   onReceiveMessage("ReceiveMessage", (user, receivedMessage) => {
   //     const newMessage = { user, text: receivedMessage };
   //     setMessages((prevMessages) => [...prevMessages, newMessage]);
   //   });
   // }, []);
-
-  const [chatRooms, setChatRooms] = useState([]);
-  const [chatRoomsUsers, setChatRoomsUsers] = useState([]);
-  const [following, setFollowing] = useState([]);
 
   useEffect(() => {
     fetchChatRooms();
@@ -276,7 +464,7 @@ const Messages = () => {
 
       if (response.status === 401 && retry) {
         console.warn("401 detected, retrying...");
-        return validateToken(true, fetchChatRooms(false));
+        return validateToken(true, fetchChatRooms);
       }
 
       if (!response.ok) {
@@ -296,7 +484,6 @@ const Messages = () => {
       console.error("Error fetching following:", err);
     }
   };
-
   const handleFetchUsers = async (retry = true, ids) => {
     try {
       const response = await fetch(GetUsersByIds, {
@@ -347,6 +534,8 @@ const Messages = () => {
           <ChatsPreviews
             chatRooms={chatRooms}
             chatRoomsUsers={chatRoomsUsers}
+            setOpenChatClicked={setOpenChatClicked}
+            setChosenChatRoom={setChosenChatRoom}
           />
 
           <NewChatUsersPreview
@@ -355,29 +544,14 @@ const Messages = () => {
             fetchChatRooms={fetchChatRooms}
           />
         </div>
-        <div>
-          <div className="messages-conversation__wrapper">
-            <div className="messages-conversation-header__wrapper">
-              <img
-                className="messages-thumbnail__img"
-                src="https://randomuser.me/api/portraits/men/32.jpg"
-                alt="profile-message-thumbnail-picture"
-              />
-              <p>John Doe</p>
-            </div>
-            <br />
-            <br />
-            <TheirMessage />
-            <MyMessage />
-          </div>
 
-          <div className="messages-conversation-message-textarea__wrapper">
-            <textarea placeholder="send your message here..."></textarea>
-            <button className="messages-conversation-send__btn">
-              <PaperPlaneRightIcon size={20} weight="fill" color={"#4495c7"} />
-            </button>
-          </div>
-        </div>
+        {openChatClicked === true && (
+          <MessageContainer
+            chosenChatRoom={chosenChatRoom}
+            messages={messages}
+            setMessages={setMessages}
+          />
+        )}
       </div>
     </div>
   );
