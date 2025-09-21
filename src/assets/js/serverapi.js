@@ -20,6 +20,13 @@ export const AddUserBackground =
   "http://localhost:5016/api/Users/add-user-background";
 export const Logout = "http://localhost:5016/api/Users/logout";
 
+//-----FOLLOWING
+export const AddFollowing = "http://localhost:5016/api/Following";
+export const DiscoverUsers = "http://localhost:5016/api/Following/users";
+export const GetFollowing = "http://localhost:5016/api/Following/following";
+export const GetFollowers = "http://localhost:5016/api/Following/followers";
+export const UnFollow = "http://localhost:5016/api/Following";
+
 //-----PostAPI
 export const BASE_POST_API = "http://localhost:5123";
 export const UpdatePost = "http://localhost:5123/api/Post";
@@ -36,3 +43,7 @@ export const GetComments = "http://localhost:5123/api/Comment/comments";
 export const AddLike = "http://localhost:5123/api/Like";
 export const GetLikes = "http://localhost:5123/api/Like/likes";
 export const CheckLike = "http://localhost:5123/api/Like/user-like";
+
+//ChatAPI
+export const GetChats = "http://localhost:5188/api/Message/chats";
+export const CreateChatRoom = "http://localhost:5188/api/Message/chatroom";
