@@ -10,6 +10,7 @@ import {
   GetUsersByIds,
   MessageSent,
   GetMessages,
+  MarkSeenMessage,
 } from "../../assets/js/serverapi";
 import { useNavigate } from "react-router-dom";
 import useValidateUser from "../../assets/js/validate-user";
@@ -112,12 +113,12 @@ const ChatsPreviews = ({
 
   const handleChatRoomClicked = (e, chatroom, chatuser) => {
     e.preventDefault();
-    setOpenChatClicked(true);
     setChosenChatRoom({
       chatroom: chatroom,
       userFullName: chatuser.fullName,
       userProfilePicture: chatuser.profilePictureUrl,
     });
+    setOpenChatClicked(true);
   };
   return (
     <div className="messages-chats__wrapper">
@@ -164,7 +165,7 @@ const ChatsPreviews = ({
   );
 };
 
-const MessageContainer = ({ chosenChatRoom, messages, setMessages }) => {
+const MessageContainer = ({ chosenChatRoom }) => {
   const navigate = useNavigate();
   const validateUser = useValidateUser();
   const USER_ID = sessionStorage.getItem("id");
@@ -174,10 +175,19 @@ const MessageContainer = ({ chosenChatRoom, messages, setMessages }) => {
     SenderId: USER_ID,
     Content: "",
   });
+  const [messages, setMessages] = useState([]);
+
+  // useEffect(() => {
+  //   handleMarkSeenMessages();
+  // }, [messages.length]);
+
+  // SignalR connection
+  useSignalR("http://localhost:5188/chatHub", setMessages, chatroom.id);
 
   useEffect(() => {
     handleFetchMessages();
-  }, [chatroom.id]);
+    handleMarkSeenMessages();
+  }, [chatroom.id, messages.length]);
 
   const handleFetchMessages = async (retry = true) => {
     try {
@@ -210,7 +220,7 @@ const MessageContainer = ({ chosenChatRoom, messages, setMessages }) => {
       }
 
       const data = await response.json();
-      console.log(data);
+      //console.log(data);
       setMessages(data);
     } catch (err) {
       console.error("Error fetching messages:", err);
@@ -227,7 +237,11 @@ const MessageContainer = ({ chosenChatRoom, messages, setMessages }) => {
           Accept: "application/json",
         },
         credentials: "include",
-        body: JSON.stringify(messageModel),
+        body: JSON.stringify({
+          ChatId: chatroom.id,
+          SenderId: USER_ID,
+          Content: messageModel.Content,
+        }),
       });
 
       if (response.status === 301) {
@@ -254,11 +268,57 @@ const MessageContainer = ({ chosenChatRoom, messages, setMessages }) => {
       }
 
       const data = await response.json();
-      console.log(data);
+      //console.log(data);
       setMessageModel((prev) => ({
         ...prev,
         Content: "",
       }));
+    } catch (err) {
+      console.error("Error sending message:", err);
+      throw err;
+    }
+  };
+
+  const handleMarkSeenMessages = async (retry = true) => {
+    try {
+      const response = await fetch(MarkSeenMessage, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          ChatId: chatroom.id,
+          SenderId: USER_ID,
+        }),
+      });
+
+      if (response.status === 301) {
+        console.warn("301 detected. Redirecting...");
+        sessionStorage.clear();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && !retry) {
+        console.error("Unauthorized. Please log in again.");
+        sessionStorage.clear();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Retrying request....");
+        return validateUser(true, handleMarkSeenMessages);
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+
+      const data = await response.json();
+      //console.log(data);
     } catch (err) {
       console.error("Error sending message:", err);
       throw err;
@@ -294,9 +354,13 @@ const MessageContainer = ({ chosenChatRoom, messages, setMessages }) => {
 
         {messages.length !== 0 ? (
           <>
-            {messages.map((msg) =>
+            {messages.map((msg, index) =>
               msg.senderId === USER_ID ? (
-                <MyMessage msg={msg} />
+                <MyMessage
+                  msg={msg}
+                  lastMessageIndex={messages.length}
+                  index={index}
+                />
               ) : (
                 <TheirMessage
                   msg={msg}
@@ -351,7 +415,7 @@ const TheirMessage = ({ msg, userProfilePicture }) => {
   );
 };
 
-const MyMessage = ({ msg }) => {
+const MyMessage = ({ msg, lastMessageIndex, index }) => {
   return (
     <div className="messages-conversation-mymessage-container__wrapper">
       <div className="messages-conversation-mymessage__wrapper">
@@ -360,6 +424,9 @@ const MyMessage = ({ msg }) => {
         </p>
         <div className="messages-conversation-mymessage-bubble__wrapper">
           <p>{msg.content}</p>
+          {index === lastMessageIndex - 1 && (
+            <p>{msg.isSeen === false ? "Sent" : "Seen"}</p>
+          )}
         </div>
       </div>
     </div>
@@ -380,20 +447,6 @@ const Messages = () => {
   const [chatRooms, setChatRooms] = useState([]);
   const [chatRoomsUsers, setChatRoomsUsers] = useState([]);
   const [following, setFollowing] = useState([]);
-  const [messages, setMessages] = useState([]);
-  const [message, setMessage] = useState("");
-
-  const { startConnection, sendMessage, onReceiveMessage } = useSignalR(
-    "http://localhost:5188/chatHub"
-  );
-
-  // useEffect(() => {
-  //   startConnection();v
-  //   onReceiveMessage("ReceiveMessage", (user, receivedMessage) => {
-  //     const newMessage = { user, text: receivedMessage };
-  //     setMessages((prevMessages) => [...prevMessages, newMessage]);
-  //   });
-  // }, []);
 
   useEffect(() => {
     fetchChatRooms();
@@ -546,11 +599,7 @@ const Messages = () => {
         </div>
 
         {openChatClicked === true && (
-          <MessageContainer
-            chosenChatRoom={chosenChatRoom}
-            messages={messages}
-            setMessages={setMessages}
-          />
+          <MessageContainer chosenChatRoom={chosenChatRoom} />
         )}
       </div>
     </div>
