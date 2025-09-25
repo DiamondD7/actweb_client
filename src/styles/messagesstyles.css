@@ -51,7 +51,7 @@
   color: rgba(0, 0, 0, 0.4);
 }
 
-.messages-chat-preview-info__wrapper span {
+.preview-message__text {
   font-size: 10px;
   color: rgba(0, 0, 0, 0.4);
 }
@@ -175,4 +175,9 @@
   width: 100%;
   background-color: transparent;
   border: none;
+}
+
+.message-not-seen__p {
+  color: red;
+  font-weight: bold;
 }

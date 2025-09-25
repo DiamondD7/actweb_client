@@ -11,6 +11,7 @@ import {
   MessageSent,
   GetMessages,
   MarkSeenMessage,
+  GetPreviewMessages,
 } from "../../assets/js/serverapi";
 import { useNavigate } from "react-router-dom";
 import useValidateUser from "../../assets/js/validate-user";
@@ -107,12 +108,15 @@ const ChatsPreviews = ({
   chatRoomsUsers,
   setOpenChatClicked,
   setChosenChatRoom,
+  previewMessage,
+  lastMessage,
+  fetchChatRooms,
 }) => {
-  const stringMessage =
-    "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum et optio explicabo vero aliquid nostrum doloremque veniam aperiam. Magnam consectetur eaque dolore suscipit beatae, fugiat maxime qui porro inventore voluptate? Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex ipsum expedita laboriosam, accusantium quasi deleniti pariatur ut. Mollitia fugiat repellat, dignissimos in nisi placeat itaque ut quaerat odio est voluptas.";
+  const USER_ID = sessionStorage.getItem("id");
 
-  const handleChatRoomClicked = (e, chatroom, chatuser) => {
+  const handleChatRoomClicked = async (e, chatroom, chatuser) => {
     e.preventDefault();
+    await fetchChatRooms(); //do i still need this?
     setChosenChatRoom({
       chatroom: chatroom,
       userFullName: chatuser.fullName,
@@ -120,6 +124,7 @@ const ChatsPreviews = ({
     });
     setOpenChatClicked(true);
   };
+
   return (
     <div className="messages-chats__wrapper">
       <h2>Chats</h2>
@@ -146,16 +151,90 @@ const ChatsPreviews = ({
                     src={`${BASE_URL}/${user.profilePictureUrl}`}
                     alt="profile-message-thumbnail-picture"
                   />
-                  <div className="messages-chat-preview-info__wrapper">
-                    <label>12:00PM</label>
-                    <p>{user.fullName}</p>
 
-                    <span>
-                      {stringMessage.length > 50
-                        ? stringMessage.substring(0, 45) + "..."
-                        : stringMessage}
-                    </span>
-                  </div>
+                  {previewMessage.map((msg) =>
+                    msg.chatId === chat.id ? (
+                      <div
+                        className="messages-chat-preview-info__wrapper"
+                        key={msg.id}
+                      >
+                        <label>{TimeAgo(msg.timeStamp)}</label>
+                        <p>{user.fullName}</p>
+
+                        {/* pick either SignalR-updated last message OR fallback to msg */}
+                        {lastMessage[chat.id] ? (
+                          <p
+                            className={
+                              lastMessage[chat.id].senderId !== USER_ID &&
+                              lastMessage[chat.id].isSeen === false
+                                ? "message-not-seen__p"
+                                : "preview-message__text"
+                            }
+                          >
+                            {lastMessage[chat.id].content.length > 50
+                              ? lastMessage[chat.id].content.substring(0, 50)
+                              : lastMessage[chat.id].content}
+                          </p>
+                        ) : (
+                          <p
+                            className={
+                              msg.senderId !== USER_ID && msg.isSeen === false
+                                ? "message-not-seen__p"
+                                : "preview-message__text"
+                            }
+                          >
+                            {msg.content.length > 50
+                              ? msg.content.substring(0, 50)
+                              : msg.content}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      ""
+                    )
+                  )}
+
+                  {/* {previewMessage.map((msg) =>
+                    msg.chatId === chat.id ? (
+                      <div
+                        className="messages-chat-preview-info__wrapper"
+                        key={msg.id}
+                      >
+                        <label>{TimeAgo(msg.timeStamp)}</label>
+                        <p>{user.fullName}</p>
+
+                        {lastMessage !== null &&
+                        lastMessage.chatId === chat.id ? (
+                          <p
+                            className={
+                              lastMessage.senderId !== USER_ID &&
+                              lastMessage.isSeen === false
+                                ? "message-not-seen__p"
+                                : "preview-message__text"
+                            }
+                          >
+                            {lastMessage.content.length > 50
+                              ? lastMessage.content.substring(0, 50)
+                              : lastMessage.content}
+                          </p>
+                        ) : (
+                          <p
+                            className={
+                              msg.senderId !== USER_ID && msg.isSeen === false
+                                ? "message-not-seen__p"
+                                : "preview-message__text"
+                            }
+                          >
+                            {msg.content.length > 50
+                              ? msg.content.substring(0, 50)
+                              : msg.content}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      ""
+                    )
+                  )} */}
                 </div>
               )
           )}
@@ -165,7 +244,7 @@ const ChatsPreviews = ({
   );
 };
 
-const MessageContainer = ({ chosenChatRoom }) => {
+const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
   const navigate = useNavigate();
   const validateUser = useValidateUser();
   const USER_ID = sessionStorage.getItem("id");
@@ -177,12 +256,13 @@ const MessageContainer = ({ chosenChatRoom }) => {
   });
   const [messages, setMessages] = useState([]);
 
-  // useEffect(() => {
-  //   handleMarkSeenMessages();
-  // }, [messages.length]);
-
   // SignalR connection
-  useSignalR("http://localhost:5188/chatHub", setMessages, chatroom.id);
+  useSignalR(
+    "http://localhost:5188/chatHub",
+    setMessages,
+    chatroom.id,
+    setLastMessage
+  );
 
   useEffect(() => {
     handleFetchMessages();
@@ -291,6 +371,7 @@ const MessageContainer = ({ chosenChatRoom }) => {
         body: JSON.stringify({
           ChatId: chatroom.id,
           SenderId: USER_ID,
+          Content: messageModel.Content,
         }),
       });
 
@@ -444,14 +525,41 @@ const Messages = () => {
     userFullName: "",
     userProfilePicture: "",
   });
+  const [lastMessage, setLastMessage] = useState({}); //container for last message (Signal R)
+  const [previewMessage, setPreviewMessage] = useState([]); //container for last messages (fetching from API)
   const [chatRooms, setChatRooms] = useState([]);
   const [chatRoomsUsers, setChatRoomsUsers] = useState([]);
   const [following, setFollowing] = useState([]);
+
+  useSignalR("http://localhost:5188/chatHub", null, 0, setLastMessage);
 
   useEffect(() => {
     fetchChatRooms();
   }, []);
 
+  const fetchPreviewMessages = async (chats) => {
+    try {
+      const response = await fetch(GetPreviewMessages, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(chats),
+      });
+
+      if (!response.ok) {
+        console.error("Error: ", response.status);
+        return;
+      }
+
+      const data = await response.json();
+      setPreviewMessage(data);
+    } catch (err) {
+      console.error("Error:", err);
+      throw err;
+    }
+  };
   const fetchFollowing = async (retry = true, chatUsers) => {
     try {
       const response = await fetch(`${GetFollowing}/${USER_ID}`, {
@@ -527,12 +635,18 @@ const Messages = () => {
       const data = await response.json();
       setChatRooms(data);
 
-      //get all ids except the user-id
-      const ids = data.map((items) =>
-        items.senderId === USER_ID ? items.recipientId : items.senderId
-      );
+      //Called fetchChatRooms function in another component (ChatPreviews). Everytime the user clicks to open a chat room.
+      //handleFetchUsers will only be called when the openChatClicked is false. in other words: it will only run once.
+      //no need to run everytime the user move to another chatroom.
+      if (openChatClicked === false) {
+        //get all ids except the user-id
+        const ids = data.map((items) =>
+          items.senderId === USER_ID ? items.recipientId : items.senderId
+        );
+        await handleFetchUsers(true, ids);
+      }
 
-      handleFetchUsers(true, ids);
+      await fetchPreviewMessages(data);
     } catch (err) {
       console.error("Error fetching following:", err);
     }
@@ -589,6 +703,9 @@ const Messages = () => {
             chatRoomsUsers={chatRoomsUsers}
             setOpenChatClicked={setOpenChatClicked}
             setChosenChatRoom={setChosenChatRoom}
+            previewMessage={previewMessage}
+            lastMessage={lastMessage}
+            fetchChatRooms={fetchChatRooms}
           />
 
           <NewChatUsersPreview
@@ -599,7 +716,10 @@ const Messages = () => {
         </div>
 
         {openChatClicked === true && (
-          <MessageContainer chosenChatRoom={chosenChatRoom} />
+          <MessageContainer
+            chosenChatRoom={chosenChatRoom}
+            setLastMessage={setLastMessage}
+          />
         )}
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
 
-const useSignalR = (hubUrl, setMessages, chatRoomId) => {
+const useSignalR = (hubUrl, setMessages, chatRoomId, setLastMessage) => {
   const connectionRef = useRef(null);
 
   useEffect(() => {
@@ -19,11 +19,14 @@ const useSignalR = (hubUrl, setMessages, chatRoomId) => {
         await connection.start();
         console.log("SignalR Connected.");
 
+        connection.on("ReceivePreviewMessage", (msg) => {
+          setLastMessage((prev) => ({
+            ...prev,
+            [msg.chatId]: msg,
+          }));
+        });
+
         connection.on("ReceiveMessage", (msg) => {
-          //console.log("Received via SignalR:", msg);
-          //console.log("Received via SignalR:", msg);
-          console.log("Message chatId:", msg.chatId);
-          console.log("Current chatRoomId:", chatRoomId);
           if (msg.chatId !== chatRoomId) return; // only update if for current chatroom
           setMessages((prev) => {
             if (prev.some((m) => m.id === msg.id)) return prev; // avoid duplicates
@@ -31,8 +34,15 @@ const useSignalR = (hubUrl, setMessages, chatRoomId) => {
           });
         });
 
-        connection.on("MessageSeen", (chatId, seenMessageIds) => {
+        connection.on("MessageSeen", (chatId, seenMessageIds, msg) => {
+          // const USER_ID = sessionStorage.getItem("id");
+          // if (USER_ID === msg.senderId) {
+          //   console.log("m");
+          //   setLastMessage((prev) => ({ ...prev, isSeen: true }));
+          // }
+
           if (chatId !== chatRoomId) return; // only update if for current chatroom
+
           setMessages((prev) =>
             prev.map((msg) =>
               seenMessageIds.includes(msg.id) ? { ...msg, isSeen: true } : msg
