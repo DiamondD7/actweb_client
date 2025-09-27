@@ -113,6 +113,7 @@ const ChatsPreviews = ({
   fetchChatRooms,
 }) => {
   const USER_ID = sessionStorage.getItem("id");
+  const [search, setSearch] = useState("");
 
   const handleChatRoomClicked = async (e, chatroom, chatuser) => {
     e.preventDefault();
@@ -125,19 +126,24 @@ const ChatsPreviews = ({
     setOpenChatClicked(true);
   };
 
+  const filterSearch = chatRoomsUsers.filter((user) =>
+    user.fullName.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="messages-chats__wrapper">
       <h2>Chats</h2>
       <input
         className="messages-chats-search__input"
         type="text"
-        placeholder="Search conversations"
+        placeholder="Search chat"
+        onChange={(e) => setSearch(e.target.value)}
       />
 
       {/* mapping chatRooms and chatRoomUsers and conditions are: match user with the senderId or recipientId and current userId should not included. */}
       {chatRooms.map((chat) => (
         <div key={chat.id}>
-          {chatRoomsUsers.map(
+          {filterSearch.map(
             (user) =>
               (chat.senderId === user.id || chat.recipientId === user.id) &&
               user.id !== sessionStorage.getItem("id") && (
