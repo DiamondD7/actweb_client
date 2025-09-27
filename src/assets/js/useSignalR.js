@@ -27,6 +27,14 @@ const useSignalR = (hubUrl, setMessages, chatRoomId, setLastMessage) => {
         });
 
         connection.on("ReceiveMessage", (msg) => {
+          setLastMessage((prev) => ({
+            ...prev,
+            [msg.chatId]: {
+              ...msg,
+              isSeen: false, // mark unseen for preview
+            },
+          }));
+
           if (msg.chatId !== chatRoomId) return; // only update if for current chatroom
           setMessages((prev) => {
             if (prev.some((m) => m.id === msg.id)) return prev; // avoid duplicates
@@ -35,17 +43,22 @@ const useSignalR = (hubUrl, setMessages, chatRoomId, setLastMessage) => {
         });
 
         connection.on("MessageSeen", (chatId, seenMessageIds, msg) => {
-          // const USER_ID = sessionStorage.getItem("id");
-          // if (USER_ID === msg.senderId) {
-          //   console.log("m");
-          //   setLastMessage((prev) => ({ ...prev, isSeen: true }));
-          // }
+          const USER_ID = sessionStorage.getItem("id");
+          setLastMessage((prev) => ({
+            ...prev,
+            [chatId]: {
+              ...(prev[chatId] || {}),
+              isSeen: msg.senderId !== USER_ID ? false : true,
+            },
+          }));
 
           if (chatId !== chatRoomId) return; // only update if for current chatroom
 
           setMessages((prev) =>
             prev.map((msg) =>
-              seenMessageIds.includes(msg.id) ? { ...msg, isSeen: true } : msg
+              seenMessageIds.includes(msg.id)
+                ? { ...msg, isSeen: msg.senderId !== USER_ID ? false : true }
+                : msg
             )
           );
         });

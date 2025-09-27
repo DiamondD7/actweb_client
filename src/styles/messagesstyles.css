@@ -40,7 +40,14 @@
   align-items: center;
   gap: 10px;
 
+  padding: 10px;
+  cursor: pointer;
   margin-top: 20px;
+}
+
+.active-chat-room {
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 0.06);
 }
 
 .messages-chat-preview-info__wrapper p {
@@ -178,6 +185,5 @@
 }
 
 .message-not-seen__p {
-  color: red;
   font-weight: bold;
 }

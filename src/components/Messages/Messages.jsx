@@ -107,6 +107,7 @@ const ChatsPreviews = ({
   chatRooms,
   chatRoomsUsers,
   setOpenChatClicked,
+  chosenChatRoom,
   setChosenChatRoom,
   previewMessage,
   lastMessage,
@@ -148,7 +149,11 @@ const ChatsPreviews = ({
               (chat.senderId === user.id || chat.recipientId === user.id) &&
               user.id !== sessionStorage.getItem("id") && (
                 <div
-                  className="messages-chat-preview__wrapper"
+                  className={`messages-chat-preview__wrapper ${
+                    chosenChatRoom.chatroom.id === chat.id
+                      ? "active-chat-room"
+                      : ""
+                  }`}
                   key={user.id}
                   onClick={(e) => handleChatRoomClicked(e, chat, user)}
                 >
@@ -168,36 +173,24 @@ const ChatsPreviews = ({
                         <p>{user.fullName}</p>
 
                         {/* pick either SignalR-updated last message OR fallback to msg */}
-                        {lastMessage[chat.id] ? (
+                        {lastMessage[chat.id] || msg ? (
                           <p
                             className={
-                              lastMessage[chat.id].senderId !== USER_ID &&
-                              lastMessage[chat.id].isSeen === false
+                              (lastMessage[chat.id]?.senderId ??
+                                msg.senderId) !== USER_ID &&
+                              (lastMessage[chat.id]?.isSeen ?? msg.isSeen) ===
+                                false
                                 ? "message-not-seen__p"
                                 : "preview-message__text"
                             }
                           >
-                            {lastMessage[chat.id].content.length > 50
-                              ? lastMessage[chat.id].content.substring(0, 50)
-                              : lastMessage[chat.id].content}
+                            {(
+                              lastMessage[chat.id]?.content ?? msg.content
+                            )?.substring(0, 50)}
                           </p>
-                        ) : (
-                          <p
-                            className={
-                              msg.senderId !== USER_ID && msg.isSeen === false
-                                ? "message-not-seen__p"
-                                : "preview-message__text"
-                            }
-                          >
-                            {msg.content.length > 50
-                              ? msg.content.substring(0, 50)
-                              : msg.content}
-                          </p>
-                        )}
+                        ) : null}
                       </div>
-                    ) : (
-                      ""
-                    )
+                    ) : null
                   )}
 
                   {/* {previewMessage.map((msg) =>
@@ -708,6 +701,7 @@ const Messages = () => {
             chatRooms={chatRooms}
             chatRoomsUsers={chatRoomsUsers}
             setOpenChatClicked={setOpenChatClicked}
+            chosenChatRoom={chosenChatRoom}
             setChosenChatRoom={setChosenChatRoom}
             previewMessage={previewMessage}
             lastMessage={lastMessage}
