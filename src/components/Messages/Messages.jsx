@@ -15,6 +15,7 @@ import {
 } from "../../assets/js/serverapi";
 import { useNavigate } from "react-router-dom";
 import useValidateUser from "../../assets/js/validate-user";
+import useNotification from "../../assets/js/useNotification";
 import { TimeAgo } from "../../assets/js/timeago";
 
 import "../../styles/messagesstyles.css";
@@ -255,6 +256,17 @@ const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
   });
   const [messages, setMessages] = useState([]);
 
+  const notification = {
+    RecieverId:
+      USER_ID === chatroom.senderId ? chatroom.recipientId : chatroom.senderId,
+    SenderId: USER_ID,
+    ReferenceId: chatroom.id,
+    Type: "NewMessage",
+    Message: "sent you a message",
+    CreatedAt: null,
+  };
+  const notificationHook = useNotification();
+
   // SignalR connection
   useSignalR(
     "http://localhost:5188/chatHub",
@@ -348,6 +360,8 @@ const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
 
       const data = await response.json();
       //console.log(data);
+
+      await notificationHook(notification);
       setMessageModel((prev) => ({
         ...prev,
         Content: "",

@@ -34,7 +34,6 @@ const useValidateUser = () => {
       }
 
       const data = await response.json();
-      console.log("xxx", callFunction);
       await callFunction(false);
     } catch (err) {
       console.error("Error validating token:", err);
