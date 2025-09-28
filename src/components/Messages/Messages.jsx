@@ -8,9 +8,14 @@ import {
   CreateChatRoom,
   GetChats,
   GetUsersByIds,
+  MessageSent,
+  GetMessages,
+  MarkSeenMessage,
+  GetPreviewMessages,
 } from "../../assets/js/serverapi";
 import { useNavigate } from "react-router-dom";
 import useValidateUser from "../../assets/js/validate-user";
+import { TimeAgo } from "../../assets/js/timeago";
 
 import "../../styles/messagesstyles.css";
 const NewChatUsersPreview = ({ following, validateToken, fetchChatRooms }) => {
@@ -52,7 +57,7 @@ const NewChatUsersPreview = ({ following, validateToken, fetchChatRooms }) => {
 
       if (response.status === 401 && retry) {
         console.warn("401 detected, retrying...");
-        return validateToken(true, handleFunctionCallback());
+        return validateToken(true, handleFunctionCallback);
       }
 
       if (!response.ok) {
@@ -98,41 +103,137 @@ const NewChatUsersPreview = ({ following, validateToken, fetchChatRooms }) => {
   );
 };
 
-const ChatsPreviews = ({ chatRooms, chatRoomsUsers }) => {
-  const stringMessage =
-    "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum et optio explicabo vero aliquid nostrum doloremque veniam aperiam. Magnam consectetur eaque dolore suscipit beatae, fugiat maxime qui porro inventore voluptate? Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex ipsum expedita laboriosam, accusantium quasi deleniti pariatur ut. Mollitia fugiat repellat, dignissimos in nisi placeat itaque ut quaerat odio est voluptas.";
+const ChatsPreviews = ({
+  chatRooms,
+  chatRoomsUsers,
+  setOpenChatClicked,
+  chosenChatRoom,
+  setChosenChatRoom,
+  previewMessage,
+  lastMessage,
+  fetchChatRooms,
+}) => {
+  const USER_ID = sessionStorage.getItem("id");
+  const [search, setSearch] = useState("");
+
+  const handleChatRoomClicked = async (e, chatroom, chatuser) => {
+    e.preventDefault();
+    await fetchChatRooms(); //do i still need this?
+    setChosenChatRoom({
+      chatroom: chatroom,
+      userFullName: chatuser.fullName,
+      userProfilePicture: chatuser.profilePictureUrl,
+    });
+    setOpenChatClicked(true);
+  };
+
+  const filterSearch = chatRoomsUsers.filter((user) =>
+    user.fullName.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="messages-chats__wrapper">
       <h2>Chats</h2>
       <input
         className="messages-chats-search__input"
         type="text"
-        placeholder="Search conversations"
+        placeholder="Search chat"
+        onChange={(e) => setSearch(e.target.value)}
       />
 
       {/* mapping chatRooms and chatRoomUsers and conditions are: match user with the senderId or recipientId and current userId should not included. */}
       {chatRooms.map((chat) => (
         <div key={chat.id}>
-          {chatRoomsUsers.map(
+          {filterSearch.map(
             (user) =>
               (chat.senderId === user.id || chat.recipientId === user.id) &&
               user.id !== sessionStorage.getItem("id") && (
-                <div className="messages-chat-preview__wrapper" key={user.id}>
+                <div
+                  className={`messages-chat-preview__wrapper ${
+                    chosenChatRoom.chatroom.id === chat.id
+                      ? "active-chat-room"
+                      : ""
+                  }`}
+                  key={user.id}
+                  onClick={(e) => handleChatRoomClicked(e, chat, user)}
+                >
                   <img
                     className="messages-thumbnail__img"
                     src={`${BASE_URL}/${user.profilePictureUrl}`}
                     alt="profile-message-thumbnail-picture"
                   />
-                  <div className="messages-chat-preview-info__wrapper">
-                    <label>12:00PM</label>
-                    <p>{user.fullName}</p>
 
-                    <span>
-                      {stringMessage.length > 50
-                        ? stringMessage.substring(0, 45) + "..."
-                        : stringMessage}
-                    </span>
-                  </div>
+                  {previewMessage.map((msg) =>
+                    msg.chatId === chat.id ? (
+                      <div
+                        className="messages-chat-preview-info__wrapper"
+                        key={msg.id}
+                      >
+                        <label>{TimeAgo(msg.timeStamp)}</label>
+                        <p>{user.fullName}</p>
+
+                        {/* pick either SignalR-updated last message OR fallback to msg */}
+                        {lastMessage[chat.id] || msg ? (
+                          <p
+                            className={
+                              (lastMessage[chat.id]?.senderId ??
+                                msg.senderId) !== USER_ID &&
+                              (lastMessage[chat.id]?.isSeen ?? msg.isSeen) ===
+                                false
+                                ? "message-not-seen__p"
+                                : "preview-message__text"
+                            }
+                          >
+                            {(
+                              lastMessage[chat.id]?.content ?? msg.content
+                            )?.substring(0, 50)}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : null
+                  )}
+
+                  {/* {previewMessage.map((msg) =>
+                    msg.chatId === chat.id ? (
+                      <div
+                        className="messages-chat-preview-info__wrapper"
+                        key={msg.id}
+                      >
+                        <label>{TimeAgo(msg.timeStamp)}</label>
+                        <p>{user.fullName}</p>
+
+                        {lastMessage !== null &&
+                        lastMessage.chatId === chat.id ? (
+                          <p
+                            className={
+                              lastMessage.senderId !== USER_ID &&
+                              lastMessage.isSeen === false
+                                ? "message-not-seen__p"
+                                : "preview-message__text"
+                            }
+                          >
+                            {lastMessage.content.length > 50
+                              ? lastMessage.content.substring(0, 50)
+                              : lastMessage.content}
+                          </p>
+                        ) : (
+                          <p
+                            className={
+                              msg.senderId !== USER_ID && msg.isSeen === false
+                                ? "message-not-seen__p"
+                                : "preview-message__text"
+                            }
+                          >
+                            {msg.content.length > 50
+                              ? msg.content.substring(0, 50)
+                              : msg.content}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      ""
+                    )
+                  )} */}
                 </div>
               )
           )}
@@ -142,42 +243,270 @@ const ChatsPreviews = ({ chatRooms, chatRoomsUsers }) => {
   );
 };
 
-const TheirMessage = () => {
+const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
+  const navigate = useNavigate();
+  const validateUser = useValidateUser();
+  const USER_ID = sessionStorage.getItem("id");
+  const { chatroom, userFullName, userProfilePicture } = chosenChatRoom;
+  const [messageModel, setMessageModel] = useState({
+    ChatId: chatroom.id,
+    SenderId: USER_ID,
+    Content: "",
+  });
+  const [messages, setMessages] = useState([]);
+
+  // SignalR connection
+  useSignalR(
+    "http://localhost:5188/chatHub",
+    setMessages,
+    chatroom.id,
+    setLastMessage
+  );
+
+  useEffect(() => {
+    handleFetchMessages();
+    handleMarkSeenMessages();
+  }, [chatroom.id, messages.length]);
+
+  const handleFetchMessages = async (retry = true) => {
+    try {
+      const response = await fetch(`${GetMessages}/${chatroom.id}`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.status === 301) {
+        console.warn("301 detected. Redirecting...");
+        sessionStorage.clear();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && !retry) {
+        console.error("Unauthorized. Please log in again.");
+        sessionStorage.clear();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Retrying request....");
+        return validateUser(true, handleFetchMessages);
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch messages");
+      }
+
+      const data = await response.json();
+      //console.log(data);
+      setMessages(data);
+    } catch (err) {
+      console.error("Error fetching messages:", err);
+      throw err;
+    }
+  };
+
+  const handleSendMessage = async (retry = true) => {
+    try {
+      const response = await fetch(MessageSent, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          ChatId: chatroom.id,
+          SenderId: USER_ID,
+          Content: messageModel.Content,
+        }),
+      });
+
+      if (response.status === 301) {
+        console.warn("301 detected. Redirecting...");
+        sessionStorage.clear();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && !retry) {
+        console.error("Unauthorized. Please log in again.");
+        sessionStorage.clear();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Retrying request....");
+        return validateUser(true, handleSendMessage);
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+
+      const data = await response.json();
+      //console.log(data);
+      setMessageModel((prev) => ({
+        ...prev,
+        Content: "",
+      }));
+    } catch (err) {
+      console.error("Error sending message:", err);
+      throw err;
+    }
+  };
+
+  const handleMarkSeenMessages = async (retry = true) => {
+    try {
+      const response = await fetch(MarkSeenMessage, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          ChatId: chatroom.id,
+          SenderId: USER_ID,
+          Content: messageModel.Content,
+        }),
+      });
+
+      if (response.status === 301) {
+        console.warn("301 detected. Redirecting...");
+        sessionStorage.clear();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && !retry) {
+        console.error("Unauthorized. Please log in again.");
+        sessionStorage.clear();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Retrying request....");
+        return validateUser(true, handleMarkSeenMessages);
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+
+      const data = await response.json();
+      //console.log(data);
+    } catch (err) {
+      console.error("Error sending message:", err);
+      throw err;
+    }
+  };
+
+  const handleMessageBtnClicked = async (e) => {
+    e.preventDefault();
+    await handleSendMessage();
+  };
+
+  const handleOnChange = (e) => {
+    const { name, value } = e.target;
+    setMessageModel((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  return (
+    <div>
+      <div className="messages-conversation__wrapper">
+        <div className="messages-conversation-header__wrapper">
+          <img
+            className="messages-thumbnail__img"
+            src={`${BASE_URL}/${userProfilePicture}`}
+            alt="profile-message-thumbnail-picture"
+          />
+          <p>{userFullName}</p>
+        </div>
+        <br />
+        <br />
+
+        {messages.length !== 0 ? (
+          <>
+            {messages.map((msg, index) =>
+              msg.senderId === USER_ID ? (
+                <MyMessage
+                  msg={msg}
+                  lastMessageIndex={messages.length}
+                  index={index}
+                />
+              ) : (
+                <TheirMessage
+                  msg={msg}
+                  userProfilePicture={userProfilePicture}
+                />
+              )
+            )}
+          </>
+        ) : (
+          <p>No messages yet. Say hi to {userFullName}!</p>
+        )}
+      </div>
+
+      <div className="messages-conversation-message-textarea__wrapper">
+        <textarea
+          placeholder="send your message here..."
+          name="Content"
+          onChange={(e) => handleOnChange(e)}
+          value={messageModel.Content}
+        ></textarea>
+        <button
+          className="messages-conversation-send__btn"
+          onClick={(e) => handleMessageBtnClicked(e)}
+        >
+          <PaperPlaneRightIcon size={20} weight="fill" color={"#4495c7"} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const TheirMessage = ({ msg, userProfilePicture }) => {
   return (
     <div className="messaages-conversation-theirmessage-container__wrapper">
       <div className="messages-conversation-theirmessage__wrapper">
-        <img
-          className="messages-thumbnail__img"
-          src="https://randomuser.me/api/portraits/men/32.jpg"
-          alt="profile-message-thumbnail-picture"
-        />
+        <div>
+          <img
+            className="messages-thumbnail__img"
+            src={`${BASE_URL}/${userProfilePicture}`}
+            alt="profile-message-thumbnail-picture"
+          />
+        </div>
 
         <div className="messages-conversation-theirmessage-bubble__wrapper">
-          <p className="message-conversation-timeStamp__text">11:36 AM</p>
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda
-            quis totam in ratione quibusdam, vero obcaecati animi odit mollitia
-            unde impedit adipisci omnis consequatur repellendus, beatae, hic
-            magni sapiente autem?
+          <p className="message-conversation-timeStamp__text">
+            {TimeAgo(msg.timeStamp)}
           </p>
+          <p>{msg.content}</p>
         </div>
       </div>
     </div>
   );
 };
 
-const MyMessage = () => {
+const MyMessage = ({ msg, lastMessageIndex, index }) => {
   return (
     <div className="messages-conversation-mymessage-container__wrapper">
       <div className="messages-conversation-mymessage__wrapper">
-        <p className="message-conversation-timeStamp__text">12:00 PM</p>
+        <p className="message-conversation-timeStamp__text">
+          {TimeAgo(msg.timeStamp)}
+        </p>
         <div className="messages-conversation-mymessage-bubble__wrapper">
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda
-            quis totam in ratione quibusdam, vero obcaecati animi odit mollitia
-            unde impedit adipisci omnis consequatur repellendus, beatae, hic
-            magni sapiente autem?
-          </p>
+          <p>{msg.content}</p>
+          {index === lastMessageIndex - 1 && (
+            <p>{msg.isSeen === false ? "Sent" : "Seen"}</p>
+          )}
         </div>
       </div>
     </div>
@@ -186,31 +515,50 @@ const MyMessage = () => {
 
 const Messages = () => {
   const USER_ID = sessionStorage.getItem("id");
-  const validateToken = useValidateUser();
   const navigate = useNavigate();
-  const [messages, setMessages] = useState([]);
-  const [message, setMessage] = useState("");
+  const validateToken = useValidateUser();
 
-  const { startConnection, sendMessage, onReceiveMessage } = useSignalR(
-    "http://localhost:5188/chatHub"
-  );
-
-  // useEffect(() => {
-  //   startConnection();
-  //   onReceiveMessage("ReceiveMessage", (user, receivedMessage) => {
-  //     const newMessage = { user, text: receivedMessage };
-  //     setMessages((prevMessages) => [...prevMessages, newMessage]);
-  //   });
-  // }, []);
-
+  const [openChatClicked, setOpenChatClicked] = useState(false);
+  const [chosenChatRoom, setChosenChatRoom] = useState({
+    chatroom: {},
+    userFullName: "",
+    userProfilePicture: "",
+  });
+  const [lastMessage, setLastMessage] = useState({}); //container for last message (Signal R)
+  const [previewMessage, setPreviewMessage] = useState([]); //container for last messages (fetching from API)
   const [chatRooms, setChatRooms] = useState([]);
   const [chatRoomsUsers, setChatRoomsUsers] = useState([]);
   const [following, setFollowing] = useState([]);
+
+  useSignalR("http://localhost:5188/chatHub", null, 0, setLastMessage);
 
   useEffect(() => {
     fetchChatRooms();
   }, []);
 
+  const fetchPreviewMessages = async (chats) => {
+    try {
+      const response = await fetch(GetPreviewMessages, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(chats),
+      });
+
+      if (!response.ok) {
+        console.error("Error: ", response.status);
+        return;
+      }
+
+      const data = await response.json();
+      setPreviewMessage(data);
+    } catch (err) {
+      console.error("Error:", err);
+      throw err;
+    }
+  };
   const fetchFollowing = async (retry = true, chatUsers) => {
     try {
       const response = await fetch(`${GetFollowing}/${USER_ID}`, {
@@ -276,7 +624,7 @@ const Messages = () => {
 
       if (response.status === 401 && retry) {
         console.warn("401 detected, retrying...");
-        return validateToken(true, fetchChatRooms(false));
+        return validateToken(true, fetchChatRooms);
       }
 
       if (!response.ok) {
@@ -286,17 +634,22 @@ const Messages = () => {
       const data = await response.json();
       setChatRooms(data);
 
-      //get all ids except the user-id
-      const ids = data.map((items) =>
-        items.senderId === USER_ID ? items.recipientId : items.senderId
-      );
+      //Called fetchChatRooms function in another component (ChatPreviews). Everytime the user clicks to open a chat room.
+      //handleFetchUsers will only be called when the openChatClicked is false. in other words: it will only run once.
+      //no need to run everytime the user move to another chatroom.
+      if (openChatClicked === false) {
+        //get all ids except the user-id
+        const ids = data.map((items) =>
+          items.senderId === USER_ID ? items.recipientId : items.senderId
+        );
+        await handleFetchUsers(true, ids);
+      }
 
-      handleFetchUsers(true, ids);
+      await fetchPreviewMessages(data);
     } catch (err) {
       console.error("Error fetching following:", err);
     }
   };
-
   const handleFetchUsers = async (retry = true, ids) => {
     try {
       const response = await fetch(GetUsersByIds, {
@@ -347,6 +700,12 @@ const Messages = () => {
           <ChatsPreviews
             chatRooms={chatRooms}
             chatRoomsUsers={chatRoomsUsers}
+            setOpenChatClicked={setOpenChatClicked}
+            chosenChatRoom={chosenChatRoom}
+            setChosenChatRoom={setChosenChatRoom}
+            previewMessage={previewMessage}
+            lastMessage={lastMessage}
+            fetchChatRooms={fetchChatRooms}
           />
 
           <NewChatUsersPreview
@@ -355,29 +714,13 @@ const Messages = () => {
             fetchChatRooms={fetchChatRooms}
           />
         </div>
-        <div>
-          <div className="messages-conversation__wrapper">
-            <div className="messages-conversation-header__wrapper">
-              <img
-                className="messages-thumbnail__img"
-                src="https://randomuser.me/api/portraits/men/32.jpg"
-                alt="profile-message-thumbnail-picture"
-              />
-              <p>John Doe</p>
-            </div>
-            <br />
-            <br />
-            <TheirMessage />
-            <MyMessage />
-          </div>
 
-          <div className="messages-conversation-message-textarea__wrapper">
-            <textarea placeholder="send your message here..."></textarea>
-            <button className="messages-conversation-send__btn">
-              <PaperPlaneRightIcon size={20} weight="fill" color={"#4495c7"} />
-            </button>
-          </div>
-        </div>
+        {openChatClicked === true && (
+          <MessageContainer
+            chosenChatRoom={chosenChatRoom}
+            setLastMessage={setLastMessage}
+          />
+        )}
       </div>
     </div>
   );

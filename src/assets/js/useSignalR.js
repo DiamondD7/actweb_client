@@ -1,76 +1,81 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
 
-const useSignalR = (hubUrl) => {
+const useSignalR = (hubUrl, setMessages, chatRoomId, setLastMessage) => {
   const connectionRef = useRef(null);
 
-  //Starting the connection
-  const startConnection = useCallback(async () => {
-    if (connectionRef.current) return;
-
+  useEffect(() => {
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl(hubUrl)
+      .withUrl(hubUrl, {
+        withCredentials: true,
+      })
       .withAutomaticReconnect()
-      .configureLogging(signalR.LogLevel.Information)
       .build();
 
     connectionRef.current = connection;
 
-    try {
-      await connection.start();
-      console.log("SignalR Connected.");
-    } catch (err) {
-      console.warn("SignalR Connection Error: ", err);
-      setTimeout(startConnection, 5000);
-    }
-  }, [hubUrl]);
-
-  //Stop connection
-  const stopConnection = useCallback(async () => {
-    if (connectionRef.current) {
-      await connectionRef.current.stop();
-      connectionRef.current = null;
-      console.log("SignalR Disconnected.");
-    }
-  }, []);
-
-  //OnReceive message
-  const onReceiveMessage = useCallback((eventName, callback) => {
-    if (connectionRef.current) {
-      connectionRef.current.on(eventName, callback);
-    }
-  }, []);
-
-  //Send message
-  const sendMessage = useCallback(async (methodName, ...args) => {
-    if (
-      connectionRef.current &&
-      connectionRef.current.statte === signalR.HubConnectionState.Connected
-    ) {
+    const start = async () => {
       try {
-        await connectionRef.current.invoke(methodName, ...args);
+        await connection.start();
+        console.log("SignalR Connected.");
+
+        connection.on("ReceivePreviewMessage", (msg) => {
+          setLastMessage((prev) => ({
+            ...prev,
+            [msg.chatId]: msg,
+          }));
+        });
+
+        connection.on("ReceiveMessage", (msg) => {
+          setLastMessage((prev) => ({
+            ...prev,
+            [msg.chatId]: {
+              ...msg,
+              isSeen: false, // mark unseen for preview
+            },
+          }));
+
+          if (msg.chatId !== chatRoomId) return; // only update if for current chatroom
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === msg.id)) return prev; // avoid duplicates
+            return [...prev, msg];
+          });
+        });
+
+        connection.on("MessageSeen", (chatId, seenMessageIds, msg) => {
+          const USER_ID = sessionStorage.getItem("id");
+          setLastMessage((prev) => ({
+            ...prev,
+            [chatId]: {
+              ...(prev[chatId] || {}),
+              isSeen: msg.senderId !== USER_ID ? false : true,
+            },
+          }));
+
+          if (chatId !== chatRoomId) return; // only update if for current chatroom
+
+          setMessages((prev) =>
+            prev.map((msg) =>
+              seenMessageIds.includes(msg.id)
+                ? { ...msg, isSeen: msg.senderId !== USER_ID ? false : true }
+                : msg
+            )
+          );
+        });
       } catch (err) {
-        console.erroe("SignalR Send Message Error: ", err);
+        console.error("SignalR Connection Error:", err);
+        setTimeout(start, 5000); // retry
       }
-    } else {
-      console.error("Cannot send message: SignalR is not connected.");
-    }
-  });
-
-  //handle connection close
-  useEffect(() => {
-    return () => {
-      stopConnection();
     };
-  }, [stopConnection]);
 
-  return {
-    startConnection,
-    stopConnection,
-    onReceiveMessage,
-    sendMessage,
-    connection: connectionRef.current,
-  };
+    start();
+
+    return () => {
+      connection.stop();
+    };
+  }, [hubUrl, setMessages, chatRoomId]);
+
+  return connectionRef.current;
 };
 
 export default useSignalR;

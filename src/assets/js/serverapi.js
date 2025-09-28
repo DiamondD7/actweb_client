@@ -45,5 +45,10 @@ export const GetLikes = "http://localhost:5123/api/Like/likes";
 export const CheckLike = "http://localhost:5123/api/Like/user-like";
 
 //ChatAPI
+export const GetMessages = "http://localhost:5188/api/Message/chatroom";
+export const GetPreviewMessages =
+  "http://localhost:5188/api/Message/message-preview";
 export const GetChats = "http://localhost:5188/api/Message/chats";
 export const CreateChatRoom = "http://localhost:5188/api/Message/chatroom";
+export const MessageSent = "http://localhost:5188/api/Message/message";
+export const MarkSeenMessage = "http://localhost:5188/api/Message";
