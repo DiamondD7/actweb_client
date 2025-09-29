@@ -10,6 +10,7 @@ const useNotification = () => {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(notification),
       });
 

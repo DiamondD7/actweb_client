@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   BASE_URL,
   GetNotificationIds,
@@ -6,13 +6,46 @@ import {
 } from "../../assets/js/serverapi";
 import { useNavigate } from "react-router-dom";
 import { TimeAgo } from "../../assets/js/timeago";
+import * as signalR from "@microsoft/signalr";
 
 import "../../styles/notificationsstyles.css";
 const Notifications = () => {
   const USER_ID = sessionStorage.getItem("id");
   const navigate = useNavigate();
+  const [seeAllNotifs, setSeeAllNotifs] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationUsers, setNotificationUsers] = useState([]);
+
+  //--------------------------------------SIGNALR {START} NOTIFICATION------------------------------------------------------
+
+  const connectionRef = useRef(null);
+
+  useEffect(() => {
+    connectionRef.current = new signalR.HubConnectionBuilder()
+      .withUrl("http://localhost:5164/notification-hub", {
+        withCredentials: true,
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    connectionRef.current
+      .start()
+      .then(() => {
+        console.log("Connected SignalR");
+
+        connectionRef.current.on("ReceiveData", (model) => {
+          console.log("Notification Recieved", model);
+          setNotifications((prev) => [model, ...prev]);
+        });
+      })
+      .catch((err) => console.error(err));
+
+    return () => {
+      connectionRef.current.stop();
+    };
+  }, []);
+
+  //--------------------------------------SIGNALR {END} NOTIFICATION------------------------------------------------------
 
   useEffect(() => {
     handleFetchNotifIds();
@@ -77,23 +110,30 @@ const Notifications = () => {
     }
   };
 
+  const displayedNotifications = seeAllNotifs
+    ? notifications
+    : notifications.slice(0, 3);
+
   return (
     <>
-      {notificationUsers.map((user) => (
-        <div key={user.id}>
-          {notifications.map(
-            (items) =>
-              user.id === items.senderId && (
-                <div
-                  className="notifications-container__wrapper"
-                  key={items.id}
-                >
+      <div className="notifications-container__wrapper">
+        {notificationUsers.map((user) => (
+          <div
+            className={`notification-data-container__wrapper ${
+              seeAllNotifs === true ? "notification-seeAll-overflow" : ""
+            }`}
+            key={user.id}
+          >
+            {displayedNotifications.map(
+              (items) =>
+                items.senderId === user.id && (
                   <div
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
                       marginTop: "20px",
                     }}
+                    key={items.id}
                   >
                     <div className="notifications-details__wrapper">
                       <img
@@ -113,17 +153,22 @@ const Notifications = () => {
                       {TimeAgo(items.createdAt)}
                     </p>
                   </div>
+                )
+            )}
+          </div>
+        ))}
 
-                  <div className="notifications-sellAll__wrapper">
-                    <button className="notifications-sellAll__btn">
-                      See all notifications
-                    </button>
-                  </div>
-                </div>
-              )
-          )}
+        <div className="notifications-seeAll__wrapper">
+          <button
+            className="notifications-sellAll__btn"
+            onClick={() => setSeeAllNotifs(!seeAllNotifs)}
+          >
+            {seeAllNotifs === true
+              ? "Hide notifications"
+              : "See all notifications"}
+          </button>
         </div>
-      ))}
+      </div>
     </>
   );
 };
