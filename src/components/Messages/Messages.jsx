@@ -1,7 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Nav from "../Nav/Nav";
 import useSignalR from "../../assets/js/useSignalR";
-import { HandWavingIcon, PaperPlaneRightIcon } from "@phosphor-icons/react";
+import {
+  HandWavingIcon,
+  PaperPlaneRightIcon,
+  SmileyIcon,
+} from "@phosphor-icons/react";
 import {
   BASE_URL,
   GetFollowing,
@@ -17,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import useValidateUser from "../../assets/js/validate-user";
 import useNotification from "../../assets/js/useNotification";
 import { TimeAgo } from "../../assets/js/timeago";
+import Picker from "emoji-picker-react";
 
 import "../../styles/messagesstyles.css";
 const NewChatUsersPreview = ({ following, validateToken, fetchChatRooms }) => {
@@ -268,6 +273,9 @@ const ChatsPreviews = ({
 };
 
 const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
+  const [showPicker, setShowPicker] = useState(false); // State to control picker visibility
+  const divScroll = useRef(null);
+
   const navigate = useNavigate();
   const validateUser = useValidateUser();
   const USER_ID = sessionStorage.getItem("id");
@@ -289,6 +297,21 @@ const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
     CreatedAt: null,
   };
   const notificationHook = useNotification();
+
+  const onEmojiClick = (emojiObject) => {
+    setMessageModel((prev) => ({
+      ...prev,
+      Content: prev.Content + emojiObject.emoji,
+    }));
+    setShowPicker(false); // Hide picker after selection
+  };
+
+  useEffect(() => {
+    //handles the automatic scrolling to the most recent message.
+    if (divScroll.current) {
+      divScroll.current.scrollTop = divScroll.current.scrollHeight;
+    }
+  }, [chosenChatRoom, messages]);
 
   // SignalR connection
   useSignalR(
@@ -470,7 +493,13 @@ const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
         <br />
 
         {messages.length !== 0 ? (
-          <>
+          <div
+            ref={divScroll}
+            style={{
+              height: "63vh",
+              overflowY: "auto",
+            }}
+          >
             {messages.map((msg, index) =>
               msg.senderId === USER_ID ? (
                 <MyMessage
@@ -485,7 +514,7 @@ const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
                 />
               )
             )}
-          </>
+          </div>
         ) : (
           <div className="message-empty-convo__wrapper">
             <HandWavingIcon size={52} weight="fill" />
@@ -503,6 +532,22 @@ const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
           onChange={(e) => handleOnChange(e)}
           value={messageModel.Content}
         ></textarea>
+        <button
+          className="messaging-emoji-picker__btn"
+          onClick={() => setShowPicker(!showPicker)}
+        >
+          {showPicker ? (
+            <SmileyIcon size={23} weight="fill" />
+          ) : (
+            <SmileyIcon size={23} />
+          )}
+        </button>
+
+        {showPicker && (
+          <div className="emoji-picker-container">
+            <Picker onEmojiClick={onEmojiClick} />
+          </div>
+        )}
         <button
           className="messages-conversation-send__btn"
           onClick={(e) => handleMessageBtnClicked(e)}
