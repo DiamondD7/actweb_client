@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Nav from "../Nav/Nav";
 import useSignalR from "../../assets/js/useSignalR";
-import { PaperPlaneRightIcon } from "@phosphor-icons/react";
+import { HandWavingIcon, PaperPlaneRightIcon } from "@phosphor-icons/react";
 import {
   BASE_URL,
   GetFollowing,
@@ -81,25 +81,37 @@ const NewChatUsersPreview = ({ following, validateToken, fetchChatRooms }) => {
 
   return (
     <div className="new-chat-container__wrapper">
-      <h5>Say hi to a friend</h5>
-      {following.map((user) => (
-        <div
-          className="new-chat-preview__wrapper"
-          key={user.id}
-          onClick={(e) => handleClick(e, user.id)}
-        >
-          <img
-            className="messages-thumbnail__img"
-            src={`${BASE_URL}/${user.profilePictureUrl}`}
-            alt="profile-message-thumbnail-picture"
-          />
-          <div className="messages-chat-preview-info__wrapper">
-            <p>{user.fullName}</p>
+      <h5>Start a conversation with a friend</h5>
+      {following.length <= 0 ? (
+        <div className="new-chat-empty__wrapper">
+          <p style={{ fontSize: "11px" }}>
+            It looks like you have not followed anyone yet.
+          </p>
 
-            <span>Start a convo with {user.firstName}</span>
-          </div>
+          <button onClick={() => navigate("/connect-page")}>
+            Find Connections
+          </button>
         </div>
-      ))}
+      ) : (
+        following.map((user) => (
+          <div
+            className="new-chat-preview__wrapper"
+            key={user.id}
+            onClick={(e) => handleClick(e, user.id)}
+          >
+            <img
+              className="messages-thumbnail__img"
+              src={`${BASE_URL}/${user.profilePictureUrl}`}
+              alt="profile-message-thumbnail-picture"
+            />
+            <div className="messages-chat-preview-info__wrapper">
+              <p>{user.fullName}</p>
+
+              <span>Start a convo with {user.firstName}</span>
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 };
@@ -191,7 +203,18 @@ const ChatsPreviews = ({
                           </p>
                         ) : null}
                       </div>
-                    ) : null
+                    ) : (
+                      <div
+                        className="messages-chat-preview-info__wrapper"
+                        key={msg.id}
+                      >
+                        <p>{user.fullName}</p>
+
+                        <p style={{ fontSize: "10px" }}>
+                          No message yet, be the first to say hi 👋
+                        </p>
+                      </div>
+                    )
                   )}
 
                   {/* {previewMessage.map((msg) =>
@@ -464,7 +487,12 @@ const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
             )}
           </>
         ) : (
-          <p>No messages yet. Say hi to {userFullName}!</p>
+          <div className="message-empty-convo__wrapper">
+            <HandWavingIcon size={52} weight="fill" />
+            <p style={{ color: "rgba(0,0,0,0.4)", marginTop: "10px" }}>
+              No messages yet. Be the first to say hi
+            </p>
+          </div>
         )}
       </div>
 
