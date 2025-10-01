@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Nav from "../Nav/Nav";
 import useSignalR from "../../assets/js/useSignalR";
 import {
+  CircleNotchIcon,
   HandWavingIcon,
   PaperPlaneRightIcon,
   SmileyIcon,
@@ -24,7 +25,12 @@ import { TimeAgo } from "../../assets/js/timeago";
 import Picker from "emoji-picker-react";
 
 import "../../styles/messagesstyles.css";
-const NewChatUsersPreview = ({ following, validateToken, fetchChatRooms }) => {
+const NewChatUsersPreview = ({
+  followingLoading,
+  following,
+  validateToken,
+  fetchChatRooms,
+}) => {
   const USER_ID = sessionStorage.getItem("id");
   const navigate = useNavigate();
   const [recipientId, setRecipientId] = useState(null); //this is only for the validate function callback
@@ -87,35 +93,43 @@ const NewChatUsersPreview = ({ following, validateToken, fetchChatRooms }) => {
   return (
     <div className="new-chat-container__wrapper">
       <h5>Start a conversation with a friend</h5>
-      {following.length <= 0 ? (
-        <div className="new-chat-empty__wrapper">
-          <p style={{ fontSize: "11px" }}>
-            It looks like you have not followed anyone yet.
-          </p>
-
-          <button onClick={() => navigate("/connect-page")}>
-            Find Connections
-          </button>
+      {followingLoading === true ? (
+        <div className="message-loading-icon__wrapper">
+          <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
         </div>
       ) : (
-        following.map((user) => (
-          <div
-            className="new-chat-preview__wrapper"
-            key={user.id}
-            onClick={(e) => handleClick(e, user.id)}
-          >
-            <img
-              className="messages-thumbnail__img"
-              src={`${BASE_URL}/${user.profilePictureUrl}`}
-              alt="profile-message-thumbnail-picture"
-            />
-            <div className="messages-chat-preview-info__wrapper">
-              <p>{user.fullName}</p>
+        <>
+          {following.length <= 0 ? (
+            <div className="new-chat-empty__wrapper">
+              <p style={{ fontSize: "11px" }}>
+                It looks like you have not followed anyone yet.
+              </p>
 
-              <span>Start a convo with {user.firstName}</span>
+              <button onClick={() => navigate("/connect-page")}>
+                Find Connections
+              </button>
             </div>
-          </div>
-        ))
+          ) : (
+            following.map((user) => (
+              <div
+                className="new-chat-preview__wrapper"
+                key={user.id}
+                onClick={(e) => handleClick(e, user.id)}
+              >
+                <img
+                  className="messages-thumbnail__img"
+                  src={`${BASE_URL}/${user.profilePictureUrl}`}
+                  alt="profile-message-thumbnail-picture"
+                />
+                <div className="messages-chat-preview-info__wrapper">
+                  <p>{user.fullName}</p>
+
+                  <span>Start a convo with {user.firstName}</span>
+                </div>
+              </div>
+            ))
+          )}
+        </>
       )}
     </div>
   );
@@ -159,115 +173,81 @@ const ChatsPreviews = ({
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {/* mapping chatRooms and chatRoomUsers and conditions are: match user with the senderId or recipientId and current userId should not included. */}
-      {chatRooms.map((chat) => (
-        <div key={chat.id}>
-          {filterSearch.map(
-            (user) =>
-              (chat.senderId === user.id || chat.recipientId === user.id) &&
-              user.id !== sessionStorage.getItem("id") && (
-                <div
-                  className={`messages-chat-preview__wrapper ${
-                    chosenChatRoom.chatroom.id === chat.id
-                      ? "active-chat-room"
-                      : ""
-                  }`}
-                  key={user.id}
-                  onClick={(e) => handleChatRoomClicked(e, chat, user)}
-                >
-                  <img
-                    className="messages-thumbnail__img"
-                    src={`${BASE_URL}/${user.profilePictureUrl}`}
-                    alt="profile-message-thumbnail-picture"
-                  />
-
-                  {previewMessage.map((msg) =>
-                    msg.chatId === chat.id ? (
-                      <div
-                        className="messages-chat-preview-info__wrapper"
-                        key={msg.id}
-                      >
-                        <label>{TimeAgo(msg.timeStamp)}</label>
-                        <p>{user.fullName}</p>
-
-                        {/* pick either SignalR-updated last message OR fallback to msg */}
-                        {lastMessage[chat.id] || msg ? (
-                          <p
-                            className={
-                              (lastMessage[chat.id]?.senderId ??
-                                msg.senderId) !== USER_ID &&
-                              (lastMessage[chat.id]?.isSeen ?? msg.isSeen) ===
-                                false
-                                ? "message-not-seen__p"
-                                : "preview-message__text"
-                            }
-                          >
-                            {(
-                              lastMessage[chat.id]?.content ?? msg.content
-                            )?.substring(0, 50)}
-                          </p>
-                        ) : null}
-                      </div>
-                    ) : (
-                      <div
-                        className="messages-chat-preview-info__wrapper"
-                        key={msg.id}
-                      >
-                        <p>{user.fullName}</p>
-
-                        <p style={{ fontSize: "10px" }}>
-                          No message yet, be the first to say hi 👋
-                        </p>
-                      </div>
-                    )
-                  )}
-
-                  {/* {previewMessage.map((msg) =>
-                    msg.chatId === chat.id ? (
-                      <div
-                        className="messages-chat-preview-info__wrapper"
-                        key={msg.id}
-                      >
-                        <label>{TimeAgo(msg.timeStamp)}</label>
-                        <p>{user.fullName}</p>
-
-                        {lastMessage !== null &&
-                        lastMessage.chatId === chat.id ? (
-                          <p
-                            className={
-                              lastMessage.senderId !== USER_ID &&
-                              lastMessage.isSeen === false
-                                ? "message-not-seen__p"
-                                : "preview-message__text"
-                            }
-                          >
-                            {lastMessage.content.length > 50
-                              ? lastMessage.content.substring(0, 50)
-                              : lastMessage.content}
-                          </p>
-                        ) : (
-                          <p
-                            className={
-                              msg.senderId !== USER_ID && msg.isSeen === false
-                                ? "message-not-seen__p"
-                                : "preview-message__text"
-                            }
-                          >
-                            {msg.content.length > 50
-                              ? msg.content.substring(0, 50)
-                              : msg.content}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      ""
-                    )
-                  )} */}
-                </div>
-              )
-          )}
+      {chatRoomsUsers.length === 0 ? (
+        <div className="message-loading-icon__wrapper">
+          <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
         </div>
-      ))}
+      ) : (
+        <>
+          {/* mapping chatRooms and chatRoomUsers and conditions are: match user with the senderId or recipientId and current userId should not included. */}
+          {chatRooms.map((chat) => (
+            <div key={chat.id}>
+              {filterSearch.map(
+                (user) =>
+                  (chat.senderId === user.id || chat.recipientId === user.id) &&
+                  user.id !== sessionStorage.getItem("id") && (
+                    <div
+                      className={`messages-chat-preview__wrapper ${
+                        chosenChatRoom.chatroom.id === chat.id
+                          ? "active-chat-room"
+                          : ""
+                      }`}
+                      key={user.id}
+                      onClick={(e) => handleChatRoomClicked(e, chat, user)}
+                    >
+                      <img
+                        className="messages-thumbnail__img"
+                        src={`${BASE_URL}/${user.profilePictureUrl}`}
+                        alt="profile-message-thumbnail-picture"
+                      />
+
+                      {previewMessage.map((msg) =>
+                        msg.chatId === chat.id ? (
+                          <div
+                            className="messages-chat-preview-info__wrapper"
+                            key={msg.id}
+                          >
+                            <label>{TimeAgo(msg.timeStamp)}</label>
+                            <p>{user.fullName}</p>
+
+                            {/* pick either SignalR-updated last message OR fallback to msg */}
+                            {lastMessage[chat.id] || msg ? (
+                              <p
+                                className={
+                                  (lastMessage[chat.id]?.senderId ??
+                                    msg.senderId) !== USER_ID &&
+                                  (lastMessage[chat.id]?.isSeen ??
+                                    msg.isSeen) === false
+                                    ? "message-not-seen__p"
+                                    : "preview-message__text"
+                                }
+                              >
+                                {(
+                                  lastMessage[chat.id]?.content ?? msg.content
+                                )?.substring(0, 50)}
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <div
+                            className="messages-chat-preview-info__wrapper"
+                            key={msg.id}
+                          >
+                            <p>{user.fullName}</p>
+
+                            <p style={{ fontSize: "10px" }}>
+                              No message yet, be the first to say hi 👋
+                            </p>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  )
+              )}
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 };
@@ -605,6 +585,7 @@ const Messages = () => {
   const navigate = useNavigate();
   const validateToken = useValidateUser();
 
+  const [followingLoading, setFollowingLoading] = useState(false);
   const [openChatClicked, setOpenChatClicked] = useState(false);
   const [chosenChatRoom, setChosenChatRoom] = useState({
     chatroom: {},
@@ -620,6 +601,7 @@ const Messages = () => {
   useSignalR("http://localhost:5188/chatHub", null, 0, setLastMessage);
 
   useEffect(() => {
+    setFollowingLoading(true);
     fetchChatRooms();
   }, []);
 
@@ -685,6 +667,10 @@ const Messages = () => {
       );
 
       setFollowing(filteredFollowing);
+
+      setTimeout(() => {
+        setFollowingLoading(false);
+      }, 100);
     } catch (err) {
       console.error("Error fetching following:", err);
     }
@@ -796,6 +782,7 @@ const Messages = () => {
           />
 
           <NewChatUsersPreview
+            followingLoading={followingLoading}
             following={following}
             validateToken={validateToken}
             fetchChatRooms={fetchChatRooms}
