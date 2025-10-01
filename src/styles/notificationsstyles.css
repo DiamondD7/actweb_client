@@ -63,3 +63,9 @@
   background-color: transparent;
   border: none;
 }
+
+.notif-loading-icon__wrapper {
+  position: relative;
+  top: 10%;
+  left: 45%;
+}

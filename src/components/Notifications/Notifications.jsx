@@ -4,6 +4,7 @@ import {
   GetNotificationIds,
   GetUsersByIds,
 } from "../../assets/js/serverapi";
+import { CircleNotchIcon } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { TimeAgo } from "../../assets/js/timeago";
 import * as signalR from "@microsoft/signalr";
@@ -12,6 +13,7 @@ import "../../styles/notificationsstyles.css";
 const Notifications = () => {
   const USER_ID = sessionStorage.getItem("id");
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [seeAllNotifs, setSeeAllNotifs] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationUsers, setNotificationUsers] = useState([]);
@@ -48,6 +50,7 @@ const Notifications = () => {
   //--------------------------------------SIGNALR {END} NOTIFICATION------------------------------------------------------
 
   useEffect(() => {
+    setLoading(true);
     handleFetchNotifIds();
   }, []);
 
@@ -105,6 +108,9 @@ const Notifications = () => {
 
       const data = await response.json();
       setNotificationUsers(data);
+      setTimeout(() => {
+        setLoading(false);
+      }, 100);
     } catch (err) {
       console.warn(err);
     }
@@ -117,57 +123,65 @@ const Notifications = () => {
   return (
     <>
       <div className="notifications-container__wrapper">
-        {notificationUsers.map((user) => (
-          <div
-            className={`notification-data-container__wrapper ${
-              seeAllNotifs === true ? "notification-seeAll-overflow" : ""
-            }`}
-            key={user.id}
-          >
-            {displayedNotifications.map(
-              (items) =>
-                items.senderId === user.id && (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginTop: "20px",
-                    }}
-                    key={items.id}
-                  >
-                    <div className="notifications-details__wrapper">
-                      <img
-                        className="notifications-thumbnail__img"
-                        src={`${BASE_URL}/${user.profilePictureUrl}`}
-                        alt="profile-message-thumbnail-picture"
-                      />
-                      <div className="notification-message__wrapper">
-                        <p>{user.fullName}</p>
-                        <span>
-                          {user.fullName} {items.message}.
-                        </span>
-                      </div>
-                    </div>
-
-                    <p style={{ fontSize: "10px" }}>
-                      {TimeAgo(items.createdAt)}
-                    </p>
-                  </div>
-                )
-            )}
+        {loading === true ? (
+          <div className="notif-loading-icon__wrapper">
+            <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
           </div>
-        ))}
+        ) : (
+          <>
+            {notificationUsers.map((user) => (
+              <div
+                className={`notification-data-container__wrapper ${
+                  seeAllNotifs === true ? "notification-seeAll-overflow" : ""
+                }`}
+                key={user.id}
+              >
+                {displayedNotifications.map(
+                  (items) =>
+                    items.senderId === user.id && (
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginTop: "20px",
+                        }}
+                        key={items.id}
+                      >
+                        <div className="notifications-details__wrapper">
+                          <img
+                            className="notifications-thumbnail__img"
+                            src={`${BASE_URL}/${user.profilePictureUrl}`}
+                            alt="profile-message-thumbnail-picture"
+                          />
+                          <div className="notification-message__wrapper">
+                            <p>{user.fullName}</p>
+                            <span>
+                              {user.fullName} {items.message}.
+                            </span>
+                          </div>
+                        </div>
 
-        <div className="notifications-seeAll__wrapper">
-          <button
-            className="notifications-sellAll__btn"
-            onClick={() => setSeeAllNotifs(!seeAllNotifs)}
-          >
-            {seeAllNotifs === true
-              ? "Hide notifications"
-              : "See all notifications"}
-          </button>
-        </div>
+                        <p style={{ fontSize: "10px" }}>
+                          {TimeAgo(items.createdAt)}
+                        </p>
+                      </div>
+                    )
+                )}
+              </div>
+            ))}
+
+            <div className="notifications-seeAll__wrapper">
+              <button
+                className="notifications-sellAll__btn"
+                onClick={() => setSeeAllNotifs(!seeAllNotifs)}
+              >
+                {seeAllNotifs === true
+                  ? "Hide notifications"
+                  : "See all notifications"}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </>
   );
