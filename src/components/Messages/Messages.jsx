@@ -1,7 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Nav from "../Nav/Nav";
 import useSignalR from "../../assets/js/useSignalR";
-import { PaperPlaneRightIcon } from "@phosphor-icons/react";
+import {
+  HandWavingIcon,
+  PaperPlaneRightIcon,
+  SmileyIcon,
+} from "@phosphor-icons/react";
 import {
   BASE_URL,
   GetFollowing,
@@ -15,7 +19,9 @@ import {
 } from "../../assets/js/serverapi";
 import { useNavigate } from "react-router-dom";
 import useValidateUser from "../../assets/js/validate-user";
+import useNotification from "../../assets/js/useNotification";
 import { TimeAgo } from "../../assets/js/timeago";
+import Picker from "emoji-picker-react";
 
 import "../../styles/messagesstyles.css";
 const NewChatUsersPreview = ({ following, validateToken, fetchChatRooms }) => {
@@ -80,25 +86,37 @@ const NewChatUsersPreview = ({ following, validateToken, fetchChatRooms }) => {
 
   return (
     <div className="new-chat-container__wrapper">
-      <h5>Say hi to a friend</h5>
-      {following.map((user) => (
-        <div
-          className="new-chat-preview__wrapper"
-          key={user.id}
-          onClick={(e) => handleClick(e, user.id)}
-        >
-          <img
-            className="messages-thumbnail__img"
-            src={`${BASE_URL}/${user.profilePictureUrl}`}
-            alt="profile-message-thumbnail-picture"
-          />
-          <div className="messages-chat-preview-info__wrapper">
-            <p>{user.fullName}</p>
+      <h5>Start a conversation with a friend</h5>
+      {following.length <= 0 ? (
+        <div className="new-chat-empty__wrapper">
+          <p style={{ fontSize: "11px" }}>
+            It looks like you have not followed anyone yet.
+          </p>
 
-            <span>Start a convo with {user.firstName}</span>
-          </div>
+          <button onClick={() => navigate("/connect-page")}>
+            Find Connections
+          </button>
         </div>
-      ))}
+      ) : (
+        following.map((user) => (
+          <div
+            className="new-chat-preview__wrapper"
+            key={user.id}
+            onClick={(e) => handleClick(e, user.id)}
+          >
+            <img
+              className="messages-thumbnail__img"
+              src={`${BASE_URL}/${user.profilePictureUrl}`}
+              alt="profile-message-thumbnail-picture"
+            />
+            <div className="messages-chat-preview-info__wrapper">
+              <p>{user.fullName}</p>
+
+              <span>Start a convo with {user.firstName}</span>
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 };
@@ -190,7 +208,18 @@ const ChatsPreviews = ({
                           </p>
                         ) : null}
                       </div>
-                    ) : null
+                    ) : (
+                      <div
+                        className="messages-chat-preview-info__wrapper"
+                        key={msg.id}
+                      >
+                        <p>{user.fullName}</p>
+
+                        <p style={{ fontSize: "10px" }}>
+                          No message yet, be the first to say hi 👋
+                        </p>
+                      </div>
+                    )
                   )}
 
                   {/* {previewMessage.map((msg) =>
@@ -244,6 +273,9 @@ const ChatsPreviews = ({
 };
 
 const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
+  const [showPicker, setShowPicker] = useState(false); // State to control picker visibility
+  const divScroll = useRef(null);
+
   const navigate = useNavigate();
   const validateUser = useValidateUser();
   const USER_ID = sessionStorage.getItem("id");
@@ -254,6 +286,32 @@ const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
     Content: "",
   });
   const [messages, setMessages] = useState([]);
+
+  const notification = {
+    RecieverId:
+      USER_ID === chatroom.senderId ? chatroom.recipientId : chatroom.senderId,
+    SenderId: USER_ID,
+    ReferenceId: chatroom.id,
+    Type: "NewMessage",
+    Message: "sent you a message",
+    CreatedAt: null,
+  };
+  const notificationHook = useNotification();
+
+  const onEmojiClick = (emojiObject) => {
+    setMessageModel((prev) => ({
+      ...prev,
+      Content: prev.Content + emojiObject.emoji,
+    }));
+    setShowPicker(false); // Hide picker after selection
+  };
+
+  useEffect(() => {
+    //handles the automatic scrolling to the most recent message.
+    if (divScroll.current) {
+      divScroll.current.scrollTop = divScroll.current.scrollHeight;
+    }
+  }, [chosenChatRoom, messages]);
 
   // SignalR connection
   useSignalR(
@@ -348,6 +406,8 @@ const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
 
       const data = await response.json();
       //console.log(data);
+
+      await notificationHook(notification);
       setMessageModel((prev) => ({
         ...prev,
         Content: "",
@@ -433,7 +493,13 @@ const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
         <br />
 
         {messages.length !== 0 ? (
-          <>
+          <div
+            ref={divScroll}
+            style={{
+              height: "63vh",
+              overflowY: "auto",
+            }}
+          >
             {messages.map((msg, index) =>
               msg.senderId === USER_ID ? (
                 <MyMessage
@@ -448,9 +514,14 @@ const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
                 />
               )
             )}
-          </>
+          </div>
         ) : (
-          <p>No messages yet. Say hi to {userFullName}!</p>
+          <div className="message-empty-convo__wrapper">
+            <HandWavingIcon size={52} weight="fill" />
+            <p style={{ color: "rgba(0,0,0,0.4)", marginTop: "10px" }}>
+              No messages yet. Be the first to say hi
+            </p>
+          </div>
         )}
       </div>
 
@@ -461,6 +532,22 @@ const MessageContainer = ({ chosenChatRoom, setLastMessage }) => {
           onChange={(e) => handleOnChange(e)}
           value={messageModel.Content}
         ></textarea>
+        <button
+          className="messaging-emoji-picker__btn"
+          onClick={() => setShowPicker(!showPicker)}
+        >
+          {showPicker ? (
+            <SmileyIcon size={23} weight="fill" />
+          ) : (
+            <SmileyIcon size={23} />
+          )}
+        </button>
+
+        {showPicker && (
+          <div className="emoji-picker-container">
+            <Picker onEmojiClick={onEmojiClick} />
+          </div>
+        )}
         <button
           className="messages-conversation-send__btn"
           onClick={(e) => handleMessageBtnClicked(e)}

@@ -85,6 +85,24 @@
   margin-top: 20px;
 }
 
+.new-chat-empty__wrapper {
+  display: inline-block;
+  position: relative;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.new-chat-empty__wrapper button {
+  cursor: pointer;
+  margin-top: 20px;
+  background-color: #4495c7;
+  color: #e4e6eb;
+  padding: 3px 10px;
+  border-radius: 5px;
+  border: 1px solid #4495c7;
+}
+
 .messages-conversation__wrapper {
   width: 1100px;
   height: 75vh;
@@ -96,7 +114,6 @@
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
     rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
   padding: 20px;
-  overflow: auto;
 }
 
 .messages-conversation-header__wrapper {
@@ -155,6 +172,7 @@
 .messages-conversation-message-textarea__wrapper {
   display: flex;
   justify-content: space-between;
+  gap: 10px;
   background-color: #ffffffff;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
     rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
@@ -166,8 +184,8 @@
 }
 .messages-conversation-message-textarea__wrapper textarea {
   outline: none;
-  max-width: 1050px;
-  min-width: 1050px;
+  max-width: 1000px;
+  min-width: 1000px;
   max-height: 65px;
   min-height: 65px;
 
@@ -186,4 +204,25 @@
 
 .message-not-seen__p {
   font-weight: bold;
+}
+
+.message-empty-convo__wrapper {
+  position: absolute;
+  top: 40%;
+  left: 60%;
+  transform: translate(-50%, -50%);
+
+  text-align: center;
+}
+
+.messaging-emoji-picker__btn {
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+}
+
+.emoji-picker-container {
+  position: absolute;
+  right: 243px;
+  bottom: 100px;
 }

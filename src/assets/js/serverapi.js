@@ -52,3 +52,9 @@ export const GetChats = "http://localhost:5188/api/Message/chats";
 export const CreateChatRoom = "http://localhost:5188/api/Message/chatroom";
 export const MessageSent = "http://localhost:5188/api/Message/message";
 export const MarkSeenMessage = "http://localhost:5188/api/Message";
+
+//NotificationAPI
+export const GetNotificationIds =
+  "http://localhost:5164/api/Notification/notification/ids";
+export const SaveNotification =
+  "http://localhost:5164/api/Notification/notification";

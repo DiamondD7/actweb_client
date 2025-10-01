@@ -13,6 +13,7 @@ const useValidateUser = () => {
 
       if (response.status === 301) {
         console.warn("301 detected, redirecting...");
+        sessionStorage.clear();
         navigate("/", { replace: true });
         return;
       }
@@ -34,7 +35,6 @@ const useValidateUser = () => {
       }
 
       const data = await response.json();
-      console.log("xxx", callFunction);
       await callFunction(false);
     } catch (err) {
       console.error("Error validating token:", err);
