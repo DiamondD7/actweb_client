@@ -219,42 +219,11 @@ const FeedHashTagsContainer = () => {
   );
 };
 
-const FeedWhatsonYourMindContainer = () => {
+const WeeklyChallengesContainer = () => {
   return (
     <div>
-      <div className="feed-whatsonyourmind__wrapper">
-        <h5>Make a Post</h5>
-        <div className="-display-flex-aligned-center -gap-10">
-          <img
-            className="feed-picture-thumbnail__img"
-            src="https://randomuser.me/api/portraits/men/1.jpg"
-            alt="profile-picture-thumbnail"
-          />
-          <div style={{ marginTop: "30px" }}>
-            <textarea
-              className="feed-whatsonyourmind-message__textarea"
-              placeholder="What's on your mind?"
-            ></textarea>
-            <div className="-display-flex-justified-spacebetween -margin-top-10">
-              <div className="-display-flex-aligned-center -gap-10">
-                <button className="-btn-transparent-noborders">
-                  <VideoCameraIcon
-                    size={20}
-                    color={"rgba(0,0,0,0.4)"}
-                    className={"-margin-left-10"}
-                  />
-                </button>
-                <button className="-btn-transparent-noborders">
-                  <ImageIcon size={20} color={"rgba(0,0,0,0.4)"} />
-                </button>
-              </div>
-
-              <div>
-                <button className="feed-whatsonyourmind-post__btn">Post</button>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="feed-weeklychallenges__wrapper">
+        <h5>Weekly Challenges</h5>
       </div>
     </div>
   );
@@ -267,7 +236,7 @@ const Feed = () => {
       <div className="feed-container__wrapper">
         <div>
           <div>
-            <FeedWhatsonYourMindContainer />
+            <WeeklyChallengesContainer />
             <div className="-margin-top-20">
               <FeedHashTagsContainer />
             </div>

@@ -13,7 +13,6 @@ import "../../styles/notificationsstyles.css";
 const Notifications = () => {
   const USER_ID = sessionStorage.getItem("id");
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [seeAllNotifs, setSeeAllNotifs] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationUsers, setNotificationUsers] = useState([]);
@@ -50,7 +49,6 @@ const Notifications = () => {
   //--------------------------------------SIGNALR {END} NOTIFICATION------------------------------------------------------
 
   useEffect(() => {
-    setLoading(true);
     handleFetchNotifIds();
   }, []);
 
@@ -68,7 +66,7 @@ const Notifications = () => {
       setNotifications(data.notifs);
       await handleFetchUsers(true, data.userIds);
     } catch (err) {
-      console.err("Error: ", err);
+      console.error("Error: ", err);
       throw err;
     }
   };
@@ -108,9 +106,6 @@ const Notifications = () => {
 
       const data = await response.json();
       setNotificationUsers(data);
-      setTimeout(() => {
-        setLoading(false);
-      }, 100);
     } catch (err) {
       console.warn(err);
     }
@@ -123,7 +118,7 @@ const Notifications = () => {
   return (
     <>
       <div className="notifications-container__wrapper">
-        {loading === true ? (
+        {notificationUsers.length === 0 ? (
           <div className="notif-loading-icon__wrapper">
             <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
           </div>
