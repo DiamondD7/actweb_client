@@ -3,10 +3,11 @@
   gap: 20px;
 }
 
-.feed-whatsonyourmind__wrapper {
+.feed-weeklychallenges__wrapper {
   background-color: #ffffffff;
 
   width: 400px;
+  height: 152px;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
     rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
   border-radius: 10px;
@@ -20,29 +21,6 @@
   border-radius: 50%;
   object-fit: cover;
   object-position: center;
-}
-
-.feed-whatsonyourmind-message__textarea {
-  outline: none;
-  resize: none;
-
-  border-radius: 50px;
-  min-width: 300px;
-  max-width: 300px;
-
-  min-height: 30px;
-  max-height: 30px;
-
-  padding: 5px 10px 5px 10px;
-}
-
-.feed-whatsonyourmind-post__btn {
-  cursor: pointer;
-  color: #eaf2ff;
-  background-color: #4495c7;
-  border-radius: 5px;
-  border: none;
-  padding: 2px 10px;
 }
 
 .hashtag-container__wrapper {
