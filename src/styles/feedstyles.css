@@ -6,6 +6,7 @@
 .feed-weeklychallenges__wrapper {
   background-color: #ffffffff;
 
+  overflow: auto;
   width: 400px;
   height: 152px;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
@@ -13,6 +14,42 @@
   border-radius: 10px;
   padding: 20px;
   margin-left: 30px;
+}
+
+.feed-weeklychallenge-list__ul {
+  font-size: 11px;
+  list-style: decimal;
+  padding: 10px 20px;
+}
+
+.feed-weeklychallenge-list__ul li {
+  color: rgba(0, 0, 0, 0.6);
+  margin-top: 10px;
+}
+
+.hashtag__wrapper {
+  height: 100px;
+}
+
+.hashtag-data__wrapper {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+
+  height: 75px;
+  padding: 5px;
+}
+
+.hashtag-data {
+  display: inline-block;
+
+  text-align: center;
+  font-size: 12px;
+  padding: 2px 10px;
+  background-color: #4495c7;
+  border-radius: 50px;
+  color: #ffffffff;
 }
 
 .feed-picture-thumbnail__img {
@@ -23,7 +60,7 @@
   object-position: center;
 }
 
-.hashtag-container__wrapper {
+.feed-features-container__wrapper {
   background-color: #ffffffff;
 
   width: 400px;
@@ -126,4 +163,44 @@
 
 .feed-comments-comment__text {
   font-size: 12px;
+}
+
+.slick-slide > div {
+  height: 210px;
+  padding: 5px;
+}
+.slick-prev:before,
+.slick-next:before {
+  color: #4495c7 !important;
+}
+
+.slick-prev {
+  left: -20px; /* move arrow outside */
+}
+
+.slick-next {
+  right: -20px; /* move arrow outside */
+}
+
+.card__wrapper {
+  margin: 0 auto;
+  background-color: #ffffffff;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+
+  height: 200px;
+}
+
+.casting-call-description__text {
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  height: 73px;
+  overflow: auto;
+}
+
+.casting-call-consideration__ul {
+  font-size: 10px;
+  margin: 5px 0 0 20px;
 }

@@ -1,14 +1,20 @@
 import React, { useEffect } from "react";
 import Nav from "../Nav/Nav";
 import {
+  CaretLeftIcon,
+  CaretRightIcon,
   ChatCenteredTextIcon,
-  ImageIcon,
+  FilmSlateIcon,
+  HashStraightIcon,
   PlayCircleIcon,
   ShareFatIcon,
   SparkleIcon,
-  VideoCameraIcon,
+  TrophyIcon,
 } from "@phosphor-icons/react";
+import Slider from "react-slick";
 
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import "../../styles/feedstyles.css";
 const FeedPostsContainer = () => {
   return (
@@ -211,10 +217,122 @@ const FeedPostsContainer = () => {
   );
 };
 
+const CastingCallsContainer = () => {
+  var settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+  };
+  return (
+    <div>
+      <h5 className="-display-flex-aligned-center -gap-10 -margin-top-20">
+        {" "}
+        <FilmSlateIcon size={15} weight="fill" color="rgba(0,0,0,0.6)" />
+        Casting Calls
+      </h5>
+
+      <Slider {...settings}>
+        <div className="castingcall-card__wrapper">
+          <div className="card__wrapper">
+            <h5>Casting Call for TVFilm</h5>
+            <p className="casting-call-description__text">
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex,
+              quidem veniam! Nesciunt, excepturi eligendi voluptates, fugit
+              pariatur id repudiandae incidunt dolorum est ab enim ducimus
+              molestiae unde dicta sit sequi! lorem
+            </p>
+
+            <ul className="casting-call-consideration__ul">
+              <li>Location: 3-88 Hensrow Road, New Lynn</li>
+              <li>Ethnicity: Any</li>
+              <li>Gender: Any</li>
+              <li>Ages: 18 years and younger</li>
+            </ul>
+          </div>
+        </div>
+        <div className="castingcall-card__wrapper">
+          <div className="card__wrapper">
+            <h5>Casting Call for TVFilm</h5>
+            <p className="casting-call-description__text">
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex,
+              quidem veniam! Nesciunt, excepturi eligendi voluptates, fugit
+              pariatur id repudiandae incidunt dolorum est ab enim ducimus
+              molestiae unde dicta sit sequi!
+            </p>
+
+            <ul className="casting-call-consideration__ul">
+              <li>Location: 3-88 Hensrow Road, New Lynn</li>
+              <li>Ethnicity: Any</li>
+              <li>Gender: Any</li>
+              <li>Ages: 18 years and younger</li>
+            </ul>
+          </div>
+        </div>
+        <div className="castingcall-card__wrapper">
+          <div className="card__wrapper">
+            <h5>Casting Call for TVFilm</h5>
+            <p className="casting-call-description__text">
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex,
+              quidem veniam! Nesciunt, excepturi eligendi voluptates, fugit
+              pariatur id repudiandae incidunt dolorum est ab enim ducimus
+              molestiae unde dicta sit sequi!
+            </p>
+
+            <ul className="casting-call-consideration__ul">
+              <li>Location: 3-88 Hensrow Road, New Lynn</li>
+              <li>Ethnicity: Any</li>
+              <li>Gender: Any</li>
+              <li>Ages: 18 years and younger</li>
+            </ul>
+          </div>
+        </div>
+        <div className="castingcall-card__wrapper">
+          <div className="card__wrapper">
+            <h5>Casting Call for TVFilm</h5>
+            <p className="casting-call-description__text">
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex,
+              quidem veniam! Nesciunt, excepturi eligendi voluptates, fugit
+              pariatur id repudiandae incidunt dolorum est ab enim ducimus
+              molestiae unde dicta sit sequi!
+            </p>
+
+            <ul className="casting-call-consideration__ul">
+              <li>Location: 3-88 Hensrow Road, New Lynn</li>
+              <li>Ethnicity: Any</li>
+              <li>Gender: Any</li>
+              <li>Ages: 18 years and younger</li>
+            </ul>
+          </div>
+        </div>
+      </Slider>
+    </div>
+  );
+};
+
 const FeedHashTagsContainer = () => {
   return (
-    <div className="hashtag-container__wrapper">
-      <div></div>
+    <div>
+      <div className="hashtag__wrapper">
+        <h5 className="-display-flex-aligned-center -gap-10">
+          {" "}
+          <HashStraightIcon size={15} />
+          Popular Hashtags
+        </h5>
+        <br />
+        <div className="hashtag-data__wrapper">
+          <div className="hashtag-data">monologue</div>
+          <div className="hashtag-data">audition</div>
+          <div className="hashtag-data">actingchallenge</div>
+          <div className="hashtag-data">crying</div>
+          <div className="hashtag-data">crying</div>
+          <div className="hashtag-data">crying</div>
+          <div className="hashtag-data">crying</div>
+          <div className="hashtag-data">crying</div>
+          <div className="hashtag-data">crying</div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -223,7 +341,17 @@ const WeeklyChallengesContainer = () => {
   return (
     <div>
       <div className="feed-weeklychallenges__wrapper">
-        <h5>Weekly Challenges</h5>
+        <h5 className="-display-flex-aligned-center -gap-10">
+          {" "}
+          <TrophyIcon size={15} weight="fill" color="rgba(0,0,0,0.6)" /> Weekly
+          Challenges
+        </h5>
+
+        <ul className="feed-weeklychallenge-list__ul">
+          <li>A minute of monologue</li>
+          <li>Crying on the SPOT!</li>
+          <li>Cry, while watching funny videos!</li>
+        </ul>
       </div>
     </div>
   );
@@ -237,8 +365,9 @@ const Feed = () => {
         <div>
           <div>
             <WeeklyChallengesContainer />
-            <div className="-margin-top-20">
+            <div className="feed-features-container__wrapper -margin-top-20">
               <FeedHashTagsContainer />
+              <CastingCallsContainer />
             </div>
           </div>
         </div>
