@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import Nav from "../Nav/Nav";
 import {
+  CalendarDotsIcon,
   CaretLeftIcon,
   CaretRightIcon,
   ChatCenteredTextIcon,
@@ -217,6 +218,33 @@ const FeedPostsContainer = () => {
   );
 };
 
+const EventWorkshopsContainer = () => {
+  return (
+    <div className="eventworkshops-container__wrapper">
+      <h5 className="-display-flex-aligned-center -gap-10 -margin-top-20">
+        <CalendarDotsIcon size={15} weight="fill" color="rgba(0,0,0,0.6)" />{" "}
+        Events/Workshops
+      </h5>
+      <div className="eventworkshops-card__wrapper">
+        <div style={{ marginTop: "20px" }}>
+          <h6>Acting Workshop 2025</h6>
+          <p className="eventworkshops-description__text">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugiat
+            omnis soluta at tempore nulla maxime modi, deleniti recusandae vel
+            veritatis ducimus quos dicta odit commodi impedit mollitia dolor
+            explicabo adipisci.
+          </p>
+          <ul className="eventworkshops-list__ul">
+            <li>Location: ASB Showgrounds North Shore</li>
+            <li>Date: 1st Apr 2025</li>
+            <li>Time: 9 - 1PM</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const CastingCallsContainer = () => {
   var settings = {
     dots: true,
@@ -368,6 +396,7 @@ const Feed = () => {
             <div className="feed-features-container__wrapper -margin-top-20">
               <FeedHashTagsContainer />
               <CastingCallsContainer />
+              <EventWorkshopsContainer />
             </div>
           </div>
         </div>
