@@ -1,219 +1,325 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import Nav from "../Nav/Nav";
 import {
+  BASE_POST_API,
+  BASE_URL,
+  GetFollowing,
+  GetFollowingPosts,
+} from "../../assets/js/serverapi";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
   CalendarDotsIcon,
-  CaretLeftIcon,
-  CaretRightIcon,
   ChatCenteredTextIcon,
   FilmSlateIcon,
   HashStraightIcon,
-  PlayCircleIcon,
   ShareFatIcon,
   SparkleIcon,
   TrophyIcon,
 } from "@phosphor-icons/react";
 import Slider from "react-slick";
+import { useNavigate } from "react-router-dom";
+import { TimeAgo } from "../../assets/js/timeago";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "../../styles/feedstyles.css";
 const FeedPostsContainer = () => {
+  const USER_ID = sessionStorage.getItem("id");
+  const [isLoading, setIsLoading] = useState(false);
+  const [feedUsers, setFeedUsers] = useState([]);
+  const [feedPosts, setFeedPosts] = useState([]);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [hasNext, setHasNext] = useState(true);
+  const [pageSize] = useState(2);
+  const observer = useRef();
+  const [openDetailsPostId, setOpenDetailsPostId] = useState(null);
+  const [seeMoreCaptionClicked, setSeeMoreCaptionClicked] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    handleGetFollowing();
+  }, []); //getfollowing
+  const handleGetFollowing = async (retry = true) => {
+    try {
+      const response = await fetch(`${GetFollowing}/${USER_ID}`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.status === 302) {
+        console.warn("302 detected. Redirecting...");
+        navigate("/", { replace: true });
+        sessionStorage.clear();
+        return;
+      }
+
+      if (response.status === 401 && !retry) {
+        navigate("/", { replace: true });
+        sessionStorage.clear();
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected, retrying request...");
+        return await handleGetFollowing(false);
+      }
+
+      if (!response.ok) {
+        console.error(response.status);
+      }
+
+      const data = await response.json();
+      //console.log(data);
+      setFeedUsers(data);
+      const ids = data.map((items) => items.id);
+      await handleGetPostsOfFollowing(ids);
+    } catch (err) {
+      console.error("Error: ", err);
+      throw err;
+    }
+  };
+
+  const handleGetPostsOfFollowing = useCallback(
+    async (ids) => {
+      if (!hasNext || isLoading) return;
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `${GetFollowingPosts}?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(ids),
+          }
+        );
+
+        if (!response.ok) {
+          console.error("Status: ", response.status);
+          return;
+        }
+
+        const data = await response.json();
+
+        setFeedPosts((prev) => [...prev, ...data.items]);
+        setHasNext(data.hasNext);
+      } catch (err) {
+        console.error("Error: ", err);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [pageNumber, hasNext, isLoading]
+  );
+
+  const lastProducRef = useCallback(
+    (node) => {
+      if (isLoading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasNext) {
+          setPageNumber((prev) => prev + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [isLoading, hasNext]
+  );
+
+  useEffect(() => {
+    if (feedUsers.length > 0) {
+      const ids = feedUsers.map((items) => items.id);
+      handleGetPostsOfFollowing(ids);
+    }
+  }, [pageNumber]);
+
+  const handleOpenBtn = (e, id) => {
+    e.preventDefault();
+    if (id === openDetailsPostId) {
+      setOpenDetailsPostId(null);
+    } else {
+      setOpenDetailsPostId(id);
+    }
+  };
+
+  const handleSeeMore = (e, id) => {
+    e.preventDefault();
+    if (id === seeMoreCaptionClicked) {
+      setSeeMoreCaptionClicked(null);
+    } else {
+      setSeeMoreCaptionClicked(id);
+    }
+  };
+
   return (
     <div className="post-container__wrapper">
-      <div>
-        <div className="post-header-user-details__wrapper">
-          <img
-            className="feed-picture-thumbnail__img"
-            src="https://randomuser.me/api/portraits/men/99.jpg"
-            alt="profile-picture-thumbnail"
-          />
-          <div>
-            <p>Jonnathan Roumy</p>
-            <span>3 days ago</span>
-          </div>
-        </div>
-        <div className="post-thumbnail__wrapper">
-          <div>
-            <img
-              className="post-thumbnail__img"
-              src="https://images.unsplash.com/photo-1625631248418-435d0444f7d4?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="post-thumbnail"
-            />
-            <button className="post-play-icon__btn">
-              <PlayCircleIcon
-                size={80}
-                color={"rgba(0, 0, 0, 0.7)"}
-                weight="fill"
-              />
-            </button>
-          </div>
+      {feedPosts.map((post) =>
+        feedUsers.map(
+          (user) =>
+            user.id === post.userId && (
+              <div
+                style={{
+                  margin: "0 0 50px 50px",
+                }}
+                ref={lastProducRef}
+                key={post.id}
+              >
+                <div className="post-header-user-details__wrapper">
+                  <img
+                    className="feed-picture-thumbnail__img"
+                    src={`${BASE_URL}/${user.profilePictureUrl}`}
+                    alt="profile-picture-thumbnail"
+                  />
+                  <div>
+                    <p>{user.fullName}</p>
+                    <span>{TimeAgo(post.createdAt)}</span>
+                  </div>
+                </div>
+                <div className="post-thumbnail__wrapper">
+                  <div className="post-reels-video__wrapper">
+                    <video
+                      className="feed-post__video"
+                      src={`${BASE_POST_API}/${post.postUrl}`}
+                      disablePictureInPicture
+                      disableRemotePlayback
+                      autoPlay={false}
+                      controls
+                      controlsList="nodownload noremoteplayback noplaybackrate"
+                      loop={true}
+                      alt="video-thumbnail"
+                    />
+                    {/* <button className="post-play-icon__btn">
+                      <PlayCircleIcon
+                        size={80}
+                        color={"rgba(0, 0, 0, 0.7)"}
+                        weight="fill"
+                      />
+                    </button> */}
+                  </div>
 
-          <div className="post-thumbnail-details__wrapper">
-            <p className="post-thumbnail-caption__text">
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Rerum,
-              doloribus, illo accusantium distinctio provident impedit error
-              consectetur architecto laborum culpa assumenda, adipisci ratione
-              labore tenetur aperiam cumque. Minus, consequatur accusamus?
-            </p>
+                  <div
+                    className={`post-thumbnail-details__wrapper ${
+                      openDetailsPostId === post.id ? "activeSlide" : ""
+                    }`}
+                  >
+                    {post.caption.length > 540 ? (
+                      <>
+                        {seeMoreCaptionClicked === false ? (
+                          <p style={{ fontSize: "12px" }}>
+                            {post.caption.substring(0, 540)}...
+                          </p>
+                        ) : (
+                          <p style={{ fontSize: "12px" }}>{post.caption}</p>
+                        )}
 
-            <div className="-display-flex-justified-spacebetween -margin-top-20">
-              <button className="post-thumbnail-details-actions__btn">
-                <SparkleIcon size={22} /> Like
-              </button>
-              <button className="post-thumbnail-details-actions__btn">
-                <ChatCenteredTextIcon size={22} /> Comment
-              </button>
-              <button className="post-thumbnail-details-actions__btn">
-                <ShareFatIcon size={22} /> Share
-              </button>
-            </div>
+                        {seeMoreCaptionClicked === false ? (
+                          <button
+                            className="-btn-invisible"
+                            onClick={(e) => handleSeeMore(e)}
+                          >
+                            <strong>see more</strong>
+                          </button>
+                        ) : (
+                          <button
+                            className="-btn-invisible"
+                            onClick={(e) => handleSeeMore(e)}
+                          >
+                            <strong>see less</strong>
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <p style={{ fontSize: "12px" }}>{post.caption}</p>
+                    )}
 
-            <div className="-display-flex-aligned-center -gap-10 -margin-top-20">
-              <img
-                className="feed-picture-comments__img"
-                src="https://randomuser.me/api/portraits/men/95.jpg"
-                alt="profile-picture-thumbnail"
-              />
-              <div>
-                <label className="feed-comments-accountName__text">
-                  Henderson Hamilton
-                </label>
-                <p className="feed-comments-comment__text">
-                  Omg, I love this!!!!!!!
-                </p>
+                    <div className="-display-flex-justified-spacebetween -margin-top-20">
+                      <button className="post-thumbnail-details-actions__btn">
+                        <SparkleIcon size={22} /> Like
+                      </button>
+                      <button className="post-thumbnail-details-actions__btn">
+                        <ChatCenteredTextIcon size={22} /> Comment
+                      </button>
+                      <button className="post-thumbnail-details-actions__btn">
+                        <ShareFatIcon size={22} /> Share
+                      </button>
+                    </div>
+
+                    <div className="-display-flex-aligned-center -gap-10 -margin-top-20">
+                      <img
+                        className="feed-picture-comments__img"
+                        src="https://randomuser.me/api/portraits/men/95.jpg"
+                        alt="profile-picture-thumbnail"
+                      />
+                      <div>
+                        <label className="feed-comments-accountName__text">
+                          Henderson Hamilton
+                        </label>
+                        <p className="feed-comments-comment__text">
+                          Omg, I love this!!!!!!!
+                        </p>
+                      </div>
+                    </div>
+                    <div className="-display-flex-aligned-center -gap-10 -margin-top-20">
+                      <img
+                        className="feed-picture-comments__img"
+                        src="https://randomuser.me/api/portraits/women/95.jpg"
+                        alt="profile-picture-thumbnail"
+                      />
+                      <div>
+                        <label className="feed-comments-accountName__text">
+                          Jenny Lace
+                        </label>
+                        <p className="feed-comments-comment__text">
+                          Where is your shirt from?
+                        </p>
+                      </div>
+                    </div>
+                    <div className="-display-flex-aligned-center -gap-10 -margin-top-20">
+                      <img
+                        className="feed-picture-comments__img"
+                        src="https://randomuser.me/api/portraits/men/94.jpg"
+                        alt="profile-picture-thumbnail"
+                      />
+                      <div>
+                        <label className="feed-comments-accountName__text">
+                          Peter Green
+                        </label>
+                        <p className="feed-comments-comment__text">Lol</p>
+                      </div>
+                    </div>
+
+                    <button
+                      className="reel-arrow-comment__btn"
+                      onClick={(e) => handleOpenBtn(e, post.id)}
+                    >
+                      {openDetailsPostId === post.id ? (
+                        <>
+                          <ArrowLeftIcon size={20} />
+                          <br />
+                          Hide comments
+                        </>
+                      ) : (
+                        <>
+                          <ArrowRightIcon size={20} />
+                          <br />
+                          Show comments
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="-display-flex-aligned-center -gap-10 -margin-top-20">
-              <img
-                className="feed-picture-comments__img"
-                src="https://randomuser.me/api/portraits/women/95.jpg"
-                alt="profile-picture-thumbnail"
-              />
-              <div>
-                <label className="feed-comments-accountName__text">
-                  Jenny Lace
-                </label>
-                <p className="feed-comments-comment__text">
-                  Where is your shirt from?
-                </p>
-              </div>
-            </div>
-            <div className="-display-flex-aligned-center -gap-10 -margin-top-20">
-              <img
-                className="feed-picture-comments__img"
-                src="https://randomuser.me/api/portraits/men/94.jpg"
-                alt="profile-picture-thumbnail"
-              />
-              <div>
-                <label className="feed-comments-accountName__text">
-                  Peter Green
-                </label>
-                <p className="feed-comments-comment__text">Lol</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            )
+        )
+      )}
 
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <div>
-        <div className="post-header-user-details__wrapper">
-          <img
-            className="feed-picture-thumbnail__img"
-            src="https://randomuser.me/api/portraits/women/69.jpg"
-            alt="profile-picture-thumbnail"
-          />
-          <div>
-            <p>Victoria James</p>
-            <span>5 days ago</span>
-          </div>
-        </div>
-        <div className="post-thumbnail__wrapper">
-          <div>
-            <img
-              className="post-thumbnail__img"
-              src="https://plus.unsplash.com/premium_photo-1683219367988-61cebb58e343?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="post-thumbnail"
-            />
-            <button className="post-play-icon__btn">
-              <PlayCircleIcon
-                size={80}
-                color={"rgba(0, 0, 0, 0.7)"}
-                weight="fill"
-              />
-            </button>
-          </div>
-
-          <div className="post-thumbnail-details__wrapper">
-            <p className="post-thumbnail-caption__text">
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Rerum,
-              doloribus, illo accusantium distinctio provident impedit error
-              consectetur architecto laborum culpa assumenda, adipisci ratione
-              labore tenetur aperiam cumque. Minus, consequatur accusamus?
-            </p>
-
-            <div className="-display-flex-justified-spacebetween -margin-top-20">
-              <button className="post-thumbnail-details-actions__btn">
-                <SparkleIcon size={22} /> Like
-              </button>
-              <button className="post-thumbnail-details-actions__btn">
-                <ChatCenteredTextIcon size={22} /> Comment
-              </button>
-              <button className="post-thumbnail-details-actions__btn">
-                <ShareFatIcon size={22} /> Share
-              </button>
-            </div>
-
-            <div className="-display-flex-aligned-center -gap-10 -margin-top-20">
-              <img
-                className="feed-picture-comments__img"
-                src="https://randomuser.me/api/portraits/men/95.jpg"
-                alt="profile-picture-thumbnail"
-              />
-              <div>
-                <label className="feed-comments-accountName__text">
-                  Henderson Hamilton
-                </label>
-                <p className="feed-comments-comment__text">
-                  Omg, I love this!!!!!!!
-                </p>
-              </div>
-            </div>
-            <div className="-display-flex-aligned-center -gap-10 -margin-top-20">
-              <img
-                className="feed-picture-comments__img"
-                src="https://randomuser.me/api/portraits/women/95.jpg"
-                alt="profile-picture-thumbnail"
-              />
-              <div>
-                <label className="feed-comments-accountName__text">
-                  Jenny Lace
-                </label>
-                <p className="feed-comments-comment__text">
-                  Where is your shirt from?
-                </p>
-              </div>
-            </div>
-            <div className="-display-flex-aligned-center -gap-10 -margin-top-20">
-              <img
-                className="feed-picture-comments__img"
-                src="https://randomuser.me/api/portraits/men/94.jpg"
-                alt="profile-picture-thumbnail"
-              />
-              <div>
-                <label className="feed-comments-accountName__text">
-                  Peter Green
-                </label>
-                <p className="feed-comments-comment__text">Lol</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {isLoading && <p>Loading more...</p>}
+      {!hasNext && <p>All products loaded</p>}
     </div>
   );
 };

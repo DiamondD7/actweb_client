@@ -27,7 +27,7 @@ const useValidateUser = () => {
 
       if (response.status === 401 && retry) {
         console.warn("401 detected, retrying...");
-        return handleValidateToken(false, callFunction);
+        return await handleValidateToken(false, callFunction);
       }
 
       if (!response.ok) {

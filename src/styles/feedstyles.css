@@ -74,11 +74,12 @@
 .post-container__wrapper {
   background-color: #ffffffff;
 
-  width: 1070px;
+  width: 900px;
   height: 755px;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
     rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
   border-radius: 10px;
+
   padding: 20px;
   overflow: auto;
 }
@@ -102,13 +103,10 @@
 .post-thumbnail__wrapper {
   display: flex;
 
-  width: 1010px;
+  width: 700px;
   height: 600px;
   border-radius: 10px;
   margin-top: 10px;
-
-  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
-    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
 }
 
 .post-thumbnail__img {
@@ -132,6 +130,21 @@
 
 .post-thumbnail-details__wrapper {
   padding: 20px;
+  width: 48%;
+
+  position: relative;
+  top: 0;
+  border-radius: 10px;
+  z-index: 1;
+
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  transition: left 0.6s ease-in-out;
+  left: -338px; /* hidden by default */
+}
+
+.post-thumbnail-details__wrapper.activeSlide {
+  left: 0; /* slides in when active */
 }
 
 .post-thumbnail-caption__text {
@@ -229,4 +242,28 @@
 
 .eventworkshops-description__text {
   font-size: 10px;
+}
+
+.post-reels-video__wrapper {
+  max-width: 400px;
+  aspect-ratio: 9/16;
+  z-index: 2;
+}
+
+.feed-post__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.reel-arrow-comment__btn {
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+  font-size: 12px;
+
+  position: absolute;
+  top: 50%;
+  right: -100px;
 }
