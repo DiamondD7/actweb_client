@@ -361,6 +361,15 @@ const FeedPostsContainer = () => {
 
   const handleAddLike = async (retry = true, videoId) => {
     try {
+      const notification = {
+        RecieverId: postByUserId,
+        SenderId: USER_ID,
+        ReferenceId: videoId,
+        Type: "NewLike",
+        Message: "likes your post",
+        CreatedAt: null,
+      };
+
       const response = await fetch(AddLike, {
         method: "POST",
         headers: {
@@ -400,8 +409,11 @@ const FeedPostsContainer = () => {
       const data = await response.json();
       //console.log(data);
 
-      setIsLikedByUser(data.likedOrUnliked);
+      if (data.likedOrUnliked === true) {
+        await notificationHook(notification);
+      }
       await handleFetchLikes();
+      setIsLikedByUser(data.likedOrUnliked);
     } catch (err) {
       console.warn(err);
     }
