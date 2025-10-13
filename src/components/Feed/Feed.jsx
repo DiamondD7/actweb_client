@@ -1,10 +1,17 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import Nav from "../Nav/Nav";
 import {
+  AddComment,
+  AddLike,
   BASE_POST_API,
   BASE_URL,
+  CheckLike,
+  GetComments,
   GetFollowing,
   GetFollowingPosts,
+  GetLikes,
+  GetUsersByIds,
+  ValidateToken,
 } from "../../assets/js/serverapi";
 import {
   ArrowLeftIcon,
@@ -13,6 +20,7 @@ import {
   ChatCenteredTextIcon,
   FilmSlateIcon,
   HashStraightIcon,
+  PaperPlaneRightIcon,
   ShareFatIcon,
   SparkleIcon,
   TrophyIcon,
@@ -20,12 +28,14 @@ import {
 import Slider from "react-slick";
 import { useNavigate } from "react-router-dom";
 import { TimeAgo } from "../../assets/js/timeago";
+import useNotification from "../../assets/js/useNotification";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "../../styles/feedstyles.css";
 const FeedPostsContainer = () => {
   const USER_ID = sessionStorage.getItem("id");
+  const notificationHook = useNotification();
   const [isLoading, setIsLoading] = useState(false);
   const [feedUsers, setFeedUsers] = useState([]);
   const [feedPosts, setFeedPosts] = useState([]);
@@ -33,8 +43,22 @@ const FeedPostsContainer = () => {
   const [hasNext, setHasNext] = useState(true);
   const [pageSize] = useState(2);
   const observer = useRef();
+
+  const [postByUserId, setPostByUserId] = useState(null);
   const [openDetailsPostId, setOpenDetailsPostId] = useState(null);
   const [seeMoreCaptionClicked, setSeeMoreCaptionClicked] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [usersComments, setUsersComments] = useState([]);
+  const [postLikes, setPostLikes] = useState([]);
+  const [allLikes, setAllLikes] = useState([]);
+  const [isLikedByUser, setIsLikedByUser] = useState(false);
+
+  const [newComment, setNewComment] = useState({
+    PostId: openDetailsPostId,
+    UserId: sessionStorage.getItem("id"),
+    Comment: "",
+  });
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -138,12 +162,340 @@ const FeedPostsContainer = () => {
     }
   }, [pageNumber]);
 
-  const handleOpenBtn = (e, id) => {
+  useEffect(() => {
+    handleFetchComments();
+    handleCheckLike(openDetailsPostId);
+  }, [openDetailsPostId]);
+
+  const handleValidate = async (retry = true, nameOfFunction) => {
+    try {
+      const response = await fetch(ValidateToken, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.status === 302) {
+        console.warn("302 detected. redirecting...");
+        navigate("/", { replace: true });
+        return false;
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. rerouting...");
+        navigate("/", { replace: true });
+        return false;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Validating tokens...");
+        return handleValidate(false, nameOfFunction);
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return false;
+      }
+
+      const data = await response.json();
+      //console.log(data);
+      if (nameOfFunction === "fetchComments") {
+        handleFetchComments(false);
+      }
+      return true;
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const handleFetchComments = async (retry = true) => {
+    try {
+      const response = await fetch(`${GetComments}/${openDetailsPostId}`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.status === 302) {
+        console.warn("302 detected. Redirecting...");
+        return;
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. Rerouting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Validating tokens...");
+        return handleValidate(true, "fetchComments");
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return;
+      }
+
+      const data = await response.json();
+      //console.log(data);
+      setComments(data);
+      const ids = data.map((items) => items.userId);
+      await handleFetchUsers(true, ids, "comments");
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  //fetched all the user that commented/liked a post
+  const handleFetchUsers = async (retry = true, ids, functionName) => {
+    try {
+      const response = await fetch(GetUsersByIds, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(ids),
+      });
+
+      if (response.status === 302) {
+        console.warn("302 detected. Redirecting...");
+        return;
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. Rerouting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Retrying request...");
+        return handleFetchUsers(false, ids, functionName);
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return;
+      }
+
+      const data = await response.json();
+      //console.log(data);
+
+      if (functionName === "comments") {
+        setUsersComments(data);
+      } else {
+        setAllLikes(data);
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const handleFetchLikes = async (retry = true) => {
+    try {
+      const response = await fetch(`${GetLikes}/${openDetailsPostId}`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.status === 302) {
+        console.warn("302 detected. Redirecting...");
+        return;
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. Rerouting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Validating tokens...");
+        return handleValidate(true, "fetchLikes");
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return;
+      }
+
+      const data = await response.json();
+      //console.log(data);
+      setPostLikes(data);
+      const ids = data.map((items) => items.userId);
+      handleFetchUsers(true, ids, "likes");
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const handleCheckLike = async (openDetailsPostId) => {
+    try {
+      const response = await fetch(CheckLike, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          PostId: openDetailsPostId,
+          UserId: sessionStorage.getItem("id"),
+          Comment: "",
+        }),
+      });
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return;
+      }
+
+      const data = await response.json();
+
+      setIsLikedByUser(data);
+      await handleFetchLikes();
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const handleAddLike = async (retry = true, videoId) => {
+    try {
+      const response = await fetch(AddLike, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          PostId: videoId,
+          UserId: sessionStorage.getItem("id"),
+          IsLiked: false, //just need a value because logic is in backend whether user wants to like or unlike
+        }),
+      });
+
+      if (response.status === 302) {
+        console.warn("302 detected. Redirecting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. Rerouting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Validating tokens...");
+        return handleValidate(true, "addLike");
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return;
+      }
+
+      const data = await response.json();
+      //console.log(data);
+
+      setIsLikedByUser(data.likedOrUnliked);
+      await handleFetchLikes();
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const handleAddComment = async (retry = true) => {
+    try {
+      const notification = {
+        RecieverId: postByUserId,
+        SenderId: USER_ID,
+        ReferenceId: openDetailsPostId,
+        Type: "NewComment",
+        Message: "commented on your post",
+        CreatedAt: null,
+      };
+
+      const response = await fetch(AddComment, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          PostId: openDetailsPostId,
+          UserId: USER_ID,
+          Comment: newComment.Comment,
+        }),
+      });
+
+      if (response.status === 302) {
+        console.warn("302 detected. Redirecting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. Rerouting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Validating tokens...");
+        return handleValidate(true, "addComment");
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return;
+      }
+
+      const data = await response.json();
+      //console.log(data);
+
+      await handleFetchComments();
+      await notificationHook(notification);
+      setNewComment((prev) => ({
+        ...prev,
+        Comment: "",
+      }));
+
+      //setIsLoading(true);
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (id === openDetailsPostId) {
+    await handleAddComment();
+  };
+
+  const handleLikeClicked = async (e, videoId) => {
+    e.preventDefault();
+    await handleAddLike(true, videoId);
+  };
+
+  const handleOnChange = (e) => {
+    const { name, value } = e.target;
+    setNewComment((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleOpenBtn = (e, post) => {
+    e.preventDefault();
+    if (post.id === openDetailsPostId) {
       setOpenDetailsPostId(null);
+      setPostByUserId(null);
     } else {
-      setOpenDetailsPostId(id);
+      setOpenDetailsPostId(post.id);
+      setPostByUserId(post.userId);
     }
   };
 
@@ -208,8 +560,8 @@ const FeedPostsContainer = () => {
                     }`}
                   >
                     {post.caption.length > 540 ? (
-                      <>
-                        {seeMoreCaptionClicked === false ? (
+                      <div className="post-reel-caption-container__wrapper">
+                        {seeMoreCaptionClicked === post.id ? (
                           <p style={{ fontSize: "12px" }}>
                             {post.caption.substring(0, 540)}...
                           </p>
@@ -217,29 +569,50 @@ const FeedPostsContainer = () => {
                           <p style={{ fontSize: "12px" }}>{post.caption}</p>
                         )}
 
-                        {seeMoreCaptionClicked === false ? (
+                        {seeMoreCaptionClicked === post.id ? (
                           <button
                             className="-btn-invisible"
-                            onClick={(e) => handleSeeMore(e)}
+                            onClick={(e) => handleSeeMore(e, post.id)}
                           >
                             <strong>see more</strong>
                           </button>
                         ) : (
                           <button
                             className="-btn-invisible"
-                            onClick={(e) => handleSeeMore(e)}
+                            onClick={(e) => handleSeeMore(e, post.id)}
                           >
                             <strong>see less</strong>
                           </button>
                         )}
-                      </>
+                      </div>
                     ) : (
                       <p style={{ fontSize: "12px" }}>{post.caption}</p>
                     )}
 
+                    {postLikes.filter((data) => data.isLiked).length <= 0 ? (
+                      ""
+                    ) : (
+                      <button className="likes-preview__btn -padding-10">
+                        <SparkleIcon size={12} weight="fill" color={"gold"} />{" "}
+                        {postLikes.length}
+                      </button>
+                    )}
+
                     <div className="-display-flex-justified-spacebetween -margin-top-20">
-                      <button className="post-thumbnail-details-actions__btn">
-                        <SparkleIcon size={22} /> Like
+                      <button
+                        className="post-thumbnail-details-actions__btn"
+                        onClick={(e) => handleLikeClicked(e, post.id)}
+                      >
+                        {isLikedByUser === false ? (
+                          <>
+                            <SparkleIcon size={20} /> Like
+                          </>
+                        ) : (
+                          <>
+                            <SparkleIcon size={20} weight="fill" color="gold" />{" "}
+                            Liked
+                          </>
+                        )}
                       </button>
                       <button className="post-thumbnail-details-actions__btn">
                         <ChatCenteredTextIcon size={22} /> Comment
@@ -249,53 +622,69 @@ const FeedPostsContainer = () => {
                       </button>
                     </div>
 
-                    <div className="-display-flex-aligned-center -gap-10 -margin-top-20">
-                      <img
-                        className="feed-picture-comments__img"
-                        src="https://randomuser.me/api/portraits/men/95.jpg"
-                        alt="profile-picture-thumbnail"
-                      />
-                      <div>
-                        <label className="feed-comments-accountName__text">
-                          Henderson Hamilton
-                        </label>
-                        <p className="feed-comments-comment__text">
-                          Omg, I love this!!!!!!!
-                        </p>
-                      </div>
+                    <div className="post-reel-comment-section-container__wrapper">
+                      {comments.map((comment) =>
+                        usersComments.map(
+                          (user) =>
+                            user.id === comment.userId && (
+                              <div
+                                className="-display-flex-justified-spacebetween -margin-top-10"
+                                key={comment.id}
+                              >
+                                <div className="-display-flex-aligned-center">
+                                  <img
+                                    className="feed-picture-comments__img"
+                                    src={`${BASE_URL}/${user.profilePictureUrl}`}
+                                    alt="profile-picture-thumbnail"
+                                  />
+                                  <div>
+                                    <label className="feed-comments-accountName__text">
+                                      {user.fullName}
+                                    </label>
+                                    <p className="feed-comments-comment__text">
+                                      {comment.comment}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <label
+                                    style={{
+                                      fontSize: "10px",
+                                      color: "rgba(0,0,0,0.4)",
+                                    }}
+                                  >
+                                    {TimeAgo(comment.commentedAt)}
+                                  </label>
+                                </div>
+                              </div>
+                            )
+                        )
+                      )}
                     </div>
-                    <div className="-display-flex-aligned-center -gap-10 -margin-top-20">
-                      <img
-                        className="feed-picture-comments__img"
-                        src="https://randomuser.me/api/portraits/women/95.jpg"
-                        alt="profile-picture-thumbnail"
-                      />
-                      <div>
-                        <label className="feed-comments-accountName__text">
-                          Jenny Lace
-                        </label>
-                        <p className="feed-comments-comment__text">
-                          Where is your shirt from?
-                        </p>
+
+                    <form onSubmit={handleSubmit}>
+                      <div className="feed-post-comment-textarea__wrapper">
+                        <textarea
+                          className="feed-post-comment__textarea"
+                          placeholder="Write a comment..."
+                          name="Comment"
+                          value={newComment.Comment}
+                          onChange={(e) => handleOnChange(e)}
+                        ></textarea>
+                        <button type="submit" className="-btn-invisible">
+                          <PaperPlaneRightIcon
+                            size={20}
+                            weight="fill"
+                            color={"#4495c7"}
+                          />
+                        </button>
                       </div>
-                    </div>
-                    <div className="-display-flex-aligned-center -gap-10 -margin-top-20">
-                      <img
-                        className="feed-picture-comments__img"
-                        src="https://randomuser.me/api/portraits/men/94.jpg"
-                        alt="profile-picture-thumbnail"
-                      />
-                      <div>
-                        <label className="feed-comments-accountName__text">
-                          Peter Green
-                        </label>
-                        <p className="feed-comments-comment__text">Lol</p>
-                      </div>
-                    </div>
+                    </form>
 
                     <button
                       className="reel-arrow-comment__btn"
-                      onClick={(e) => handleOpenBtn(e, post.id)}
+                      onClick={(e) => handleOpenBtn(e, post)}
                     >
                       {openDetailsPostId === post.id ? (
                         <>

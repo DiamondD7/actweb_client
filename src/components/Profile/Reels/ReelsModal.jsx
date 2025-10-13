@@ -799,36 +799,33 @@ const ReelsModal = ({
                     />
                   </div>
                 ) : (
-                  <div className="-display-flex-justified-spacebetween -padding-10">
+                  <div>
                     {usersComment.map((user) => (
                       <div key={user.id}>
                         {comments.map(
                           (comment) =>
                             comment.userId === user.id && (
-                              <div
-                                className="-display-flex-justified-spacearound -margin-top-10"
-                                key={comment.id}
-                              >
-                                <div>
+                              <div className="-display-flex-justified-spacearound -margin-top-20">
+                                <div className="-display-flex-aligned-center">
                                   <img
                                     src={`${BASE_URL}/${user.profilePictureUrl}`}
                                     className="comment-profilepic__img"
                                     alt="profilepic"
                                   />
-                                </div>
 
-                                <div>
-                                  <p
-                                    style={{
-                                      fontSize: "12px",
-                                      fontWeight: "bold",
-                                    }}
-                                  >
-                                    {user.fullName}
-                                  </p>
-                                  <p className="reels-comment__text">
-                                    {comment.comment}
-                                  </p>
+                                  <div>
+                                    <p
+                                      style={{
+                                        fontSize: "12px",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      {user.fullName}
+                                    </p>
+                                    <p className="reels-comment__text">
+                                      {comment.comment}
+                                    </p>
+                                  </div>
                                 </div>
                                 <div>
                                   <label
