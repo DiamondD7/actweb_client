@@ -60,3 +60,7 @@ export const GetNotificationIds =
   "http://localhost:5164/api/Notification/notification/ids";
 export const SaveNotification =
   "http://localhost:5164/api/Notification/notification";
+
+//CastingCallAPI
+export const GetCastingCalls =
+  "http://localhost:5067/api/CastingCall/casting-calls";

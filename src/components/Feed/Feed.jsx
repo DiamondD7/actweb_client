@@ -12,16 +12,19 @@ import {
   GetLikes,
   GetUsersByIds,
   ValidateToken,
+  GetCastingCalls,
 } from "../../assets/js/serverapi";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CalendarDotsIcon,
   ChatCenteredTextIcon,
+  CircleNotchIcon,
   FilmSlateIcon,
   HashStraightIcon,
   PaperPlaneRightIcon,
   ShareFatIcon,
+  SmileyXEyesIcon,
   SparkleIcon,
   TrophyIcon,
 } from "@phosphor-icons/react";
@@ -752,7 +755,35 @@ const EventWorkshopsContainer = () => {
   );
 };
 
-const CastingCallsContainer = () => {
+const CastingCallsContainer = ({ USER_ID }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [castingCalls, setCastingCalls] = useState([]);
+  useEffect(() => {
+    setIsLoading(true);
+    fetchCastingCalls();
+  }, []);
+
+  const fetchCastingCalls = async () => {
+    try {
+      const response = await fetch(`${GetCastingCalls}/${USER_ID}`, {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        console.error(response.status);
+      }
+
+      const data = await response.json();
+      setCastingCalls(data);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
+    } catch (err) {
+      console.error("Error: ", err);
+      throw err;
+    }
+  };
+
   var settings = {
     dots: true,
     infinite: true,
@@ -761,87 +792,60 @@ const CastingCallsContainer = () => {
     slidesToScroll: 1,
   };
   return (
-    <div>
+    <div className="feed-casting-call-container__wrapper">
       <h5 className="-display-flex-aligned-center -gap-10 -margin-top-20">
         {" "}
         <FilmSlateIcon size={15} weight="fill" color="rgba(0,0,0,0.6)" />
         Casting Calls
       </h5>
 
-      <Slider {...settings}>
-        <div className="castingcall-card__wrapper">
-          <div className="card__wrapper">
-            <h5>Casting Call for TVFilm</h5>
-            <p className="casting-call-description__text">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex,
-              quidem veniam! Nesciunt, excepturi eligendi voluptates, fugit
-              pariatur id repudiandae incidunt dolorum est ab enim ducimus
-              molestiae unde dicta sit sequi! lorem
-            </p>
-
-            <ul className="casting-call-consideration__ul">
-              <li>Location: 3-88 Hensrow Road, New Lynn</li>
-              <li>Ethnicity: Any</li>
-              <li>Gender: Any</li>
-              <li>Ages: 18 years and younger</li>
-            </ul>
-          </div>
+      {isLoading === true ? (
+        <div style={{ textAlign: "center", marginTop: "60px" }}>
+          <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
         </div>
-        <div className="castingcall-card__wrapper">
-          <div className="card__wrapper">
-            <h5>Casting Call for TVFilm</h5>
-            <p className="casting-call-description__text">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex,
-              quidem veniam! Nesciunt, excepturi eligendi voluptates, fugit
-              pariatur id repudiandae incidunt dolorum est ab enim ducimus
-              molestiae unde dicta sit sequi!
-            </p>
+      ) : (
+        <>
+          {castingCalls.length <= 0 ? (
+            <div style={{ textAlign: "center", marginTop: "60px" }}>
+              <SmileyXEyesIcon
+                size={20}
+                weight="fill"
+                color="rgba(0,0,0,0.3)"
+              />
+              <h5 style={{ color: "rgba(0,0,0,0.3)" }}>No Casting Calls</h5>
+            </div>
+          ) : (
+            <Slider {...settings}>
+              {castingCalls.map((items) => (
+                <div className="castingcall-card__wrapper" key={items.id}>
+                  <div className="card__wrapper">
+                    <div className="-display-flex-justified-spacebetween -display-flex-aligned-center">
+                      <h5>{items.title}</h5>
+                      <p style={{ fontSize: "10px" }}>
+                        {new Date(items.createdAt).toLocaleDateString("nz")}
+                      </p>
+                    </div>
+                    <p className="casting-call-description__text">
+                      {items.description}
+                    </p>
 
-            <ul className="casting-call-consideration__ul">
-              <li>Location: 3-88 Hensrow Road, New Lynn</li>
-              <li>Ethnicity: Any</li>
-              <li>Gender: Any</li>
-              <li>Ages: 18 years and younger</li>
-            </ul>
-          </div>
-        </div>
-        <div className="castingcall-card__wrapper">
-          <div className="card__wrapper">
-            <h5>Casting Call for TVFilm</h5>
-            <p className="casting-call-description__text">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex,
-              quidem veniam! Nesciunt, excepturi eligendi voluptates, fugit
-              pariatur id repudiandae incidunt dolorum est ab enim ducimus
-              molestiae unde dicta sit sequi!
-            </p>
-
-            <ul className="casting-call-consideration__ul">
-              <li>Location: 3-88 Hensrow Road, New Lynn</li>
-              <li>Ethnicity: Any</li>
-              <li>Gender: Any</li>
-              <li>Ages: 18 years and younger</li>
-            </ul>
-          </div>
-        </div>
-        <div className="castingcall-card__wrapper">
-          <div className="card__wrapper">
-            <h5>Casting Call for TVFilm</h5>
-            <p className="casting-call-description__text">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex,
-              quidem veniam! Nesciunt, excepturi eligendi voluptates, fugit
-              pariatur id repudiandae incidunt dolorum est ab enim ducimus
-              molestiae unde dicta sit sequi!
-            </p>
-
-            <ul className="casting-call-consideration__ul">
-              <li>Location: 3-88 Hensrow Road, New Lynn</li>
-              <li>Ethnicity: Any</li>
-              <li>Gender: Any</li>
-              <li>Ages: 18 years and younger</li>
-            </ul>
-          </div>
-        </div>
-      </Slider>
+                    <ul className="casting-call-consideration__ul">
+                      <li>Location: {items.location}</li>
+                      <li>Ethnicity: {items.ethnicity}</li>
+                      <li>Gender: {items.gender}</li>
+                      <li>Ages: {items.age}</li>
+                      <li style={{ fontWeight: "bold" }}>
+                        Due Date:{" "}
+                        {new Date(items.dueDate).toLocaleDateString("nz")}
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </Slider>
+          )}
+        </>
+      )}
     </div>
   );
 };
@@ -893,6 +897,7 @@ const WeeklyChallengesContainer = () => {
 };
 
 const Feed = () => {
+  const USER_ID = sessionStorage.getItem("id");
   return (
     <div className="-main-container__wrapper">
       <Nav />
@@ -902,7 +907,7 @@ const Feed = () => {
             <WeeklyChallengesContainer />
             <div className="feed-features-container__wrapper -margin-top-20">
               <FeedHashTagsContainer />
-              <CastingCallsContainer />
+              <CastingCallsContainer USER_ID={USER_ID} />
               <EventWorkshopsContainer />
             </div>
           </div>

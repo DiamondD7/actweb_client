@@ -214,6 +214,10 @@
   resize: none;
 }
 
+.feed-casting-call-container__wrapper {
+  height: 225px;
+}
+
 .slick-slide > div {
   height: 210px;
   padding: 5px;
