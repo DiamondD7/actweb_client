@@ -64,3 +64,6 @@ export const SaveNotification =
 //CastingCallAPI
 export const GetCastingCalls =
   "http://localhost:5067/api/CastingCall/casting-calls";
+
+//EventsAPI
+export const GetAllEvents = "http://localhost:5041/api/Events";

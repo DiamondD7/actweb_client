@@ -13,11 +13,13 @@ import {
   GetUsersByIds,
   ValidateToken,
   GetCastingCalls,
+  GetAllEvents,
 } from "../../assets/js/serverapi";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CalendarDotsIcon,
+  CalendarSlashIcon,
   ChatCenteredTextIcon,
   CircleNotchIcon,
   FilmSlateIcon,
@@ -728,29 +730,79 @@ const FeedPostsContainer = () => {
   );
 };
 
-const EventWorkshopsContainer = () => {
+const EventWorkshopsContainer = ({ USER_ID }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [events, setEvents] = useState([]);
+  useEffect(() => {
+    setIsLoading(true);
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch(GetAllEvents, {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        console.error(response.status);
+      }
+
+      const data = await response.json();
+      setEvents(data);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
+    } catch (err) {
+      console.error("Error", err);
+      throw err;
+    }
+  };
   return (
     <div className="eventworkshops-container__wrapper">
       <h5 className="-display-flex-aligned-center -gap-10 -margin-top-20">
         <CalendarDotsIcon size={15} weight="fill" color="rgba(0,0,0,0.6)" />{" "}
         Events/Workshops
       </h5>
-      <div className="eventworkshops-card__wrapper">
-        <div style={{ marginTop: "20px" }}>
-          <h6>Acting Workshop 2025</h6>
-          <p className="eventworkshops-description__text">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugiat
-            omnis soluta at tempore nulla maxime modi, deleniti recusandae vel
-            veritatis ducimus quos dicta odit commodi impedit mollitia dolor
-            explicabo adipisci.
-          </p>
-          <ul className="eventworkshops-list__ul">
-            <li>Location: ASB Showgrounds North Shore</li>
-            <li>Date: 1st Apr 2025</li>
-            <li>Time: 9 - 1PM</li>
-          </ul>
+
+      {isLoading === true ? (
+        <div style={{ textAlign: "center", marginTop: "60px" }}>
+          <CircleNotchIcon size={35} className={"-btn-loading__icon"} />
         </div>
-      </div>
+      ) : (
+        <>
+          {events.length <= 0 ? (
+            <div style={{ textAlign: "center", marginTop: "60px" }}>
+              <CalendarSlashIcon
+                size={20}
+                weight="fill"
+                color="rgba(0,0,0,0.3)"
+              />
+              <h5 style={{ color: "rgba(0,0,0,0.3)" }}>No Upcoming Events</h5>
+            </div>
+          ) : (
+            <>
+              {events.map((event) => (
+                <div className="eventworkshops-card__wrapper" key={event.id}>
+                  <div style={{ marginTop: "20px" }}>
+                    <h6>{event.title}</h6>
+                    <p className="eventworkshops-description__text">
+                      {event.description}
+                    </p>
+                    <ul className="eventworkshops-list__ul">
+                      <li>Location: {event.location}</li>
+                      <li>
+                        Date & Time:{" "}
+                        {new Date(event.eventDate).toLocaleString("en-nz")}
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 };
@@ -908,7 +960,7 @@ const Feed = () => {
             <div className="feed-features-container__wrapper -margin-top-20">
               <FeedHashTagsContainer />
               <CastingCallsContainer USER_ID={USER_ID} />
-              <EventWorkshopsContainer />
+              <EventWorkshopsContainer USER_ID={USER_ID} />
             </div>
           </div>
         </div>

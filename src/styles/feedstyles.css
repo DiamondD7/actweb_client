@@ -259,14 +259,17 @@
 }
 
 .eventworkshops-container__wrapper {
-  margin-top: 40px;
+  margin-top: 30px;
+  padding: 0 10px;
+  overflow: auto;
+  height: 179px;
 }
 
 .eventworkshops-card__wrapper {
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
     rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
   height: 135px;
-  margin-top: 5px;
+  margin: 5px 0 10px 0;
   padding: 0 10px;
   border-radius: 10px;
   overflow: auto;
@@ -282,6 +285,8 @@
 
 .eventworkshops-description__text {
   font-size: 10px;
+  height: 60px;
+  overflow: auto;
 }
 
 .post-reels-video__wrapper {
