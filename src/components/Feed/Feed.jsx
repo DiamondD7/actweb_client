@@ -18,10 +18,12 @@ import {
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  BookmarkSimpleIcon,
   CalendarDotsIcon,
   CalendarSlashIcon,
   ChatCenteredTextIcon,
   CircleNotchIcon,
+  DotsThreeIcon,
   FilmSlateIcon,
   HashStraightIcon,
   PaperPlaneRightIcon,
@@ -29,6 +31,7 @@ import {
   SmileyXEyesIcon,
   SparkleIcon,
   TrophyIcon,
+  WarningIcon,
 } from "@phosphor-icons/react";
 import Slider from "react-slick";
 import { useNavigate } from "react-router-dom";
@@ -41,6 +44,7 @@ import "../../styles/feedstyles.css";
 const FeedPostsContainer = () => {
   const USER_ID = sessionStorage.getItem("id");
   const notificationHook = useNotification();
+  const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [feedUsers, setFeedUsers] = useState([]);
   const [feedPosts, setFeedPosts] = useState([]);
@@ -507,6 +511,7 @@ const FeedPostsContainer = () => {
 
   const handleOpenBtn = (e, post) => {
     e.preventDefault();
+    setIsMenuModalOpen(false);
     if (post.id === openDetailsPostId) {
       setOpenDetailsPostId(null);
       setPostByUserId(null);
@@ -576,6 +581,28 @@ const FeedPostsContainer = () => {
                       openDetailsPostId === post.id ? "activeSlide" : ""
                     }`}
                   >
+                    <div style={{ textAlign: "right" }}>
+                      <button
+                        className="-btn-invisible"
+                        onClick={() => setIsMenuModalOpen(!isMenuModalOpen)}
+                      >
+                        <DotsThreeIcon size={20} />
+                      </button>
+                    </div>
+
+                    {isMenuModalOpen && (
+                      <div className="post-modal-menu__wrapper">
+                        <ul className="post-modal-menu__ul">
+                          <li>
+                            <BookmarkSimpleIcon size={15} /> Save
+                          </li>
+                          <li>
+                            <WarningIcon size={15} /> Report
+                          </li>
+                        </ul>
+                      </div>
+                    )}
+
                     {post.caption.length > 540 ? (
                       <div className="post-reel-caption-container__wrapper">
                         {seeMoreCaptionClicked === post.id ? (
