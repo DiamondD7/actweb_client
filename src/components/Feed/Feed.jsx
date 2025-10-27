@@ -14,6 +14,7 @@ import {
   ValidateToken,
   GetCastingCalls,
   GetAllEvents,
+  SavePost,
 } from "../../assets/js/serverapi";
 import {
   ArrowLeftIcon,
@@ -491,6 +492,52 @@ const FeedPostsContainer = () => {
     }
   };
 
+  const handleSavePost = async (e, retry = true) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(SavePost, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          PostId: openDetailsPostId,
+          UserId: USER_ID,
+        }),
+      });
+
+      if (response.status === 302) {
+        console.warn("302 detected. Redirecting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry === false) {
+        console.warn("Unauthorized. Rerouting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Validating tokens...");
+        return await handleSavePost(e, false);
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        return;
+      }
+
+      const data = await response.json();
+      console.log(data);
+    } catch (err) {
+      console.warn(err);
+      throw err;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     await handleAddComment();
@@ -593,7 +640,7 @@ const FeedPostsContainer = () => {
                     {isMenuModalOpen && (
                       <div className="post-modal-menu__wrapper">
                         <ul className="post-modal-menu__ul">
-                          <li>
+                          <li onClick={(e) => handleSavePost(e, true)}>
                             <BookmarkSimpleIcon size={15} /> Save
                           </li>
                           <li>

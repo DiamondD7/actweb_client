@@ -59,6 +59,7 @@ import Reels from "./Reels/Reels";
 import Posts from "./Posts/Posts";
 
 import "../../styles/profilestyles.css";
+import Saved from "./Saved/Saved";
 const ProfileReels = ({ userData }) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -1412,6 +1413,8 @@ const ProfileReels = ({ userData }) => {
               </div>
             ) : postNavs === "drafts" ? (
               <div></div>
+            ) : postNavs === "saved" ? (
+              <Saved />
             ) : (
               <div></div>
             )}

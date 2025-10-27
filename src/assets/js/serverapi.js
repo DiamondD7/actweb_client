@@ -20,6 +20,9 @@ export const AddUserBackground =
   "http://localhost:5016/api/Users/add-user-background";
 export const Logout = "http://localhost:5016/api/Users/logout";
 
+//UserAPI / SavedPosts
+export const SavePost = "http://localhost:5016/api/SavedPost/saved-post";
+
 //-----FOLLOWING
 export const AddFollowing = "http://localhost:5016/api/Following";
 export const DiscoverUsers = "http://localhost:5016/api/Following/users";
