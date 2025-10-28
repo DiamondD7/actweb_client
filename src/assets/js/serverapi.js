@@ -21,6 +21,7 @@ export const AddUserBackground =
 export const Logout = "http://localhost:5016/api/Users/logout";
 
 //UserAPI / SavedPosts
+export const GetSavedPostIds = "http://localhost:5016/api/SavedPost/saved-ids";
 export const SavePost = "http://localhost:5016/api/SavedPost/saved-post";
 
 //-----FOLLOWING
@@ -39,6 +40,7 @@ export const GetFollowingPosts =
   "http://localhost:5123/api/Post/postsoffollowing";
 export const UploadVideo = "http://localhost:5123/api/Post/upload-video";
 export const AddPost = "http://localhost:5123/api/Post/add-post";
+export const GetPostsByIds = "http://localhost:5123/api/Post/posts-by-ids";
 
 //POST COMMENT
 export const AddComment = "http://localhost:5123/api/Comment";

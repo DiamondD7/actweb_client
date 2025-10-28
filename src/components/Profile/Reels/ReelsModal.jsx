@@ -24,6 +24,7 @@ import {
 } from "../../../assets/js/serverapi";
 import { useNavigate } from "react-router-dom";
 import { TimeAgo } from "../../../assets/js/timeAgo";
+import useNotification from "../../../assets/js/useNotification";
 
 const ReelsModal = ({
   userData,
@@ -32,6 +33,7 @@ const ReelsModal = ({
   handleGetReels,
 }) => {
   const navigate = useNavigate();
+  const notificationHook = useNotification();
   const [seeMoreCaptionClicked, setSeeMoreCaptionClicked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [openDetailsSection, setOpenDetailsSection] = useState(false);
@@ -206,6 +208,14 @@ const ReelsModal = ({
   };
 
   const handleAddComment = async (retry = true) => {
+    const notification = {
+      RecieverId: chosenReel.userId,
+      SenderId: sessionStorage.getItem("id"),
+      ReferenceId: chosenReel.id,
+      Type: "NewComment",
+      Message: "commented on your post",
+      CreatedAt: null,
+    };
     try {
       const response = await fetch(AddComment, {
         method: "POST",
@@ -241,6 +251,11 @@ const ReelsModal = ({
 
       const data = await response.json();
       console.log(data);
+
+      //if the user commenting is not the owner of the post, send notification
+      if (chosenReel.userId !== sessionStorage.getItem("id")) {
+        await notificationHook(notification);
+      }
 
       setNewCommentAndLike((prev) => ({
         ...prev,
@@ -324,6 +339,14 @@ const ReelsModal = ({
   };
 
   const handleAddLike = async (retry = true) => {
+    const notification = {
+      RecieverId: chosenReel.userId,
+      SenderId: sessionStorage.getItem("id"),
+      ReferenceId: chosenReel.id,
+      Type: "NewLike",
+      Message: "liked your post",
+      CreatedAt: null,
+    };
     try {
       const response = await fetch(AddLike, {
         method: "POST",
@@ -363,6 +386,14 @@ const ReelsModal = ({
 
       const data = await response.json();
       //console.log(data);
+
+      //if the user commenting is not the owner of the post, send notification and only send notif when liked not unliked
+      if (
+        chosenReel.userId !== sessionStorage.getItem("id") &&
+        data.likedOrUnliked === true
+      ) {
+        await notificationHook(notification);
+      }
 
       setIsLikedByUser(data.likedOrUnliked);
       handleFetchLikes();
