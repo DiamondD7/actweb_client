@@ -1344,7 +1344,15 @@ const ProfileReels = ({ userData }) => {
           }`}
           onClick={() => handleNavs("posts")}
         >
-          <SquaresFourIcon size={15} /> Posts
+          {postNavs === "posts" ? (
+            <>
+              <SquaresFourIcon size={15} color="#4495c7" weight="fill" /> Posts
+            </>
+          ) : (
+            <>
+              <SquaresFourIcon size={15} /> Posts
+            </>
+          )}
         </button>
 
         <button
@@ -1353,7 +1361,15 @@ const ProfileReels = ({ userData }) => {
           }`}
           onClick={() => handleNavs("reels")}
         >
-          <MonitorPlayIcon size={15} /> Reels
+          {postNavs === "reels" ? (
+            <>
+              <MonitorPlayIcon size={15} color="#4495c7" weight="fill" /> Reels
+            </>
+          ) : (
+            <>
+              <MonitorPlayIcon size={15} /> Reels
+            </>
+          )}
         </button>
 
         <button
@@ -1374,7 +1390,15 @@ const ProfileReels = ({ userData }) => {
           }`}
           onClick={() => handleNavs("drafts")}
         >
-          <FoldersIcon size={15} /> Drafts
+          {postNavs === "drafts" ? (
+            <>
+              <FoldersIcon size={15} color="#4495c7" weight="fill" /> Drafts
+            </>
+          ) : (
+            <>
+              <FoldersIcon size={15} /> Drafts
+            </>
+          )}
         </button>
         <button
           className={`profile-reels-actions__btn ${
@@ -1382,7 +1406,16 @@ const ProfileReels = ({ userData }) => {
           }`}
           onClick={() => handleNavs("saved")}
         >
-          <BookmarkSimpleIcon size={15} /> Saved
+          {postNavs === "saved" ? (
+            <>
+              <BookmarkSimpleIcon size={15} color="#4495c7" weight="fill" />{" "}
+              Saved
+            </>
+          ) : (
+            <>
+              <BookmarkSimpleIcon size={15} /> Saved
+            </>
+          )}
         </button>
       </div>
 
