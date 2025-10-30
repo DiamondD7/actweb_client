@@ -15,6 +15,7 @@ import {
   GetCastingCalls,
   GetAllEvents,
   SavePost,
+  GetSavedPostIds,
 } from "../../assets/js/serverapi";
 import {
   ArrowLeftIcon,
@@ -62,6 +63,7 @@ const FeedPostsContainer = () => {
   const [postLikes, setPostLikes] = useState([]);
   const [allLikes, setAllLikes] = useState([]);
   const [isLikedByUser, setIsLikedByUser] = useState(false);
+  const [savedPostsId, setSavedPostsId] = useState([]);
 
   const [newComment, setNewComment] = useState({
     PostId: openDetailsPostId,
@@ -73,7 +75,39 @@ const FeedPostsContainer = () => {
 
   useEffect(() => {
     handleGetFollowing();
+    handleGetSavedPostIds();
   }, []); //getfollowing
+
+  const handleGetSavedPostIds = async (retry = true) => {
+    try {
+      const response = await fetch(`${GetSavedPostIds}/${USER_ID}`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.status === 401 && !retry) {
+        console.error("Unauthorized. Redirecting...");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected. Retrying...");
+        return await handleGetSavedPostIds(false);
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch saved post IDs");
+      }
+
+      const data = await response.json();
+      setSavedPostsId(data.ids);
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
   const handleGetFollowing = async (retry = true) => {
     try {
       const response = await fetch(`${GetFollowing}/${USER_ID}`, {
@@ -531,7 +565,8 @@ const FeedPostsContainer = () => {
       }
 
       const data = await response.json();
-      console.log(data);
+      //console.log(data);
+      await handleGetSavedPostIds();
     } catch (err) {
       console.warn(err);
       throw err;
@@ -640,9 +675,16 @@ const FeedPostsContainer = () => {
                     {isMenuModalOpen && (
                       <div className="post-modal-menu__wrapper">
                         <ul className="post-modal-menu__ul">
-                          <li onClick={(e) => handleSavePost(e, true)}>
-                            <BookmarkSimpleIcon size={15} /> Save
-                          </li>
+                          {savedPostsId.includes(post.id) ? (
+                            <li>
+                              <BookmarkSimpleIcon size={15} weight="fill" />{" "}
+                              Saved
+                            </li>
+                          ) : (
+                            <li onClick={(e) => handleSavePost(e, true)}>
+                              <BookmarkSimpleIcon size={15} /> Save
+                            </li>
+                          )}
                           <li>
                             <WarningIcon size={15} /> Report
                           </li>
