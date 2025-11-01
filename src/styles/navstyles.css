@@ -60,3 +60,54 @@
   border: none;
   border-bottom: 2px solid #4495c7;
 }
+
+.nav-searchbar-container__wrapper {
+  position: absolute;
+  top: 107px;
+  left: 245px;
+  width: 15%;
+  height: 150px;
+  background-color: #ffffff;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  border-radius: 8px;
+  z-index: 3;
+}
+
+.search-for-click-text__wrapper {
+  cursor: pointer;
+
+  position: absolute;
+  bottom: 0;
+
+  background-color: rgba(0, 0, 0, 0.06);
+  width: 100%;
+}
+
+.search-for-click-text__wrapper p {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  gap: 5px;
+
+  font-size: 12px;
+  color: #202020;
+}
+
+.nav-filtered-search__wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 10px;
+  cursor: pointer;
+
+  margin-top: 10px;
+  overflow: auto;
+}
+
+.nav-search-picture-thumbnail__img {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+}

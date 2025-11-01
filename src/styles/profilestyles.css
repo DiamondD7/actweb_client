@@ -215,7 +215,7 @@
 
 .profile-reels-call-to-action__wrapper {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-evenly;
   gap: 10px;
 
   width: 1050px;

@@ -27,6 +27,7 @@ import { TimeAgo } from "../../../assets/js/timeAgo";
 import useNotification from "../../../assets/js/useNotification";
 
 const ReelsModal = ({
+  USER_ID,
   userData,
   setIsReelOpened,
   chosenReel,
@@ -678,17 +679,19 @@ const ReelsModal = ({
           >
             <div>
               <div className="reels-details__wrapper -padding-10">
-                <div style={{ textAlign: "end" }}>
-                  <button
-                    className="-btn-invisible"
-                    onClick={() => setIsOpenMenuModal(!isOpenMenuModal)}
-                  >
-                    <DotsThreeIcon
-                      size={19}
-                      color={isOpenMenuModal === true ? "#4495c7" : ""}
-                    />
-                  </button>
-                </div>
+                {USER_ID === sessionStorage.getItem("id") && (
+                  <div style={{ textAlign: "end" }}>
+                    <button
+                      className="-btn-invisible"
+                      onClick={() => setIsOpenMenuModal(!isOpenMenuModal)}
+                    >
+                      <DotsThreeIcon
+                        size={19}
+                        color={isOpenMenuModal === true ? "#4495c7" : ""}
+                      />
+                    </button>
+                  </div>
+                )}
                 <div className="-display-flex-justified-spacebetween">
                   <div className="-display-flex-aligned-center -gap-10">
                     <img
