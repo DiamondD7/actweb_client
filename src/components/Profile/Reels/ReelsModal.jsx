@@ -214,7 +214,7 @@ const ReelsModal = ({
       SenderId: sessionStorage.getItem("id"),
       ReferenceId: chosenReel.id,
       Type: "NewComment",
-      Message: "commented on your post",
+      Message: "commented on your reel",
       CreatedAt: null,
     };
     try {
@@ -345,7 +345,7 @@ const ReelsModal = ({
       SenderId: sessionStorage.getItem("id"),
       ReferenceId: chosenReel.id,
       Type: "NewLike",
-      Message: "liked your post",
+      Message: "liked your reel",
       CreatedAt: null,
     };
     try {

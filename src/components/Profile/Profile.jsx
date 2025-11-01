@@ -58,6 +58,7 @@ import {
 import Reels from "./Reels/Reels";
 import Posts from "./Posts/Posts";
 import Saved from "./Saved/Saved";
+import useNotification from "../../assets/js/useNotification";
 
 import "../../styles/profilestyles.css";
 const ProfileReels = ({ userData, USER_ID }) => {
@@ -514,6 +515,7 @@ const ProfileReels = ({ userData, USER_ID }) => {
     setIsPostClicked,
     handleGetPosts,
   }) => {
+    const notificationHook = useNotification();
     const navigate = useNavigate();
     const [updateLoading, setUpdateLoading] = useState(false);
     const [editClicked, setEditClicked] = useState(false);
@@ -692,6 +694,14 @@ const ProfileReels = ({ userData, USER_ID }) => {
     };
 
     const handleAddComment = async (retry = true) => {
+      const notification = {
+        RecieverId: chosenPost.userId,
+        SenderId: sessionStorage.getItem("id"),
+        ReferenceId: chosenPost.id,
+        Type: "NewComment",
+        Message: "commented on your post",
+        CreatedAt: null,
+      };
       try {
         const response = await fetch(AddComment, {
           method: "POST",
@@ -727,6 +737,11 @@ const ProfileReels = ({ userData, USER_ID }) => {
 
         const data = await response.json();
         console.log(data);
+
+        //if the user commenting is not the owner of the post, send notification
+        if (chosenPost.userId !== sessionStorage.getItem("id")) {
+          await notificationHook(notification);
+        }
 
         setNewCommentAndLike((prev) => ({
           ...prev,
@@ -812,6 +827,14 @@ const ProfileReels = ({ userData, USER_ID }) => {
     };
 
     const handleAddLike = async (retry = true) => {
+      const notification = {
+        RecieverId: chosenPost.userId,
+        SenderId: sessionStorage.getItem("id"),
+        ReferenceId: chosenPost.id,
+        Type: "NewLike",
+        Message: "liked your reel",
+        CreatedAt: null,
+      };
       try {
         const response = await fetch(AddLike, {
           method: "POST",
@@ -851,6 +874,14 @@ const ProfileReels = ({ userData, USER_ID }) => {
 
         const data = await response.json();
         //console.log(data);
+
+        //if the user commenting is not the owner of the post, send notification and only send notif when liked not unliked
+        if (
+          chosenPost.userId !== sessionStorage.getItem("id") &&
+          data.likedOrUnliked === true
+        ) {
+          await notificationHook(notification);
+        }
 
         setIsLikedByUser(data.likedOrUnliked);
         handleFetchLikes();
