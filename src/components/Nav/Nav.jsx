@@ -9,6 +9,7 @@ import {
   SignOutIcon,
   UserIcon,
   GearSixIcon,
+  XIcon,
 } from "@phosphor-icons/react";
 import { BASE_URL, GetFollowing } from "../../assets/js/serverapi";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -16,9 +17,26 @@ import { Logout } from "../../assets/js/serverapi";
 import Notifications from "../Notifications/Notifications";
 
 import "../../styles/navstyles.css";
+const NavSearchAllModal = ({ searchText, setSearchAllClicked }) => {
+  return (
+    <>
+      <button
+        className="nav-search-all-modal-close__btn"
+        onClick={() => setSearchAllClicked(false)}
+      >
+        <XIcon size={25} color="#ffff" />
+      </button>
+      <div className="nav-search-all-modal__wrapper">
+        <h4>All results for "{searchText}"</h4>
+      </div>
+    </>
+  );
+};
+
 const NavSearchBar = ({ searchText, setSearchText, userFollowing }) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const [searchAllClicked, setSearchAllClicked] = useState(false);
 
   useEffect(() => {
     if (!searchText) return;
@@ -27,46 +45,65 @@ const NavSearchBar = ({ searchText, setSearchText, userFollowing }) => {
     }, 500);
   }, []);
 
+  const handleSearchAllClicked = (e) => {
+    e.preventDefault();
+    setSearchAllClicked(true);
+  };
+
   const filterSearch = userFollowing.filter((user) =>
     user.fullName.toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (
-    <div className="nav-searchbar-container__wrapper">
-      {isLoading === true ? (
-        <div style={{ textAlign: "center", marginTop: "45px" }}>
-          <CircleNotchIcon size={20} className={"-btn-loading__icon"} />
-        </div>
-      ) : (
-        <div>
-          {filterSearch.map((user) => (
-            <div
-              className="nav-filtered-search__wrapper"
-              key={user.id}
-              onClick={() => {
-                navigate(`/profile-page?id=${user.id}`);
-                setSearchText("");
-              }}
-            >
-              <MagnifyingGlassIcon size={17} color={"#202020ac"} />
+    <>
+      {searchAllClicked && <div className="overlay"></div>}
 
-              <img
-                className="nav-search-picture-thumbnail__img"
-                src={`${BASE_URL}/${user.profilePictureUrl}`}
-                alt="profile-picture-thumbnail"
-              />
-              <p style={{ fontSize: "12px" }}>{user.fullName}</p>
-            </div>
-          ))}
-        </div>
+      {searchAllClicked && (
+        <NavSearchAllModal
+          searchText={searchText}
+          setSearchAllClicked={setSearchAllClicked}
+        />
       )}
 
-      <div className="search-for-click-text__wrapper">
-        <p>
-          See all results for <strong>"{searchText}"</strong>
-        </p>
+      <div className="nav-searchbar-container__wrapper">
+        {isLoading === true ? (
+          <div style={{ textAlign: "center", marginTop: "45px" }}>
+            <CircleNotchIcon size={20} className={"-btn-loading__icon"} />
+          </div>
+        ) : (
+          <div>
+            {filterSearch.map((user) => (
+              <div
+                className="nav-filtered-search__wrapper"
+                key={user.id}
+                onClick={() => {
+                  navigate(`/profile-page?id=${user.id}`);
+                  setSearchText("");
+                }}
+              >
+                <MagnifyingGlassIcon size={17} color={"#202020ac"} />
+
+                <img
+                  className="nav-search-picture-thumbnail__img"
+                  src={`${BASE_URL}/${user.profilePictureUrl}`}
+                  alt="profile-picture-thumbnail"
+                />
+                <p style={{ fontSize: "12px" }}>{user.fullName}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div
+          className="search-for-click-text__wrapper"
+          onClick={(e) => handleSearchAllClicked(e)}
+        >
+          <p>
+            See all results for <strong>"{searchText}"</strong>
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
