@@ -17,7 +17,39 @@ import { Logout } from "../../assets/js/serverapi";
 import Notifications from "../Notifications/Notifications";
 
 import "../../styles/navstyles.css";
+const AccountsSection = () => {
+  return (
+    <>
+      <div
+        style={{
+          width: "80%",
+          height: "500px",
+          borderLeft: "1px solid #ccc",
+          padding: "10px",
+          overflow: "auto",
+        }}
+      >
+        <div className="-display-flex-justified-spacebetween -display-flex-aligned-center -margin-top-20">
+          <div className="-display-flex-aligned-center -gap-10">
+            <img
+              className="nav-search-account__img"
+              src="https://randomuser.me/api/portraits/women/1.jpg"
+              alt="profile-pic-thumbnail"
+            />
+
+            <p style={{ fontSize: "15px" }}>Jane Doe</p>
+          </div>
+
+          <button className="-connect-not-following__btn">Follow</button>
+        </div>
+      </div>
+    </>
+  );
+};
+
 const NavSearchAllModal = ({ searchText, setSearchAllClicked }) => {
+  const [section, setSection] = useState("Accounts");
+
   return (
     <>
       <button
@@ -28,6 +60,26 @@ const NavSearchAllModal = ({ searchText, setSearchAllClicked }) => {
       </button>
       <div className="nav-search-all-modal__wrapper">
         <h4>All results for "{searchText}"</h4>
+        <div className="nav-search-all-modal-section__wrapper">
+          <div style={{ width: "20%" }}>
+            <ul className="nav-search-all-list__ul">
+              <li
+                className={section === "Accounts" ? "activeSection" : ""}
+                onClick={() => setSection("Accounts")}
+              >
+                Accounts
+              </li>
+              <li
+                className={section === "Tags" ? "activeSection" : ""}
+                onClick={() => setSection("Tags")}
+              >
+                Tags
+              </li>
+            </ul>
+          </div>
+
+          <AccountsSection />
+        </div>
       </div>
     </>
   );

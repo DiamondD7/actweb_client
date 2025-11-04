@@ -30,6 +30,23 @@
   left: 50%;
 }
 
+.-connect-follower-following__btn {
+  background-color: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.-connect-not-following__btn {
+  background-color: #4495c7;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
 .-btn-confirmation-delete {
   cursor: pointer;
   background-color: rgba(243, 122, 122, 0.945);

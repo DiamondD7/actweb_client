@@ -136,3 +136,33 @@
   cursor: pointer;
   z-index: 6;
 }
+
+.nav-search-all-modal-section__wrapper {
+  display: flex;
+  margin-top: 20px;
+
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.nav-search-account__img {
+  border-radius: 50%;
+  width: 30px;
+}
+
+.nav-search-all-list__ul {
+  list-style: none;
+}
+
+.nav-search-all-list__ul li {
+  cursor: pointer;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.activeSection {
+  font-weight: bold;
+  color: #4495c7;
+}
