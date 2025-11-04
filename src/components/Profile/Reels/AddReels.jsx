@@ -193,7 +193,6 @@ const AddReels = ({ setIsAddReelClicked, handleGetReels }) => {
     await handleUploadVideo();
   };
 
-  console.log(videoError);
   return (
     <div>
       <div className="reel-upload-container__wrapper">

@@ -20,6 +20,10 @@ export const AddUserBackground =
   "http://localhost:5016/api/Users/add-user-background";
 export const Logout = "http://localhost:5016/api/Users/logout";
 
+//UserAPI / SavedPosts
+export const GetSavedPostIds = "http://localhost:5016/api/SavedPost/saved-ids";
+export const SavePost = "http://localhost:5016/api/SavedPost/saved-post";
+
 //-----FOLLOWING
 export const AddFollowing = "http://localhost:5016/api/Following";
 export const DiscoverUsers = "http://localhost:5016/api/Following/users";
@@ -32,8 +36,11 @@ export const BASE_POST_API = "http://localhost:5123";
 export const UpdatePost = "http://localhost:5123/api/Post";
 export const GetPosts = "http://localhost:5123/api/Post/get-posts";
 export const GetReels = "http://localhost:5123/api/Post/reels";
+export const GetFollowingPosts =
+  "http://localhost:5123/api/Post/postsoffollowing";
 export const UploadVideo = "http://localhost:5123/api/Post/upload-video";
 export const AddPost = "http://localhost:5123/api/Post/add-post";
+export const GetPostsByIds = "http://localhost:5123/api/Post/posts-by-ids";
 
 //POST COMMENT
 export const AddComment = "http://localhost:5123/api/Comment";
@@ -58,3 +65,10 @@ export const GetNotificationIds =
   "http://localhost:5164/api/Notification/notification/ids";
 export const SaveNotification =
   "http://localhost:5164/api/Notification/notification";
+
+//CastingCallAPI
+export const GetCastingCalls =
+  "http://localhost:5067/api/CastingCall/casting-calls";
+
+//EventsAPI
+export const GetAllEvents = "http://localhost:5041/api/Events";

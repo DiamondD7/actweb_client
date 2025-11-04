@@ -215,7 +215,7 @@
 
 .profile-reels-call-to-action__wrapper {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-evenly;
   gap: 10px;
 
   width: 1050px;
@@ -319,7 +319,7 @@
     rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
   border-radius: 10px;
 
-  z-index: 2;
+  z-index: 6;
 }
 
 .profile-background-headers__wrapper {
@@ -434,7 +434,7 @@
     rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
   border-radius: 10px;
 
-  z-index: 2;
+  z-index: 6;
 }
 
 .background__wrapper {
@@ -497,7 +497,7 @@
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
     rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
   border-radius: 10px;
-  z-index: 2;
+  z-index: 6;
 
   opacity: 1;
   animation: openAnimate 0.5s ease-in-out;

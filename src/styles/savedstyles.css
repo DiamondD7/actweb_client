@@ -1,0 +1,33 @@
+.saved-posts-container__wrapper {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 10px;
+
+  margin-top: 20px;
+  overflow: auto;
+
+  margin-top: 10px;
+  width: 1050px;
+  height: 535px;
+
+  background-color: #ffffffff;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.profile-reels-reels-content-thumbnail__wrapper {
+  cursor: pointer;
+  width: 190px;
+  height: 300px;
+}
+
+.profile-reels-reels-thumbnail__video {
+  width: 190px;
+  height: 300px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 10px;
+}

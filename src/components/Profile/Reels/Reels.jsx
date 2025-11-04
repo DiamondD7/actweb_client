@@ -5,6 +5,7 @@ import { BASE_POST_API } from "../../../assets/js/serverapi";
 
 import "../../../styles/reelsstyles.css";
 const Reels = ({
+  USER_ID,
   userData,
   userReels,
   handleGetReels,
@@ -29,6 +30,7 @@ const Reels = ({
       )}
       {isReelOpened === true ? (
         <ReelsModal
+          USER_ID={USER_ID}
           userData={userData}
           setIsReelOpened={setIsReelOpened}
           chosenReel={chosenReel}

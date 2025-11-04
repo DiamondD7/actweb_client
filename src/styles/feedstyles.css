@@ -6,6 +6,7 @@
 .feed-weeklychallenges__wrapper {
   background-color: #ffffffff;
 
+  overflow: auto;
   width: 400px;
   height: 152px;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
@@ -13,6 +14,42 @@
   border-radius: 10px;
   padding: 20px;
   margin-left: 30px;
+}
+
+.feed-weeklychallenge-list__ul {
+  font-size: 11px;
+  list-style: decimal;
+  padding: 10px 20px;
+}
+
+.feed-weeklychallenge-list__ul li {
+  color: rgba(0, 0, 0, 0.6);
+  margin-top: 10px;
+}
+
+.hashtag__wrapper {
+  height: 100px;
+}
+
+.hashtag-data__wrapper {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+
+  height: 75px;
+  padding: 5px;
+}
+
+.hashtag-data {
+  display: inline-block;
+
+  text-align: center;
+  font-size: 12px;
+  padding: 2px 10px;
+  background-color: #4495c7;
+  border-radius: 50px;
+  color: #ffffffff;
 }
 
 .feed-picture-thumbnail__img {
@@ -23,7 +60,7 @@
   object-position: center;
 }
 
-.hashtag-container__wrapper {
+.feed-features-container__wrapper {
   background-color: #ffffffff;
 
   width: 400px;
@@ -37,11 +74,12 @@
 .post-container__wrapper {
   background-color: #ffffffff;
 
-  width: 1070px;
+  width: 900px;
   height: 755px;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
     rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
   border-radius: 10px;
+
   padding: 20px;
   overflow: auto;
 }
@@ -65,13 +103,10 @@
 .post-thumbnail__wrapper {
   display: flex;
 
-  width: 1010px;
+  width: 700px;
   height: 600px;
   border-radius: 10px;
   margin-top: 10px;
-
-  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
-    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
 }
 
 .post-thumbnail__img {
@@ -95,6 +130,21 @@
 
 .post-thumbnail-details__wrapper {
   padding: 20px;
+  width: 48%;
+
+  position: relative;
+  top: 0;
+  border-radius: 10px;
+  z-index: 1;
+
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  transition: left 0.6s ease-in-out;
+  left: -338px; /* hidden by default */
+}
+
+.post-thumbnail-details__wrapper.activeSlide {
+  left: 0; /* slides in when active */
 }
 
 .post-thumbnail-caption__text {
@@ -112,6 +162,46 @@
   border: none;
 }
 
+.post-reel-caption-container__wrapper {
+  height: 190px;
+  overflow: auto;
+}
+
+.post-reel-comment-section-container__wrapper {
+  height: 250px;
+  overflow: auto;
+}
+
+.post-modal-menu__wrapper {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  background-color: #ffffff;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  border-radius: 8px;
+  padding: 10px;
+
+  z-index: 2;
+}
+
+.post-modal-menu__ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.post-modal-menu__ul li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  margin-top: 5px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #333333;
+  cursor: pointer;
+}
+
 .feed-picture-comments__img {
   width: 25px;
   height: 25px;
@@ -126,4 +216,129 @@
 
 .feed-comments-comment__text {
   font-size: 12px;
+}
+
+.feed-post-comment-textarea__wrapper {
+  position: absolute;
+  bottom: 10px;
+  width: 300px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.feed-post-comment__textarea {
+  min-width: 90%;
+  max-width: 90%;
+
+  min-height: 40px;
+  max-height: 40px;
+
+  border: 0.5px solid rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+
+  padding: 5px;
+
+  outline: none;
+  resize: none;
+}
+
+.feed-casting-call-container__wrapper {
+  height: 225px;
+}
+
+.slick-slide > div {
+  height: 210px;
+  padding: 5px;
+}
+.slick-prev:before,
+.slick-next:before {
+  color: #4495c7 !important;
+}
+
+.slick-prev {
+  left: -20px; /* move arrow outside */
+}
+
+.slick-next {
+  right: -20px; /* move arrow outside */
+}
+
+.card__wrapper {
+  margin: 0 auto;
+  background-color: #ffffffff;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+
+  height: 200px;
+}
+
+.casting-call-description__text {
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  height: 73px;
+  overflow: auto;
+}
+
+.casting-call-consideration__ul {
+  font-size: 10px;
+  margin: 5px 0 0 20px;
+}
+
+.eventworkshops-container__wrapper {
+  margin-top: 30px;
+  padding: 0 10px;
+  overflow: auto;
+  height: 179px;
+}
+
+.eventworkshops-card__wrapper {
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  height: 135px;
+  margin: 5px 0 10px 0;
+  padding: 0 10px;
+  border-radius: 10px;
+  overflow: auto;
+}
+
+.eventworkshops-list__ul {
+  margin: 5px 0 0 20px;
+}
+
+.eventworkshops-list__ul li {
+  font-size: 10px;
+}
+
+.eventworkshops-description__text {
+  font-size: 10px;
+  height: 60px;
+  overflow: auto;
+}
+
+.post-reels-video__wrapper {
+  max-width: 400px;
+  aspect-ratio: 9/16;
+  z-index: 2;
+}
+
+.feed-post__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.reel-arrow-comment__btn {
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+  font-size: 12px;
+
+  position: absolute;
+  top: 50%;
+  right: -100px;
 }

@@ -24,14 +24,17 @@ import {
 } from "../../../assets/js/serverapi";
 import { useNavigate } from "react-router-dom";
 import { TimeAgo } from "../../../assets/js/timeAgo";
+import useNotification from "../../../assets/js/useNotification";
 
 const ReelsModal = ({
+  USER_ID,
   userData,
   setIsReelOpened,
   chosenReel,
   handleGetReels,
 }) => {
   const navigate = useNavigate();
+  const notificationHook = useNotification();
   const [seeMoreCaptionClicked, setSeeMoreCaptionClicked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [openDetailsSection, setOpenDetailsSection] = useState(false);
@@ -206,6 +209,14 @@ const ReelsModal = ({
   };
 
   const handleAddComment = async (retry = true) => {
+    const notification = {
+      RecieverId: chosenReel.userId,
+      SenderId: sessionStorage.getItem("id"),
+      ReferenceId: chosenReel.id,
+      Type: "NewComment",
+      Message: "commented on your reel",
+      CreatedAt: null,
+    };
     try {
       const response = await fetch(AddComment, {
         method: "POST",
@@ -241,6 +252,11 @@ const ReelsModal = ({
 
       const data = await response.json();
       console.log(data);
+
+      //if the user commenting is not the owner of the post, send notification
+      if (chosenReel.userId !== sessionStorage.getItem("id")) {
+        await notificationHook(notification);
+      }
 
       setNewCommentAndLike((prev) => ({
         ...prev,
@@ -324,6 +340,14 @@ const ReelsModal = ({
   };
 
   const handleAddLike = async (retry = true) => {
+    const notification = {
+      RecieverId: chosenReel.userId,
+      SenderId: sessionStorage.getItem("id"),
+      ReferenceId: chosenReel.id,
+      Type: "NewLike",
+      Message: "liked your reel",
+      CreatedAt: null,
+    };
     try {
       const response = await fetch(AddLike, {
         method: "POST",
@@ -363,6 +387,14 @@ const ReelsModal = ({
 
       const data = await response.json();
       //console.log(data);
+
+      //if the user commenting is not the owner of the post, send notification and only send notif when liked not unliked
+      if (
+        chosenReel.userId !== sessionStorage.getItem("id") &&
+        data.likedOrUnliked === true
+      ) {
+        await notificationHook(notification);
+      }
 
       setIsLikedByUser(data.likedOrUnliked);
       handleFetchLikes();
@@ -647,17 +679,19 @@ const ReelsModal = ({
           >
             <div>
               <div className="reels-details__wrapper -padding-10">
-                <div style={{ textAlign: "end" }}>
-                  <button
-                    className="-btn-invisible"
-                    onClick={() => setIsOpenMenuModal(!isOpenMenuModal)}
-                  >
-                    <DotsThreeIcon
-                      size={19}
-                      color={isOpenMenuModal === true ? "#4495c7" : ""}
-                    />
-                  </button>
-                </div>
+                {USER_ID === sessionStorage.getItem("id") && (
+                  <div style={{ textAlign: "end" }}>
+                    <button
+                      className="-btn-invisible"
+                      onClick={() => setIsOpenMenuModal(!isOpenMenuModal)}
+                    >
+                      <DotsThreeIcon
+                        size={19}
+                        color={isOpenMenuModal === true ? "#4495c7" : ""}
+                      />
+                    </button>
+                  </div>
+                )}
                 <div className="-display-flex-justified-spacebetween">
                   <div className="-display-flex-aligned-center -gap-10">
                     <img
@@ -799,36 +833,33 @@ const ReelsModal = ({
                     />
                   </div>
                 ) : (
-                  <div className="-display-flex-justified-spacebetween -padding-10">
+                  <div>
                     {usersComment.map((user) => (
                       <div key={user.id}>
                         {comments.map(
                           (comment) =>
                             comment.userId === user.id && (
-                              <div
-                                className="-display-flex-justified-spacearound -margin-top-10"
-                                key={comment.id}
-                              >
-                                <div>
+                              <div className="-display-flex-justified-spacearound -margin-top-20">
+                                <div className="-display-flex-aligned-center">
                                   <img
                                     src={`${BASE_URL}/${user.profilePictureUrl}`}
                                     className="comment-profilepic__img"
                                     alt="profilepic"
                                   />
-                                </div>
 
-                                <div>
-                                  <p
-                                    style={{
-                                      fontSize: "12px",
-                                      fontWeight: "bold",
-                                    }}
-                                  >
-                                    {user.fullName}
-                                  </p>
-                                  <p className="reels-comment__text">
-                                    {comment.comment}
-                                  </p>
+                                  <div>
+                                    <p
+                                      style={{
+                                        fontSize: "12px",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      {user.fullName}
+                                    </p>
+                                    <p className="reels-comment__text">
+                                      {comment.comment}
+                                    </p>
+                                  </div>
                                 </div>
                                 <div>
                                   <label

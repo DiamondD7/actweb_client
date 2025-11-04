@@ -17,6 +17,7 @@
 
   backdrop-filter: blur(5px);
   background-color: rgba(0, 0, 0, 0.6);
+  z-index: 5;
 }
 
 .-overflow-auto {
@@ -27,6 +28,23 @@
 .-loading-icon__wrapper {
   position: absolute;
   left: 50%;
+}
+
+.-connect-follower-following__btn {
+  background-color: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.-connect-not-following__btn {
+  background-color: #4495c7;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 .-btn-confirmation-delete {

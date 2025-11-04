@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { data, useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { TimeAgo } from "../../assets/js/timeAgo";
 import {
   USER_API_URI,
@@ -57,9 +57,11 @@ import {
 } from "@phosphor-icons/react";
 import Reels from "./Reels/Reels";
 import Posts from "./Posts/Posts";
+import Saved from "./Saved/Saved";
+import useNotification from "../../assets/js/useNotification";
 
 import "../../styles/profilestyles.css";
-const ProfileReels = ({ userData }) => {
+const ProfileReels = ({ userData, USER_ID }) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [chosenPost, setChosenPost] = useState([]);
@@ -123,13 +125,10 @@ const ProfileReels = ({ userData }) => {
   const handleGetPosts = async (retry = true) => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${GetPosts}/${sessionStorage.getItem("id")}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${GetPosts}/${USER_ID}`, {
+        method: "GET",
+        credentials: "include",
+      });
 
       if (response.status === 302) {
         console.warn("302 detected. redirecting...");
@@ -168,13 +167,10 @@ const ProfileReels = ({ userData }) => {
   const handleGetReels = async (retry = true) => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${GetReels}/${sessionStorage.getItem("id")}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${GetReels}/${USER_ID}`, {
+        method: "GET",
+        credentials: "include",
+      });
 
       if (response.status === 302) {
         console.warn("302 detected. redirecting...");
@@ -513,11 +509,13 @@ const ProfileReels = ({ userData }) => {
   // ---------------------------------------------------------------------------------------
 
   const PostModalContainer = ({
+    USER_ID,
     chosenPost,
     userData,
     setIsPostClicked,
     handleGetPosts,
   }) => {
+    const notificationHook = useNotification();
     const navigate = useNavigate();
     const [updateLoading, setUpdateLoading] = useState(false);
     const [editClicked, setEditClicked] = useState(false);
@@ -696,6 +694,14 @@ const ProfileReels = ({ userData }) => {
     };
 
     const handleAddComment = async (retry = true) => {
+      const notification = {
+        RecieverId: chosenPost.userId,
+        SenderId: sessionStorage.getItem("id"),
+        ReferenceId: chosenPost.id,
+        Type: "NewComment",
+        Message: "commented on your post",
+        CreatedAt: null,
+      };
       try {
         const response = await fetch(AddComment, {
           method: "POST",
@@ -731,6 +737,11 @@ const ProfileReels = ({ userData }) => {
 
         const data = await response.json();
         console.log(data);
+
+        //if the user commenting is not the owner of the post, send notification
+        if (chosenPost.userId !== sessionStorage.getItem("id")) {
+          await notificationHook(notification);
+        }
 
         setNewCommentAndLike((prev) => ({
           ...prev,
@@ -816,6 +827,14 @@ const ProfileReels = ({ userData }) => {
     };
 
     const handleAddLike = async (retry = true) => {
+      const notification = {
+        RecieverId: chosenPost.userId,
+        SenderId: sessionStorage.getItem("id"),
+        ReferenceId: chosenPost.id,
+        Type: "NewLike",
+        Message: "liked your reel",
+        CreatedAt: null,
+      };
       try {
         const response = await fetch(AddLike, {
           method: "POST",
@@ -855,6 +874,14 @@ const ProfileReels = ({ userData }) => {
 
         const data = await response.json();
         //console.log(data);
+
+        //if the user commenting is not the owner of the post, send notification and only send notif when liked not unliked
+        if (
+          chosenPost.userId !== sessionStorage.getItem("id") &&
+          data.likedOrUnliked === true
+        ) {
+          await notificationHook(notification);
+        }
 
         setIsLikedByUser(data.likedOrUnliked);
         handleFetchLikes();
@@ -1105,17 +1132,19 @@ const ProfileReels = ({ userData }) => {
             )}
 
             <div className="post-open-modal-postDetails__wrapper">
-              <div style={{ textAlign: "end" }}>
-                <button
-                  className="-btn-invisible"
-                  onClick={() => setIsOpenMenuModal(!isOpenMenuModal)}
-                >
-                  <DotsThreeIcon
-                    size={19}
-                    color={isOpenMenuModal === true ? "#4495c7" : ""}
-                  />
-                </button>
-              </div>
+              {USER_ID === sessionStorage.getItem("id") && (
+                <div style={{ textAlign: "end" }}>
+                  <button
+                    className="-btn-invisible"
+                    onClick={() => setIsOpenMenuModal(!isOpenMenuModal)}
+                  >
+                    <DotsThreeIcon
+                      size={19}
+                      color={isOpenMenuModal === true ? "#4495c7" : ""}
+                    />
+                  </button>
+                </div>
+              )}
               <div className="-display-flex-justified-spacebetween">
                 <div className="-display-flex-aligned-center -gap-10">
                   <img
@@ -1322,6 +1351,7 @@ const ProfileReels = ({ userData }) => {
       )}
       {isPostClicked === true && (
         <PostModalContainer
+          USER_ID={USER_ID}
           chosenPost={chosenPost}
           userData={userData}
           setIsPostClicked={setIsPostClicked}
@@ -1343,7 +1373,15 @@ const ProfileReels = ({ userData }) => {
           }`}
           onClick={() => handleNavs("posts")}
         >
-          <SquaresFourIcon size={15} /> Posts
+          {postNavs === "posts" ? (
+            <>
+              <SquaresFourIcon size={15} color="#4495c7" weight="fill" /> Posts
+            </>
+          ) : (
+            <>
+              <SquaresFourIcon size={15} /> Posts
+            </>
+          )}
         </button>
 
         <button
@@ -1352,37 +1390,66 @@ const ProfileReels = ({ userData }) => {
           }`}
           onClick={() => handleNavs("reels")}
         >
-          <MonitorPlayIcon size={15} /> Reels
+          {postNavs === "reels" ? (
+            <>
+              <MonitorPlayIcon size={15} color="#4495c7" weight="fill" /> Reels
+            </>
+          ) : (
+            <>
+              <MonitorPlayIcon size={15} /> Reels
+            </>
+          )}
         </button>
 
-        <button
-          className="profile-reels-makeapost-icon__btn "
-          onClick={() => handleOpenAddModals()}
-        >
-          <PlusIcon size={15} color={"#eaf2ff"} />{" "}
-          {postNavs === "posts"
-            ? "Make a Post"
-            : postNavs === "reels"
-            ? "Make a Reel"
-            : "Make a Post"}
-        </button>
+        {USER_ID === sessionStorage.getItem("id") && (
+          <>
+            <button
+              className="profile-reels-makeapost-icon__btn "
+              onClick={() => handleOpenAddModals()}
+            >
+              <PlusIcon size={15} color={"#eaf2ff"} />{" "}
+              {postNavs === "posts"
+                ? "Make a Post"
+                : postNavs === "reels"
+                ? "Make a Reel"
+                : "Make a Post"}
+            </button>
 
-        <button
-          className={`profile-reels-actions__btn ${
-            postNavs === "drafts" ? "active-post-navs" : ""
-          }`}
-          onClick={() => handleNavs("drafts")}
-        >
-          <FoldersIcon size={15} /> Drafts
-        </button>
-        <button
-          className={`profile-reels-actions__btn ${
-            postNavs === "saved" ? "active-post-navs" : ""
-          }`}
-          onClick={() => handleNavs("saved")}
-        >
-          <BookmarkSimpleIcon size={15} /> Saved
-        </button>
+            <button
+              className={`profile-reels-actions__btn ${
+                postNavs === "drafts" ? "active-post-navs" : ""
+              }`}
+              onClick={() => handleNavs("drafts")}
+            >
+              {postNavs === "drafts" ? (
+                <>
+                  <FoldersIcon size={15} color="#4495c7" weight="fill" /> Drafts
+                </>
+              ) : (
+                <>
+                  <FoldersIcon size={15} /> Drafts
+                </>
+              )}
+            </button>
+            <button
+              className={`profile-reels-actions__btn ${
+                postNavs === "saved" ? "active-post-navs" : ""
+              }`}
+              onClick={() => handleNavs("saved")}
+            >
+              {postNavs === "saved" ? (
+                <>
+                  <BookmarkSimpleIcon size={15} color="#4495c7" weight="fill" />{" "}
+                  Saved
+                </>
+              ) : (
+                <>
+                  <BookmarkSimpleIcon size={15} /> Saved
+                </>
+              )}
+            </button>
+          </>
+        )}
       </div>
 
       {/* this is the post nav contents */}
@@ -1403,6 +1470,7 @@ const ProfileReels = ({ userData }) => {
             ) : postNavs === "reels" ? (
               <div>
                 <Reels
+                  USER_ID={USER_ID}
                   userData={userData}
                   userReels={userReels}
                   handleGetReels={handleGetReels}
@@ -1412,6 +1480,8 @@ const ProfileReels = ({ userData }) => {
               </div>
             ) : postNavs === "drafts" ? (
               <div></div>
+            ) : postNavs === "saved" ? (
+              <Saved />
             ) : (
               <div></div>
             )}
@@ -1489,7 +1559,7 @@ const ProfileCards = ({ userData }) => {
   );
 };
 
-const ProfileBackground = () => {
+const ProfileBackground = ({ USER_ID, userName }) => {
   const navigate = useNavigate();
   const [editBackgroundClicked, setEditBackgroundClicked] = useState(false);
   const [openViewAllBtn, setOpenViewAllBtn] = useState(false);
@@ -1501,11 +1571,13 @@ const ProfileBackground = () => {
 
   const handleFeatureBackgrounds = async (retry = true) => {
     try {
-      const ID = sessionStorage.getItem("id");
-      const response = await fetch(`${GetFeaturedBackgrounds}?userId=${ID}`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${GetFeaturedBackgrounds}?userId=${USER_ID}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
 
       if (response.status === 401 && retry === false) {
         console.warn("Unauthorize. Rerouting...");
@@ -1536,7 +1608,7 @@ const ProfileBackground = () => {
     }
   };
 
-  const ViewAllContainer = ({ setOpenViewAllBtn }) => {
+  const ViewAllContainer = ({ setOpenViewAllBtn, userName }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [userBackgroundData, setUserBackgroundData] = useState([]);
 
@@ -1547,11 +1619,13 @@ const ProfileBackground = () => {
 
     const handleFetchBackgrounds = async (retry = true) => {
       try {
-        const ID = sessionStorage.getItem("id");
-        const response = await fetch(`${GetUserBackgrounds}?userId=${ID}`, {
-          method: "GET",
-          credentials: "include",
-        });
+        const response = await fetch(
+          `${GetUserBackgrounds}?userId=${USER_ID}`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
 
         if (response.status === 401 && retry === false) {
           console.warn("Unauthorize. Rerouting...");
@@ -1596,13 +1670,13 @@ const ProfileBackground = () => {
             >
               <XIcon size={15} />
             </button>
-            <h4 style={{ marginTop: "10px" }}>Aaron's Background</h4>
+            <h4 style={{ marginTop: "10px" }}>{userName}'s Background</h4>
             <br />
             <p style={{ fontSize: "12px", lineHeight: "1.5" }}>
-              This page gives you a quick look at Aaron’s background — where
-              they’ve come from, what they’ve worked on, and a bit about their
-              journey in acting. It’s here so you can get to know them better
-              beyond just their roles.
+              This page gives you a quick look at {userName}’s background —
+              where they’ve come from, what they’ve worked on, and a bit about
+              their journey in acting. It’s here so you can get to know them
+              better beyond just their roles.
             </p>
           </div>
 
@@ -2492,7 +2566,10 @@ const ProfileBackground = () => {
       {openViewAllBtn === true && (
         <>
           <div className="overlay"></div>
-          <ViewAllContainer setOpenViewAllBtn={setOpenViewAllBtn} />
+          <ViewAllContainer
+            setOpenViewAllBtn={setOpenViewAllBtn}
+            userName={userName}
+          />
         </>
       )}
       <div className="-display-flex-justified-spacebetween">
@@ -2502,12 +2579,15 @@ const ProfileBackground = () => {
         >
           View all
         </button>
-        <button
-          className="-btn-invisible"
-          onClick={() => setEditBackgroundClicked(true)}
-        >
-          <PencilSimpleIcon size={15} />
-        </button>
+
+        {USER_ID === sessionStorage.getItem("id") && (
+          <button
+            className="-btn-invisible"
+            onClick={() => setEditBackgroundClicked(true)}
+          >
+            <PencilSimpleIcon size={15} />
+          </button>
+        )}
       </div>
 
       {featuredBackgrounds.length <= 0 ? (
@@ -2555,7 +2635,13 @@ const ProfileBackground = () => {
   );
 };
 
-const ProfileDetails = ({ navigate, userData, following, followers }) => {
+const ProfileDetails = ({
+  USER_ID,
+  navigate,
+  userData,
+  following,
+  followers,
+}) => {
   return (
     <div>
       <div className="profile-deatils__wrapper">
@@ -2581,19 +2667,23 @@ const ProfileDetails = ({ navigate, userData, following, followers }) => {
           </p>
         </div>
 
-        <button
-          className="profile-details-profilepicture-edit__btn"
-          onClick={() => navigate("/settings-page?load=profile")}
-        >
-          <PencilSimpleIcon size={15} />
-        </button>
+        {USER_ID === sessionStorage.getItem("id") && (
+          <button
+            className="profile-details-profilepicture-edit__btn"
+            onClick={() => navigate("/settings-page?load=profile")}
+          >
+            <PencilSimpleIcon size={15} />
+          </button>
+        )}
       </div>
     </div>
   );
 };
 
 const Profile = () => {
-  const USER_ID = sessionStorage.getItem("id");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const USER_ID = searchParams.get("id") || sessionStorage.getItem("id");
+
   const [isLoading, setIsLoading] = useState(false);
   const [userData, setUserData] = useState([]);
   const [following, setFollowing] = useState([]);
@@ -2604,18 +2694,15 @@ const Profile = () => {
     handleGetUserData();
     fetchFollowing();
     fetchFollowers();
-  }, []);
+  }, [USER_ID]);
 
   const handleGetUserData = async (retry = true) => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${USER_API_URI}/${sessionStorage.getItem("id")}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${USER_API_URI}/${USER_ID}`, {
+        method: "GET",
+        credentials: "include",
+      });
 
       if (response.status === 302) {
         console.warn("301 detected, redirecting...");
@@ -2735,17 +2822,21 @@ const Profile = () => {
         <div className="profile-container__wrapper">
           <div>
             <ProfileDetails
+              USER_ID={USER_ID}
               navigate={navigate}
               userData={userData}
               following={following}
               followers={followers}
             />
-            <ProfileBackground />
+            <ProfileBackground
+              USER_ID={USER_ID}
+              userName={userData.firstName}
+            />
           </div>
           <div>
             <ProfileCards userData={userData} />
 
-            <ProfileReels userData={userData} />
+            <ProfileReels userData={userData} USER_ID={USER_ID} />
           </div>
         </div>
       )}

@@ -124,15 +124,14 @@ const Notifications = () => {
           </div>
         ) : (
           <>
-            {notificationUsers.map((user) => (
-              <div
-                className={`notification-data-container__wrapper ${
-                  seeAllNotifs === true ? "notification-seeAll-overflow" : ""
-                }`}
-                key={user.id}
-              >
-                {displayedNotifications.map(
-                  (items) =>
+            <div
+              className={`notification-data-container__wrapper ${
+                seeAllNotifs === true ? "notification-seeAll-overflow" : ""
+              }`}
+            >
+              {displayedNotifications.map((items) =>
+                notificationUsers.map(
+                  (user) =>
                     items.senderId === user.id && (
                       <div
                         style={{
@@ -161,9 +160,9 @@ const Notifications = () => {
                         </p>
                       </div>
                     )
-                )}
-              </div>
-            ))}
+                )
+              )}
+            </div>
 
             <div className="notifications-seeAll__wrapper">
               <button
