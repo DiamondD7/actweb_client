@@ -6,7 +6,7 @@ import {
 } from "../../assets/js/serverapi";
 import { CircleNotchIcon } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
-import { TimeAgo } from "../../assets/js/timeago";
+import { TimeAgo } from "../../assets/js/timeAgo";
 import * as signalR from "@microsoft/signalr";
 
 import "../../styles/notificationsstyles.css";
