@@ -21,7 +21,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import useValidateUser from "../../assets/js/validate-user";
 import useNotification from "../../assets/js/useNotification";
-import { TimeAgo } from "../../assets/js/timeAgo";
+import { TimeAgo } from "../../assets/js/timeAgo.js";
 import Picker from "emoji-picker-react";
 
 import "../../styles/messagesstyles.css";

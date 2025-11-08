@@ -37,7 +37,7 @@ import {
 } from "@phosphor-icons/react";
 import Slider from "react-slick";
 import { useNavigate } from "react-router-dom";
-import { TimeAgo } from "../../assets/js/timeago";
+import { TimeAgo } from "../../assets/js/timeAgo.js";
 import useNotification from "../../assets/js/useNotification";
 
 import "slick-carousel/slick/slick.css";
