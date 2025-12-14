@@ -158,3 +158,11 @@
   border: none;
   border-radius: 5px;
 }
+
+.password-change__wrapper {
+  width: 500px;
+  height: 350px;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #4495c7;
+}

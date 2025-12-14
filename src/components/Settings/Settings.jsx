@@ -15,9 +15,10 @@ import {
 } from "../../assets/js/serverapi";
 import Nav from "../Nav/Nav";
 import Appearance from "./Sub-Settings/Appearance";
+import PersonalBackground from "./Sub-Settings/PersonalBackground";
 
 import "../../styles/settingsstyles.css";
-import PersonalBackground from "./Sub-Settings/PersonalBackground";
+import AdvanceSecurity from "./Sub-Settings/AdvanceSecurity";
 
 const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
   const USERNAME_REGEX = /^[a-zA-Z][a-zA-Z0-9._]{2,15}$/;
@@ -491,6 +492,111 @@ const Account = ({ userData, handleGetUserData }) => {
   );
 };
 
+const SecuritySettings = () => {
+  const PasswordChangeContainer = () => {
+    return (
+      <>
+        <h5>Change your password</h5>
+        <p style={{ fontSize: "12px", marginBottom: "10px" }}>
+          It is important for you to change your password every 6 months to
+          protect your account
+        </p>
+        <div className="password-change__wrapper">
+          <form className="account-form__wrapper">
+            <>
+              <div className="-display-flex-aligned-center -gap-10">
+                <h5 style={{ color: "#f3f3f3" }}>
+                  Enter your current password
+                </h5>
+              </div>
+
+              <div
+                style={{ backgroundColor: "#f3f3f3" }}
+                className="-form-input__wrapper"
+              >
+                <p>Current password</p>
+                <input type="password" name="currentPassword" placeholder="" />
+              </div>
+            </>
+
+            <>
+              <div className="-display-flex-aligned-center -gap-10">
+                <h5 style={{ color: "#f3f3f3" }}>Enter your new password</h5>
+              </div>
+
+              <div
+                style={{ backgroundColor: "#f3f3f3" }}
+                className="-form-input__wrapper"
+              >
+                <p>New password</p>
+                <input
+                  style={{ backgroundColor: "#f3f3f3" }}
+                  type="password"
+                  name="newPassword"
+                  placeholder=""
+                />
+              </div>
+            </>
+
+            <>
+              <div className="-display-flex-aligned-center -gap-10">
+                <h5 style={{ color: "#f3f3f3" }}>Confirm your new password</h5>
+              </div>
+
+              <div
+                style={{ backgroundColor: "#f3f3f3" }}
+                className="-form-input__wrapper"
+              >
+                <p>Confirm password</p>
+                <input
+                  style={{ backgroundColor: "#f3f3f3" }}
+                  type="password"
+                  name="confirmPassword"
+                  placeholder=""
+                />
+              </div>
+            </>
+          </form>
+        </div>
+      </>
+    );
+  };
+
+  return (
+    <div>
+      <p style={{ fontSize: "12px", lineHeight: "1.5" }}>
+        This is your security settings page. From here, you can update your
+        security details to make sure you are protecting your account. You can
+        also add or remove Two Factor Authentication but we recommend to add
+        one. Keeping your account safe is our number one priority.
+      </p>
+      <form className="account-form__wrapper">
+        <div className="-display-flex-aligned-center -gap-10">
+          <h5>Change your email address</h5>
+        </div>
+
+        <div className="-form-input__wrapper">
+          <p>Email Address</p>
+          <input type="text" name="emailAddress" placeholder="" />
+        </div>
+
+        <div className="-display-flex-aligned-center -gap-10">
+          <h5>Add a recovery email address</h5>
+        </div>
+        <p style={{ fontSize: "12px", marginTop: "5px" }}>
+          Recovery email address is important for your account security
+        </p>
+        <div className="-form-input__wrapper">
+          <p>Recovery email address</p>
+          <input type="text" name="recoveryEmailAddress" placeholder="" />
+        </div>
+      </form>
+
+      <PasswordChangeContainer />
+    </div>
+  );
+};
+
 const Settings = () => {
   const [userData, setUserData] = useState([]);
 
@@ -612,6 +718,26 @@ const Settings = () => {
             >
               Security
             </li>
+            {navDisplay === "Security" ||
+            navDisplay === "Security > Advance" ? (
+              <>
+                <ul className="sub-ul__wrapper">
+                  <li
+                    className={
+                      navDisplay === "Security > Advance"
+                        ? "setting-nav-active"
+                        : ""
+                    }
+                    onClick={() => setNavDisplay("Security > Advance")}
+                  >
+                    Advance
+                  </li>
+                </ul>
+              </>
+            ) : (
+              ""
+            )}
+
             <li
               className={navDisplay === "Privacy" ? "setting-nav-active" : ""}
               onClick={() => setNavDisplay("Privacy")}
@@ -642,6 +768,10 @@ const Settings = () => {
               userData={userData}
               handleGetUserData={handleGetUserData}
             />
+          ) : navDisplay === "Security" ? (
+            <SecuritySettings />
+          ) : navDisplay === "Security > Advance" ? (
+            <AdvanceSecurity />
           ) : (
             ""
           )}
