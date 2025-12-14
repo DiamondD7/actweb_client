@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   MagnifyingGlassIcon,
   ArticleIcon,
@@ -11,13 +11,71 @@ import {
   GearSixIcon,
   XIcon,
 } from "@phosphor-icons/react";
-import { BASE_URL, GetFollowing } from "../../assets/js/serverapi";
+import {
+  BASE_URL,
+  GetFollowing,
+  GetUsersAccounts,
+} from "../../assets/js/serverapi";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Logout } from "../../assets/js/serverapi";
 import Notifications from "../Notifications/Notifications";
 
 import "../../styles/navstyles.css";
-const AccountsSection = () => {
+const AccountsSection = ({ searchText }) => {
+  const navigate = useNavigate();
+  const [accounts, setAccounts] = useState([]);
+
+  useEffect(() => {
+    handleFetchAccounts();
+  }, []);
+
+  const handleFetchAccounts = async (retry = true) => {
+    try {
+      const response = await fetch(
+        `${GetUsersAccounts}?searchKeyword=${searchText}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(sessionStorage.getItem("id")),
+        }
+      );
+
+      if (response.status === 302) {
+        console.warn("302 detected. Redirecting...");
+        navigate("/", { replace: true });
+        sessionStorage.clear();
+        return;
+      }
+
+      if (response.status === 401 && !retry) {
+        console.error(`Unauthorized. Redirecting...`);
+        navigate("/", { replace: true });
+        sessionStorage.clear();
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.log("401 detected. Retrying request...");
+        return handleFetchAccounts(false);
+      }
+
+      if (!response.ok) {
+        console.error(response.status);
+        return;
+      }
+
+      const data = await response.json();
+      setAccounts(data);
+    } catch (err) {
+      console.log(`Error thrown: ${err}`);
+      throw err;
+    }
+  };
+
   return (
     <>
       <div
@@ -29,19 +87,24 @@ const AccountsSection = () => {
           overflow: "auto",
         }}
       >
-        <div className="-display-flex-justified-spacebetween -display-flex-aligned-center -margin-top-20">
-          <div className="-display-flex-aligned-center -gap-10">
-            <img
-              className="nav-search-account__img"
-              src="https://randomuser.me/api/portraits/women/1.jpg"
-              alt="profile-pic-thumbnail"
-            />
+        {accounts.map((user, index) => (
+          <div
+            key={index}
+            className="-display-flex-justified-spacebetween -display-flex-aligned-center -margin-top-20"
+          >
+            <div className="-display-flex-aligned-center -gap-10">
+              <img
+                className="nav-search-picture-thumbnail__img"
+                src={`${BASE_URL}/${user.profilePictureUrl}`}
+                alt="profile-pic-thumbnail"
+              />
 
-            <p style={{ fontSize: "15px" }}>Jane Doe</p>
+              <p style={{ fontSize: "15px" }}>{user.fullName}</p>
+            </div>
+
+            <button className="-connect-not-following__btn">Follow</button>
           </div>
-
-          <button className="-connect-not-following__btn">Follow</button>
-        </div>
+        ))}
       </div>
     </>
   );
@@ -78,7 +141,7 @@ const NavSearchAllModal = ({ searchText, setSearchAllClicked }) => {
             </ul>
           </div>
 
-          <AccountsSection />
+          <AccountsSection searchText={searchText} />
         </div>
       </div>
     </>

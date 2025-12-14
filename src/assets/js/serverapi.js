@@ -9,6 +9,7 @@ export const USER_API_URI = `${userapiVar}/api/Users`;
 export const ValidateToken = `${userapiVar}/api/Users/validate-user-token`;
 export const GetUserBackgrounds = `${userapiVar}/api/Users/get-user-backgrounds`;
 export const GetUsersByIds = `${userapiVar}/api/Users/userIds`;
+export const GetUsersAccounts = `${userapiVar}/api/Users/users-accounts`;
 export const GetFeaturedBackgrounds = `${userapiVar}/api/Users/get-featured-backgrounds`;
 export const UserCreation = `${userapiVar}/api/Users/create-user`;
 export const CheckLogin = `${userapiVar}/api/Users/check-login`;
