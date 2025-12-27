@@ -771,7 +771,10 @@ const Settings = () => {
           ) : navDisplay === "Security" ? (
             <SecuritySettings />
           ) : navDisplay === "Security > Advance" ? (
-            <AdvanceSecurity />
+            <AdvanceSecurity
+              userData={userData}
+              handleGetUserData={handleGetUserData}
+            />
           ) : (
             ""
           )}
