@@ -12,13 +12,14 @@ import {
   UploadProfilePicture,
   USER_API_URI,
   BASE_URL,
+  NewPasswordCheckAndChange,
 } from "../../assets/js/serverapi";
 import Nav from "../Nav/Nav";
 import Appearance from "./Sub-Settings/Appearance";
 import PersonalBackground from "./Sub-Settings/PersonalBackground";
+import AdvanceSecurity from "./Sub-Settings/AdvanceSecurity";
 
 import "../../styles/settingsstyles.css";
-import AdvanceSecurity from "./Sub-Settings/AdvanceSecurity";
 
 const ProfileSettings = ({ navigate, userData, handleGetUserData }) => {
   const USERNAME_REGEX = /^[a-zA-Z][a-zA-Z0-9._]{2,15}$/;
@@ -493,7 +494,112 @@ const Account = ({ userData, handleGetUserData }) => {
 };
 
 const SecuritySettings = () => {
+  // --------------------------------------------------- SUB COMPONENT
   const PasswordChangeContainer = () => {
+    const navigate = useNavigate();
+    const [passwordChangeData, setPasswordChangeData] = useState({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+    const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
+    const [validNewPassword, setValidNewPassword] = useState(null);
+    const [matchedPW, setMatchedPW] = useState(null);
+    const [errorMessage, setErrorMessage] = useState(""); //error message for password change
+    const [successMessage, setSuccessMessage] = useState(""); //success message for password change
+    const [isPasswordChangedClicked, setIsPasswordChangedClicked] =
+      useState(false);
+
+    useEffect(() => {
+      const newPasswordMatch = PWD_REGEX.test(passwordChangeData.newPassword);
+
+      if (
+        passwordChangeData.newPassword !== passwordChangeData.confirmPassword
+      ) {
+        setMatchedPW(false);
+      } else {
+        setMatchedPW(true);
+      }
+
+      if (newPasswordMatch === false) {
+        setValidNewPassword(false);
+      } else if (newPasswordMatch === true) {
+        setValidNewPassword(true);
+      }
+    }, [passwordChangeData.newPassword, passwordChangeData.confirmPassword]);
+
+    const handleOnInputChange = (e) => {
+      const { name, value } = e.target;
+      setPasswordChangeData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    };
+
+    const handleChangePasswordClick = async (e) => {
+      e.preventDefault();
+      await handlePasswordChange();
+    };
+
+    const handlePasswordChange = async (retry = true) => {
+      setIsPasswordChangedClicked(true);
+      try {
+        const response = await fetch(NewPasswordCheckAndChange, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            UserId: sessionStorage.getItem("id"),
+            CurrentPassword: passwordChangeData.currentPassword,
+            NewPassword: passwordChangeData.newPassword,
+          }),
+        });
+
+        if (response.status === 302) {
+          console.warn("302 detected, redirecting...");
+          navigate("/", { replace: true });
+          sessionStorage.clear();
+          return;
+        }
+
+        if (response.status === 401 && !retry) {
+          console.error("Unauthorized. Rerouting...");
+          navigate("/", { replace: true });
+          sessionStorage.clear();
+          return;
+        }
+
+        if (response.status === 401 && retry) {
+          console.warn("401 detected, retrying request...");
+          return handlePasswordChange(false);
+        }
+
+        const data = await response.json();
+        if (data.status === false) {
+          setErrorMessage(data.message);
+        }
+
+        setTimeout(() => {
+          setIsPasswordChangedClicked(false);
+          setPasswordChangeData({
+            currentPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+          });
+
+          if (data.status === true) {
+            setSuccessMessage(data.message);
+            setErrorMessage("");
+          }
+        }, 2000);
+      } catch (err) {
+        console.warn(err);
+        throw err;
+      }
+    };
     return (
       <>
         <h5>Change your password</h5>
@@ -501,8 +607,33 @@ const SecuritySettings = () => {
           It is important for you to change your password every 6 months to
           protect your account
         </p>
+
+        {successMessage && <p className="-success-form-p">{successMessage}</p>}
+
+        {errorMessage && <p className="-error-form-p">{errorMessage}</p>}
+
+        {passwordChangeData.newPassword.length > 0 ||
+        passwordChangeData.confirmPassword.length > 0 ? (
+          <>
+            {!validNewPassword && (
+              <p className="-error-form-p">
+                8 to 24 characters. Must include uppercase and lowercase
+                letters, a number and a special character. <br />
+                Allowed special characters: ! @ # $ %
+              </p>
+            )}
+            {!matchedPW && (
+              <p className="-error-form-p">Passwords do not match!</p>
+            )}
+          </>
+        ) : (
+          ""
+        )}
         <div className="password-change__wrapper">
-          <form className="account-form__wrapper">
+          <form
+            onSubmit={(e) => handleChangePasswordClick(e)}
+            className="settings-security-form__wrapper"
+          >
             <>
               <div className="-display-flex-aligned-center -gap-10">
                 <h5 style={{ color: "#f3f3f3" }}>
@@ -515,7 +646,13 @@ const SecuritySettings = () => {
                 className="-form-input__wrapper"
               >
                 <p>Current password</p>
-                <input type="password" name="currentPassword" placeholder="" />
+                <input
+                  type="password"
+                  value={passwordChangeData.currentPassword}
+                  name="currentPassword"
+                  placeholder=""
+                  onChange={(e) => handleOnInputChange(e)}
+                />
               </div>
             </>
 
@@ -532,8 +669,10 @@ const SecuritySettings = () => {
                 <input
                   style={{ backgroundColor: "#f3f3f3" }}
                   type="password"
+                  value={passwordChangeData.newPassword}
                   name="newPassword"
                   placeholder=""
+                  onChange={(e) => handleOnInputChange(e)}
                 />
               </div>
             </>
@@ -551,11 +690,35 @@ const SecuritySettings = () => {
                 <input
                   style={{ backgroundColor: "#f3f3f3" }}
                   type="password"
+                  value={passwordChangeData.confirmPassword}
                   name="confirmPassword"
                   placeholder=""
+                  onChange={(e) => handleOnInputChange(e)}
                 />
               </div>
             </>
+
+            <button
+              type="submit"
+              className={`security-changepassword__btn ${
+                matchedPW === false || validNewPassword === false
+                  ? "-btn-disabled"
+                  : ""
+              }`}
+              disabled={
+                matchedPW === false || validNewPassword === false ? true : false
+              }
+            >
+              {isPasswordChangedClicked === false ? (
+                "Change password"
+              ) : (
+                <CircleNotchIcon
+                  size={13}
+                  color={"#4495c7"}
+                  className={"-btn-loading__icon"}
+                />
+              )}
+            </button>
           </form>
         </div>
       </>
