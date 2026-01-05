@@ -963,7 +963,11 @@ const Settings = () => {
               ""
             )}
             <li
-              className={navDisplay === "Security" ? "setting-nav-active" : ""}
+              className={
+                navDisplay === "Security" || navDisplay === "Security > Advance"
+                  ? "setting-nav-active"
+                  : ""
+              }
               onClick={() => setNavDisplay("Security")}
             >
               Security
