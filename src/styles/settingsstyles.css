@@ -107,6 +107,10 @@
   left: 55%;
 }
 
+.settings-security-form__wrapper {
+  width: 400px;
+  padding: 20px;
+}
 .account-form__wrapper {
   width: 400px;
   padding: 20px;
@@ -175,5 +179,39 @@
   cursor: pointer;
   color: gray;
   border: 1px solid gray;
+  border-radius: 5px;
   background-color: rgb(227, 227, 227);
+}
+.advance-security-radio-enabled__btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 5px;
+  cursor: pointer;
+  color: #f3f3f3;
+  border: 1px solid limegreen;
+  border-radius: 5px;
+  background-color: limegreen;
+}
+
+.security-changepassword__btn {
+  width: 150px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 5px 10px;
+  background-color: #ffffffff;
+  color: #4495c7;
+  border: none;
+  border-radius: 5px;
+}
+
+.recovery-change-email-rec__btn {
+  width: 150px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 5px 10px;
+  background-color: #ffffffff;
+  color: #4495c7;
+  border: none;
+  border-radius: 5px;
 }

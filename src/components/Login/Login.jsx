@@ -1,13 +1,104 @@
 import React, { useState } from "react";
-import { CheckLogin, ValidateTokens } from "../../assets/js/serverapi";
+import {
+  CheckLogin,
+  ValidateTokens,
+  TwoFactorEmail,
+  TwoFactorVerify,
+} from "../../assets/js/serverapi";
 import { CircleNotchIcon, EyeIcon, EyeSlashIcon } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 
 import "../../styles/loginstyles.css";
+const TwoFactorAuthPage = ({
+  setIsLoginClicked,
+  handleTokenValidation,
+  loggingUser,
+}) => {
+  const { id } = loggingUser;
+  const [code, setCode] = useState("");
+  const [invalidCode, setInvalidCode] = useState(false);
+
+  const handletest = (e) => {
+    e.preventDefault();
+    handleVerifyCode();
+  };
+
+  const handleVerifyCode = async () => {
+    try {
+      const response = await fetch(TwoFactorVerify, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          Id: id,
+          Code: code,
+        }),
+      });
+
+      if (response.status === 401) {
+        console.error("Invalid two factor authentication code.");
+        setInvalidCode(true);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+      setIsLoginClicked(true);
+      await handleTokenValidation(loggingUser);
+    } catch (err) {
+      console.error("Error sending two factor email:", err);
+      throw err;
+    }
+  };
+
+  return (
+    <div>
+      <h1>Two Factor Authentication</h1>
+      <p>Enter the code that was sent to your email address.</p>
+
+      {invalidCode && (
+        <label className="twofactorauth-invalid__text">
+          Invalid code. Please double check the code again or try logging back
+          in again
+        </label>
+      )}
+
+      <form onSubmit={(e) => handletest(e)}>
+        <input
+          className="twofactorauth-code__input"
+          type="text"
+          onChange={(e) => setCode(e.target.value)}
+          placeholder="Enter your code here"
+        />
+        <br />
+
+        <button className="twofactorauth-verify__btn" type="submit">
+          Verify
+        </button>
+
+        <button
+          className="twofactorauth-back__btn"
+          type="button"
+          onClick={() => window.location.reload()}
+        >
+          Back
+        </button>
+      </form>
+    </div>
+  );
+};
+
 const Login = () => {
   const navigate = useNavigate();
+  const [twoFactorPageOpen, setTwoFactorPageOpen] = useState(false);
+  const [loggingUser, setLoggingUser] = useState([]);
   const [showError, setShowError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isJoinNowClicked, setIsJoinNowClicked] = useState(false);
@@ -52,14 +143,43 @@ const Login = () => {
         throw new Error("Network response was not ok");
       }
 
-      const data = await response.json();
+      const user = await response.json();
 
       if (response.ok) {
-        await handleTokenValidation(data.data);
+        if (user.data.isTwoFactorAuthenticationOn === false) {
+          await handleTokenValidation(user.data);
+        } else {
+          setLoggingUser(user.data);
+          await handleEmailTwoFactor(user.data);
+        }
       }
     } catch (err) {
       console.error("Login failed:", err);
       // Handle error appropriately, e.g., show a notification
+    }
+  };
+
+  const handleEmailTwoFactor = async (userData) => {
+    try {
+      const response = await fetch(TwoFactorEmail, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+      setTwoFactorPageOpen(true);
+      setIsLoginClicked(false);
+    } catch (err) {
+      console.error("Error sending two factor email:", err);
+      throw err;
     }
   };
 
@@ -152,68 +272,80 @@ const Login = () => {
             </div>
           </div>
           <div className="login-rightSide__wrapper">
-            <h1>Login</h1>
-            <p>Welcome! Please enter your details below to login</p>
-            {showError && (
-              <p>
-                <strong className="-error-form-p">
-                  Error: Invalid email or password
-                </strong>
-              </p>
+            {twoFactorPageOpen ? (
+              <>
+                <TwoFactorAuthPage
+                  setIsLoginClicked={setIsLoginClicked}
+                  handleTokenValidation={handleTokenValidation}
+                  loggingUser={loggingUser}
+                />
+              </>
+            ) : (
+              <>
+                <h1>Login</h1>
+                <p>Welcome! Please enter your details below to login</p>
+                {showError && (
+                  <p>
+                    <strong className="-error-form-p">
+                      Error: Invalid email or password
+                    </strong>
+                  </p>
+                )}
+                <form className="form__wrapper" onSubmit={handleLoginClicked}>
+                  <div className="-form-input__wrapper">
+                    <p>Email</p>
+                    <input
+                      required
+                      type="text"
+                      name="email"
+                      onChange={(e) => handleInputChange(e)}
+                    />
+                  </div>
+                  <div className="-form-password-input__wrapper">
+                    <div style={{ width: "100%" }}>
+                      <p>Password</p>
+                      <input
+                        required
+                        type={showPassword === false ? "password" : "text"}
+                        name="password"
+                        onChange={(e) => handleInputChange(e)}
+                      />
+                    </div>
+                    <button
+                      className="-password-seeIcon-btn"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setShowPassword(!showPassword);
+                      }}
+                    >
+                      {showPassword === false ? (
+                        <EyeSlashIcon size={18} />
+                      ) : (
+                        <EyeIcon size={18} />
+                      )}
+                    </button>
+                  </div>
+
+                  <button type="submit" className="form-submit__btn -btn-dark-">
+                    Submit
+                  </button>
+
+                  <br />
+                  <br />
+                  <p>Or</p>
+
+                  <div className="signin-google__wrapper">
+                    <GoogleLogin
+                      onSuccess={(google) => handleGoogleLoginSuccess(google)}
+                      onError={(err) => console.log(err)}
+                      text="signin_with"
+                      width="330px"
+                      shape="pill"
+                    />
+                  </div>
+                </form>
+              </>
             )}
-            <form className="form__wrapper" onSubmit={handleLoginClicked}>
-              <div className="-form-input__wrapper">
-                <p>Email</p>
-                <input
-                  required
-                  type="text"
-                  name="email"
-                  onChange={(e) => handleInputChange(e)}
-                />
-              </div>
-              <div className="-form-password-input__wrapper">
-                <div style={{ width: "100%" }}>
-                  <p>Password</p>
-                  <input
-                    required
-                    type={showPassword === false ? "password" : "text"}
-                    name="password"
-                    onChange={(e) => handleInputChange(e)}
-                  />
-                </div>
-                <button
-                  className="-password-seeIcon-btn"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowPassword(!showPassword);
-                  }}
-                >
-                  {showPassword === false ? (
-                    <EyeSlashIcon size={18} />
-                  ) : (
-                    <EyeIcon size={18} />
-                  )}
-                </button>
-              </div>
-
-              <button type="submit" className="form-submit__btn -btn-dark-">
-                Submit
-              </button>
-
-              <br />
-              <br />
-              <p>Or</p>
-
-              <div className="signin-google__wrapper">
-                <GoogleLogin
-                  onSuccess={(google) => handleGoogleLoginSuccess(google)}
-                  onError={(err) => console.log(err)}
-                  text="signin_with"
-                  width="330px"
-                  shape="pill"
-                />
-              </div>
-            </form>
           </div>
         </div>
       )}

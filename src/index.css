@@ -163,6 +163,13 @@
   margin-top: 10px;
 }
 
+.-success-form-p {
+  color: limegreen;
+  font-size: 12px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
 .-password-seeIcon-btn {
   cursor: pointer;
   background-color: transparent;
@@ -295,7 +302,7 @@
 }
 
 .-btn-disabled {
-  cursor: default;
+  cursor: not-allowed;
   background-color: #494949;
   border: none;
 }

@@ -87,3 +87,43 @@
   left: 50%;
   transform: translate(-50%, -50%);
 }
+
+.twofactorauth-code__input {
+  outline: none;
+  text-align: center;
+  width: 80%;
+  padding: 10px;
+  margin-top: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.twofactorauth-verify__btn {
+  cursor: pointer;
+  width: 80%;
+  padding: 10px 20px;
+  margin-top: 50px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4495c7;
+  color: #eaf2ff;
+}
+
+.twofactorauth-back__btn {
+  cursor: pointer;
+  width: 80%;
+  padding: 10px 20px;
+  margin-top: 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: transparent;
+  color: #494949;
+}
+
+.twofactorauth-invalid__text {
+  color: red;
+  font-size: 12px;
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+}
