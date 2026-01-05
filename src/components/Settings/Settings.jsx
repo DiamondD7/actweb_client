@@ -13,6 +13,7 @@ import {
   USER_API_URI,
   BASE_URL,
   NewPasswordCheckAndChange,
+  UserNewRecoveryEmail,
 } from "../../assets/js/serverapi";
 import Nav from "../Nav/Nav";
 import Appearance from "./Sub-Settings/Appearance";
@@ -494,6 +495,71 @@ const Account = ({ userData, handleGetUserData }) => {
 };
 
 const SecuritySettings = () => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [outcomeMessage, setOutcomeMessage] = useState("");
+  const [emailRecovery, setEmailRecovery] = useState("");
+
+  const handleRecoveryEmailChange = async (retry = true) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(UserNewRecoveryEmail, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          Id: sessionStorage.getItem("id"),
+          EmailRecovery: emailRecovery,
+        }),
+      });
+
+      if (response.status === 302) {
+        console.warn("302 detected, redirecting...");
+        navigate("/", { replace: true });
+        sessionStorage.clear();
+        return;
+      }
+
+      if (response.status === 401 && !retry) {
+        console.warn("Unauthorized. Rerouting...");
+        navigate("/", { replace: true });
+        sessionStorage.clear();
+        return;
+      }
+
+      if (response.status === 401 && retry) {
+        console.warn("401 detected, retrying request...");
+        return handleRecoveryEmailChange(false);
+      }
+
+      if (!response.ok) {
+        console.warn(response.status);
+        setError(true);
+      }
+
+      const data = await response.json();
+
+      if (data.status === false) {
+        setOutcomeMessage(data.message);
+      } else {
+        setEmailRecovery("");
+        setOutcomeMessage(data.message);
+        setError(false);
+      }
+
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
   // --------------------------------------------------- SUB COMPONENT
   const PasswordChangeContainer = () => {
     const navigate = useNavigate();
@@ -733,26 +799,47 @@ const SecuritySettings = () => {
         also add or remove Two Factor Authentication but we recommend to add
         one. Keeping your account safe is our number one priority.
       </p>
-      <form className="account-form__wrapper">
-        <div className="-display-flex-aligned-center -gap-10">
-          <h5>Change your email address</h5>
-        </div>
-
-        <div className="-form-input__wrapper">
-          <p>Email Address</p>
-          <input type="text" name="emailAddress" placeholder="" />
-        </div>
-
+      <form
+        className="account-form__wrapper"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleRecoveryEmailChange();
+        }}
+      >
         <div className="-display-flex-aligned-center -gap-10">
           <h5>Add a recovery email address</h5>
         </div>
         <p style={{ fontSize: "12px", marginTop: "5px" }}>
           Recovery email address is important for your account security
         </p>
+
+        {error && <p className="-error-form-p">{outcomeMessage}</p>}
+        {!error && outcomeMessage.length > 0 && (
+          <p className="-success-form-p">{outcomeMessage}</p>
+        )}
         <div className="-form-input__wrapper">
           <p>Recovery email address</p>
-          <input type="text" name="recoveryEmailAddress" placeholder="" />
+          <input
+            type="text"
+            name="recoveryEmailAddress"
+            placeholder=""
+            onChange={(e) => setEmailRecovery(e.target.value)}
+          />
         </div>
+
+        {emailRecovery.length > 0 && (
+          <button type="submit" className="recovery-change-email-rec__btn">
+            {isLoading ? (
+              <CircleNotchIcon
+                size={13}
+                color={"#f3f3f3"}
+                className={"-btn-loading__icon"}
+              />
+            ) : (
+              "Change"
+            )}
+          </button>
+        )}
       </form>
 
       <PasswordChangeContainer />

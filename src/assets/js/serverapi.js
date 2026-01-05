@@ -16,6 +16,7 @@ export const CheckLogin = `${userapiVar}/api/Users/check-login`;
 export const ValidateTokens = `${userapiVar}/api/Users/validate-tokens`;
 export const UploadProfilePicture = `${userapiVar}/api/Users/upload-profile-picture`;
 export const NewPasswordCheckAndChange = `${userapiVar}/api/Users/password-change-check-cred`;
+export const UserNewRecoveryEmail = `${userapiVar}/api/Users/user-new-recovery-email`;
 export const UpdateUserTwoFactorAuth = `${userapiVar}/api/Users/user-twofactorauth`;
 export const TwoFactorEmail = `${userapiVar}/api/TwoFactorAuth/two-factor-auth-validation-email`;
 export const TwoFactorVerify = `${userapiVar}/api/TwoFactorAuth/two-factor-auth-verify`;
