@@ -206,7 +206,7 @@ const Login = () => {
         sessionStorage.setItem("id", userData.id);
         setIsLoginClicked(false);
         // Navigate to the dashboard or home page after successful login
-        navigate("/feed-page");
+        navigate("/profile-page");
       }, 2000);
     } catch (e) {
       console.error("Error validating tokens:", e);
