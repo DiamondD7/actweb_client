@@ -228,6 +228,7 @@ const Nav = () => {
   const location = useLocation();
   const currentPath = location.pathname;
 
+  const [feedMouseOver, setFeedMouseOver] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
 
   const [searchText, setSearchText] = useState("");
@@ -325,7 +326,7 @@ const Nav = () => {
           </div>
           <div className="nav-navigations__wrapper">
             <ul className="nav-navigations__list">
-              <li
+              {/* <li
                 onClick={() => navigate("/feed-page")}
                 className={currentPath === "/feed-page" ? "active-nav" : ""}
               >
@@ -334,6 +335,32 @@ const Nav = () => {
                   weight={currentPath === "/feed-page" ? "fill" : "regular"}
                   color={currentPath === "/feed-page" ? "#4495c7" : ""}
                 />
+                Feed
+              </li> */}
+
+              {feedMouseOver && (
+                <label
+                  style={{
+                    position: "absolute",
+                    top: "40px",
+                    left: "520px",
+                    fontSize: "11px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  This feature will be available in the future
+                </label>
+              )}
+              <li
+                onMouseOver={() => {
+                  setFeedMouseOver(true);
+                }}
+                onMouseLeave={() => {
+                  setFeedMouseOver(false);
+                }}
+                style={{ cursor: "not-allowed", color: "#999" }}
+              >
+                <ArticleIcon size={20} color="#999" />
                 Feed
               </li>
               <li
